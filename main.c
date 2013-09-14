@@ -36,6 +36,7 @@ int main(void)
 
 void drive(void)
 {
+	int a;
 	struct image_data* idata;
 	int angle,input;
 	init_drive();

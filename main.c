@@ -22,6 +22,7 @@ void direct_test(void);
 
 int main(void)
 {
+	int a;
 	cm_handle = init_camera();
 	car_connect();
 	pthread_create(&thread[0],NULL,key_handler,NULL);

@@ -68,14 +68,16 @@ struct image_data* line_check(int handle)
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	print_screen_y();
+	//print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
-	//print_screen_color();
+	print_screen_color();
 	//check_traffic_light();
 	//exit(0);
 #endif
+
+	check_traffic_light();
 
 	switch(g_drive_flag)
 	{
@@ -1146,19 +1148,17 @@ void print_screen_color()
 		printf("%d", i/100);
 	}
 	printf("\n");
-	for(i = 200; i>0 ; i--)
+	for(i = 240; i>100 ; i--)
 	{
 		printf("%3d:",i);
 		for(j = MAXWIDTH-1; j>=0; j--)
 		{	
-			if(IS_RED(j,i))
+			if(IS_TRAFFIC_RED(j,i))
 				printf("R");
-			else if(IS_YELLOW(j,i))
+			else if(IS_TRAFFIC_YELLOW(j,i))
 				printf("Y");
-			else if(IS_WHITE(j,i))
-				printf("W");
-			else if(IS_BLACK(j,i))
-				printf("B");
+			else if(IS_TRAFFIC_GREEN(j,i))
+				printf("G");
 			else
 				printf(" ");
 			/*

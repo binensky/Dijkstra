@@ -45,12 +45,10 @@ void drive(void)
 
 	while(TRUE)
 	{			
-
 		idata = line_check(cm_handle); // get image data 
 
 		switch(g_image_flag)
 		{			
-
 			case IF_STOP:
 				stop();
 				g_drive_flag = DF_STOP;
@@ -64,8 +62,15 @@ void drive(void)
 			case IF_CL_LEFT:
 			case IF_CL_RIGHT:
 			case IF_SG_STOP:
+				traffic_drive(IF_SG_STOP);
+			break;
+
 			case IF_SG_LEFT:
+				traffic_drive(IF_SG_LEFT);
+				break;
+
 			case IF_SG_RIGHT:
+				traffic_drive(IF_SG_RIGHT);
 			break;
 		}
 #ifdef DRIVE
@@ -74,6 +79,25 @@ void drive(void)
 #endif
 	}
 }
+
+void traffic_drive(int flag){
+	switch(flag){
+		case IF_SG_STOP:
+			stop();
+			g_drive_flag = DF_STOP;
+			break;
+
+		case IF_SG_LEFT:
+					
+			break;
+
+		case IF_SG_RIGHT:
+
+			break;
+	}
+}
+
+
 
 void init_drive()
 {

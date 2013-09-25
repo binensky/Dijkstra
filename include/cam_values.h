@@ -11,7 +11,7 @@
 
 // -------- MISO Defined Value ----------
 
-#define CUTLINE 80
+#define CUTLINE 100
 #define GAP 10
 
 // threshold
@@ -60,17 +60,22 @@
 // macro function 
 #define Y(A,B) vidbuf->ycbcr.y[(B)*MAXWIDTH+(A)]
 //#define Y(C,D) img_buf_y[(D)][(C)]
-#define CB(E,F) vidbuf->ycbcr.cb[(F/2)*MAXWIDTH+(E/2)]
-#define CR(G,H) vidbuf->ycbcr.cr[(H/2)*MAXWIDTH+(G/2)]
+#define CB(E,F) vidbuf->ycbcr.cb[((F)/2)*MAXWIDTH+((E)/2)]
+#define CR(G,H) vidbuf->ycbcr.cr[((H)/2)*MAXWIDTH+((G)/2)]
 
-#define IS_YELLOW(I,J) ( Y(I,J) >= THRESHOLD) && ( CB(I,J) < THRESHOLD_YELLOW_CB)
-#define IS_WHITE(K,L) (Y(K,L) >= THRESHOLD+70) && ( CB(K,L) >= THRESHOLD_CB)
+#define IS_UNKNOWN(M,N) ((Y(M,N) >= THRESHOLD) && (Y(M,N) < THRESHOLD+70) && (CB(M,N) >= THRESHOLD_YELLOW_CB))
+#define IS_YELLOW(I,J) (( Y(I,J) >= THRESHOLD) && ( CB(I,J) < THRESHOLD_YELLOW_CB))
+#define IS_WHITE(K,L) ((Y(K,L) >= THRESHOLD+70) && ( CB(K,L) >= THRESHOLD_CB))
 #define IS_BLACK(X,Z) !(IS_YELLOW(X,Z) || IS_WHITE(X,Z))
-#define IS_RED(X,Z) Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_RED_CR
+#define IS_RED(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_RED_CR)
 
-#define IS_TRAFFIC_RED(X,Z) Y(X,Z) >= THRESHOLD && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_RED_CR
-#define IS_TRAFFIC_YELLOW(X,Z) Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_YELLOW_CR && CR(X,Z) < THRESHOLD_RED_CR
-#define IS_TRAFFIC_GREEN(X,Z) Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) < THRESHOLD_GREEN_CR
+#define IS_YELLOW_SPEED_BUMP(O,P) (IS_YELLOW(O,P) && IS_YELLOW(O-1,P) && IS_YELLOW(O+1, P))
+#define IS_WHITE_SPEED_BUMP(O,P) (IS_WHITE(O,P) && IS_WHITE(O-1,P) && IS_WHITE(O+1, P))
+#define IS_BLACK_SPEED_BUMP(O,P) (IS_BLACK(O,P)&&!IS_UNKNOWN(O,P) && IS_BLACK(O-1,P)&&!IS_UNKNOWN(O-1,P) && IS_BLACK(O+1,P)&&!IS_UNKNOWN(O+1,P)) 
+
+#define IS_TRAFFIC_RED(X,Z) (Y(X,Z) >= THRESHOLD && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_RED_CR)
+#define IS_TRAFFIC_YELLOW(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_YELLOW_CR && CR(X,Z) < THRESHOLD_RED_CR)
+#define IS_TRAFFIC_GREEN(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) < THRESHOLD_GREEN_CR)
 
 // struct 
 struct p_point
@@ -84,27 +89,10 @@ struct p_point pt[PT_SIZE]; // 잡힌 점
 
 static int cm_handle;
 static int fd;
-struct sigaction act;
-struct pxa_video_buf* vidbuf;
-struct pxacam_setting camset;
 
 int find_left = FL_NONE, find_right = FL_NONE;
 int img_buf_y[MAXHEIGHT][MAXWIDTH];
-int width_scan_point = 0;
+int width_scan_point = MIDWIDTH;
 
-
-struct pxa_camera
-{
-	int handle;
-	int status;
-	int mode;
-	int sensor;
-	int ref_count;
-
-	// Video Buffer
-	int width;
-	int height;
-	enum    pxavid_format format;
-};
 
 #endif

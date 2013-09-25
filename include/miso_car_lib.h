@@ -3,7 +3,7 @@
 
 #include "car_lib.h"
 #include "miso_values.h"
-//#include "cam_values.h"
+#include "angle_table.h"
 
 
 #define DM_INTERVAL 100
@@ -52,14 +52,8 @@ void speed_down(int v)
 // direction
 void turn_straight()
 {
-	if ( g_angle == DM_STRAIGHT)
-	{
-		dm_angle(HIGH(g_angle),LOW(g_angle));
-	}else
-	{
-		g_angle = (g_angle+DM_STRAIGHT)/2;
-		dm_angle(HIGH(g_angle),LOW(g_angle));
-	}
+	g_angle = DM_STRAIGHT;
+	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
 void turn_set(int v)
@@ -75,18 +69,18 @@ void turn_set(int v)
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
-void turn_left(int v)
+void turn_left(int v,int dist)
 {
 	int angle;
 //	angle =  (DM_STRAIGHT+((v-135)*(14))) / DM_INTERVAL + 2;
-	turn_set(a2dm_left[((v-1)/5)-18]);
+	turn_set(a2dm_left[((v-1)/2)-45]);
 }
 
-void turn_right(int v)
+void turn_right(int v,int dist)
 {
 	int angle;
 //	angle =  (DM_STRAIGHT-((45-v)*(16))) / DM_INTERVAL - 2;
-	turn_set(a2dm_right[17 - (v-1)/5]);
+	turn_set(right_angle[dist][v/3]);
 }
 
 // cm_angle 
@@ -113,13 +107,14 @@ void distance_set(int dis)
 void change_line(int v)
 {
 	if(g_image_flag == IF_CL_LEFT){
+
 	}
 	else if( g_image_flag == IF_CL_RIGHT){
+
 	}
 }
 
-
-void set_angle(int angle)
+void set_angle(int angle,int dist)
 {
 	if(RANGE_STRAIGHT(angle)){
 		g_drive_flag = DF_STR;
@@ -129,12 +124,12 @@ void set_angle(int angle)
 	else if( RANGE_RIGHT(angle)){
 		g_drive_flag = DF_CUR;
 	//	speed_down(10);		
-		turn_right(angle);
+		turn_right(angle,dist);
 	} 
 	else if(RANGE_LEFT(angle)){
 		g_drive_flag = DF_CUR;		
 	//	speed_down(10);
-		turn_left(angle);
+		turn_left(angle,dist);
 	}else if(RANGE_NO_CHANGE(angle))
 	{
 		g_drive_flag = DF_CUR;

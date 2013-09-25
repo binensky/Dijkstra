@@ -1,7 +1,8 @@
-//#define DEBUG
+#define DEBUG
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
+//#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -26,8 +27,10 @@ int main(void)
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
-	drive();
-//	direct_test();
+
+//	drive();
+	direct_test();
+	
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
 	//pthread_join(thread[2],NULL);
@@ -36,7 +39,6 @@ int main(void)
 
 void drive(void)
 {
-	int a;
 	struct image_data* idata;
 	int angle,input;
 	init_drive();
@@ -57,7 +59,7 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 			printf("img angle %d\n", idata->angle);
 #endif
-			set_angle(idata->angle);
+			set_angle(idata->angle,idata->dist);
 			break;
 			case IF_CL_LEFT:
 			case IF_CL_RIGHT:
@@ -73,7 +75,8 @@ void drive(void)
 	}
 }
 
-void init_drive(){
+void init_drive()
+{
 #ifdef DRIVE
 	sleep(3);
 #endif
@@ -81,7 +84,7 @@ void init_drive(){
 	usleep(2000);
 	camera_straight();
 	usleep(2000);
-	speed_set(1000);
+	speed_set(500);
 	usleep(2000);
 	accel(0x02f);
 	usleep(2000);
@@ -94,17 +97,19 @@ void init_drive(){
 void direct_test()
 {
 	struct image_data* idata;
-	int input;
-
+	init_drive();
 	while(TRUE)
 	{
+		char input;
+		
 		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. back \n");
 		scanf("%c",&input);
+
 		switch(input)
 		{
 			case '0':
 				idata = line_check(cm_handle); // get image data 
-				printf("angle : %d\n",idata->angle);
+				//printf("angle : %d\n",idata->angle);
 				break;	
 			case '1':	
 				g_angle += 50;

@@ -72,12 +72,12 @@ struct image_data* line_check(int handle)
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
-	print_screen_color();
+//	print_screen_color();
 	//check_traffic_light();
 	//exit(0);
 #endif
 
-	check_traffic_light();
+//	check_traffic_light();
 
 	switch(g_drive_flag)
 	{
@@ -1063,7 +1063,7 @@ void print_screen_y()
 {
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE; j>0 ; j--)
+	for(j = 140; j>0 ; j--)
 	{
 		printf("%3d:",j);
 

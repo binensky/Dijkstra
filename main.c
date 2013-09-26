@@ -81,6 +81,7 @@ void drive(void)
 }
 
 void traffic_drive(int flag){
+	int n;
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
@@ -88,26 +89,24 @@ void traffic_drive(int flag){
 			break;
 
 		case IF_SG_LEFT:
-			distance_set(350);
+			n = mDistance();
+			distance_set(1200);
 			forward_dis();
+			while(mDistance() - n < 1720){}
 			turn_set(2200);
-			distance_set(400);
-			forward_dis();
+			while(mDistance() - n < 3800){}
 			turn_straight();
-			distance_set(200);
-			forward_dis();
+			while(mDistance() - n < 4600){}
 			break;
-
 		case IF_SG_RIGHT:
-			distance_set(350);
+			n = mDistance();
+			distance_set(1200);
 			forward_dis();
+			while(mDistance() - n < 1720){}
 			turn_set(800);
-			distance_set(400);
-			forward_dis();
+			while(mDistance() - n < 3800){}
 			turn_straight();
-			distance_set(200);
-			forward_dis();
-
+			while(mDistance() - n < 4600){}
 			break;
 	}
 }
@@ -136,12 +135,13 @@ void init_drive()
 void direct_test()
 {
 	struct image_data* idata;
+	int i = 0;
 	init_drive();
 	while(TRUE)
 	{
 		char input;
-
-		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. back \n");
+		int n;
+		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. back, 6. traffic right, 7. traffic left\n");
 		scanf("%c",&input);
 
 		switch(input)
@@ -170,18 +170,24 @@ void direct_test()
 				backward_dis(0);
 				break;
 			case '6':
-				turn_straight();
-				distance_set(350);
+				n = mDistance();
+				distance_set(1200);
 				forward_dis();
-				sleep(1);
+				while(mDistance() - n < 1720){}
+				turn_set(800);
+				while(mDistance() - n < 3800){}
+				turn_straight();
+				while(mDistance() - n < 4600){}
+				break;
+			case '7':
+				n = mDistance();
+				distance_set(1200);
+				forward_dis();
+				while(mDistance() - n < 1720){}
 				turn_set(2200);
-				distance_set(400);
-				forward_dis();
-				sleep(1);
+				while(mDistance() - n < 3800){}
 				turn_straight();
-				distance_set(200);
-				forward_dis();
-				sleep(1);
+				while(mDistance() - n < 4600){}
 				break;
 			default: 
 				break;

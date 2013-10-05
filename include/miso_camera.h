@@ -39,7 +39,8 @@ void print_screen_cb();
 void print_screen_cr();
 void print_screen_color();
 
-int get_road_angle(struct p_point a, struct p_point b);
+int get_road_angle();
+int get_angle(struct p_point a, struct p_point b);
 int left_line_check(int h);
 int right_line_check(int h);
 int find_inline(int rl_info, int i, int offset);
@@ -53,11 +54,16 @@ int find_speed_bump_point(int w, int y);
 int find_speed_bump_in_point(int i, int j);
 
 int check_traffic_light();
+int is_left_turn(int x, int y);
 
 int direct = NONE;
 int dir_count = 0;
 int is_speed_bump;
 int distan = -1; // default
+int pt_cnt = 0;
+int first = 1;
+int angles[10];
+
 
 struct image_data* line_check(int handle)
 {
@@ -72,12 +78,10 @@ struct image_data* line_check(int handle)
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
-	print_screen_color();
+	//print_screen_color();
 	//check_traffic_light();
 	//exit(0);
 #endif
-
-	check_traffic_light();
 
 	switch(g_drive_flag)
 	{
@@ -111,7 +115,8 @@ struct image_data* line_check(int handle)
 		printf("DF_STR\n");
 #endif
 		// 도로 중간 값을 검사한다. 
-		tmp = check_mid_line(140,100);
+		//tmp = check_mid_line(140,100);
+		tmp = MID_DRIVE;	// 차선변경이 자꾸 떠서 일단 주석처리
 		if( tmp == MID_DRIVE)
 		{
 			for(i = 1; i< CUTLINE ; i++)
@@ -186,15 +191,29 @@ struct image_data* line_check(int handle)
 		return img_data;
 	}
 
-	midangle = get_road_angle(pt[BOT], pt[END]);
-
+	midangle = get_road_angle();
+	
 #ifdef DRIVE_DEBUG
-	printf("pt /(%d,%d)->(%d,%d) ", pt[BOT].x, pt[BOT].y,pt[END].x, pt[END].y);
+	for(i=0; i<pt_cnt; i++)
+	{
+		printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
+	}
+	printf("\n");
 #endif
+	
+	if( (angles[BOT] < angles[pt_cnt-2] * 2) && pt[BOT].y < 15) 
+		img_data->flag = AF_STRAIGHT;
+	else if( (angles[BOT] < angles[pt_cnt-2] * 2) && pt[BOT].y >= 15) 
+		img_data->flag = AF_STRAIGHT_END;
+	else 
+		img_data->flag = AF_CURVE;
 
 	img_data->angle = midangle;
-	img_data->dist = ( (distan == -1) ? pt[END].y : distan);
+	img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
 
+#ifdef DRIVE_DEBUG
+	printf("angle : %d, dist %d, flag %d\n",img_data->angle, img_data->dist, img_data->flag);
+#endif
 	return img_data;
 }
 
@@ -224,7 +243,7 @@ int right_line_check(int i)
 {
 
 #ifdef TRACE
-	printf("left line check\n");
+	printf("right line check\n");
 #endif
 
 	int w;
@@ -247,7 +266,7 @@ int find_inline(int rl_info, int y, int w)
 #ifdef TRACE
 	printf("find inline\n");
 #endif
-	int x;
+	int x, a;
 	if(rl_info == LEFT)					// 왼쪽 선이라면 
 	{
 		// 위로 올라가면서 방지턱을 확인한다
@@ -260,13 +279,15 @@ int find_inline(int rl_info, int y, int w)
 			return TRUE;
 		}
 
-		pt[BOT].y = y;				
+		pt[BOT].y = y;
 		pt[BOT].x = w;
+		pt_cnt += 1;
+
 #ifdef DRIVE_DEBUG
 		printf("set bot point <%d><%d>\n",w,y);
 #endif
 
-		if(find_in_point(LEFT, y, pt[BOT].x)) // sub_point를 찾는다. 
+		if(find_in_point(LEFT, y, w)) // sub_point를 찾는다. 
 		{
 			find_left = FL_FIND;
 			return TRUE;
@@ -285,6 +306,7 @@ int find_inline(int rl_info, int y, int w)
 		}
 		pt[BOT].y = y;		
 		pt[BOT].x = w;
+		pt_cnt += 1;
 
 #ifdef DRIVE_DEBUG
 		printf("set bot point <%d><%d>\n",w,y);
@@ -469,8 +491,17 @@ int check_mid_line(int mid_line,int under_line)
 	int i,j,k;
 	int left_color = COL_UNKNOWN, right_color = COL_UNKNOWN;
 
+#ifdef TRACE
 	printf("in check_mid_line\n");
+#endif
 	// mid line 까지 올라가면서 검사한다. 
+
+	for(i=0;i<mid_line;i++)
+	{
+		if(IS_YELLOW(MIDWIDTH,i))
+			return MID_DRIVE;
+	}
+
 	for( i = under_line ; i < mid_line; i++)
 	{
 		if(!IS_BLACK(MIDWIDTH,i))
@@ -538,6 +569,17 @@ int check_mid_line(int mid_line,int under_line)
 				}
 			}
 		} 
+		if(left_color == COL_YELLOW && right_color == COL_WHITE)
+			return MID_CL_RIGHT;
+
+		else if(left_color == COL_WHITE && right_color == COL_YELLOW)
+			return MID_CL_LEFT;
+
+		else{
+			right_color = COL_UNKNOWN;
+			left_color = COL_UNKNOWN;
+		}
+
 	} // end vertical scan 
 
 #ifdef MID_LINE_DEBUG
@@ -574,14 +616,7 @@ int check_mid_line(int mid_line,int under_line)
 	printf("\n");
 
 #endif
-	if(left_color == COL_YELLOW && right_color == COL_WHITE)
-		return MID_CL_RIGHT;
-
-	else if(left_color == COL_WHITE && right_color == COL_YELLOW)
-		return MID_CL_LEFT;
-
-	else
-		return MID_DRIVE;			
+	return MID_DRIVE;			
 }
 
 int check_speed_bump(int rl_info, int w, int y)
@@ -673,31 +708,48 @@ int find_in_point(int rl_info, int i, int offset)
 				for( x = offset; x>0; x--)
 				{
 					if(x == MIDWIDTH)
-					{
 						distan = y;
-					}
 
 					// (1,0)을 찾은 경우 점을 저장하고 offset을 갱신한다.  
 					if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) )
 					{
+						if(pt_cnt == 1)
+						{
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x;
+						}
+
+						if(pt[pt_cnt-1].y + 10 == y)
+						{
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x;
+							pt_cnt += 1;
+						}
+
 						pt_tmp.y = y;
 						pt_tmp.x = x;
 						offset = x;
-
+						
 						if(set_end_point(rl_info, &pt_tmp,flag))
+						{
+							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
+								pt_cnt += 1;
 							return TRUE;
+						}
+						/*
 						else if(x < offset - 100){ // 한 행에서 너무 많이 x이동을 수행하게 되면 
 							if(set_end_point(rl_info,&pt_tmp,flag))
 								return TRUE;
 						}
-
+						*/
 						break;
 					}
 				}
 				// 오른쪽에서 1,0 을 못 찾은 경우
 				if(x == 0)
 				{
-					if(pt[END].y < 0 ){
+					if(pt_cnt == 1)
+					{
 						init_point();
 						return FALSE;
 					}
@@ -711,31 +763,59 @@ int find_in_point(int rl_info, int i, int offset)
 
 				for( x = offset; x<MAXWIDTH-1; x++)
 				{
+					if(x == MIDWIDTH)
+						distan = y;
+
 					if( IS_BLACK(x,y)  && !IS_BLACK(x+1,y))
 					{
+
+						if(pt_cnt == 1)
+						{
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x;
+						}
+
+						if(pt[pt_cnt-1].y + 10 == y)
+						{
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x+1;
+							pt_cnt += 1;
+						}
+
 						pt_tmp.y = y;
 						pt_tmp.x = x+1;
 						offset = x+1;
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
+						{
+							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
+								pt_cnt += 1;
 							return TRUE;
+						}
+
+						/*
 						else if(x > offset + 100){ // 한 행에서 너무 많이 x이동을 수행하게 되면 
 							if(set_end_point(rl_info,&pt_tmp,flag))
 								return TRUE;
 						}
+						*/
 						break;
 					}
 				}
 				// 왼쪽에서 (10)을 못 찾은 경우
-				if(x == MAXWIDTH-1 && pt[END].y < 0){
-					init_point();
-					return FALSE;
+				if(x == MAXWIDTH-1){
+					if(pt_cnt == 1)
+					{
+						init_point();
+						return FALSE;
+					}
+					return TRUE;
 				}
 			}
 		}// end scan for top
 	} // end rl_info == LEFT
-	else{
-
+	else
+	{
 		for( y = i+1; y <= CUTLINE ; y++)
 		{
 			if( IS_BLACK(offset,y))
@@ -744,22 +824,48 @@ int find_in_point(int rl_info, int i, int offset)
 
 				for( x = offset ; x >0 ; x--)
 				{
+					if(x == MIDWIDTH)
+						distan = y;
+
 					if(!IS_BLACK(x,y) && IS_BLACK(x-1,y))
 					{
+
+						if(pt_cnt == 1)
+						{
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x;
+						}
+
+						if(pt[pt_cnt-1].y + 10 == y)
+						{
+							printf("set pt[%d] : (%d, %d)\n",pt_cnt,x,y);
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x-1;
+							pt_cnt += 1;
+						}
+
 						pt_tmp.y = y;
 						pt_tmp.x = x-1;
 						offset = x-1;
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
+						{
+							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
+								pt_cnt += 1;
 							return TRUE;
+						}
 						break;
 					}
 				}
 
 				// 오른쪽에서 (0,1) 을 못 찾은 경우
-				if(x == 0 && pt[END].y < 0){
-					init_point();
-					return FALSE;
+				if(x == 0){
+					if(pt_cnt == 1)
+					{
+						init_point();
+						return FALSE;
+					}
+					return TRUE;
 				}
 
 			} // 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -768,26 +874,55 @@ int find_in_point(int rl_info, int i, int offset)
 				flag = 1;
 				for( x = offset; x<MAXWIDTH-1; x++)
 				{
+					if(x == MIDWIDTH)
+						distan = y;
+
 					if( !IS_BLACK(x,y) && IS_BLACK(x+1,y))
 					{
+
+						if(pt_cnt == 1)
+						{
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x;
+						}
+
+						if(pt[pt_cnt-1].y + 10 == y)
+						{
+							printf("set pt[%d] : (%d, %d)\n",pt_cnt,x,y);
+							pt[pt_cnt].y = y;
+							pt[pt_cnt].x = x;
+							pt_cnt += 1;
+						}
+
 						pt_tmp.y = y;
 						pt_tmp.x = x;
 						offset = x;
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
+						{
+							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
+								pt_cnt += 1;
 							return TRUE;
+						}
 
 						break;
 					}
 				}
 				// 왼쪽에서 (0,1)을 못 찾은 경우
-				if(x == MAXWIDTH-1 && pt[END].y < 0){
-					init_point();
-					return FALSE;
+				if(x == MAXWIDTH-1)
+				{
+					if(pt_cnt == 1)
+					{
+						init_point();
+						return FALSE;
+					}
+					return TRUE;
 				}
 			}
 		} // end scan for top 
 	} // end rl_info == RIGHT
+	if(pt_cnt == 1 && pt[pt_cnt].x != -1)
+		pt_cnt += 1;
 	return TRUE;
 }
 
@@ -840,6 +975,22 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 #ifdef TRACE
 	printf("set_end_point\n");
 #endif
+	if(direct == NONE)
+	{
+		if( pt_tmp->x > pt[pt_cnt-1].x)
+			direct = LEFT;
+		else if(pt_tmp->x < pt[pt_cnt-1].x)
+			direct = RIGHT;
+	}
+	else
+	{
+		if(direct == LEFT && pt_tmp->x < pt[pt_cnt-1].x)
+			return TRUE;
+		else if(direct == RIGHT && pt_tmp->x > pt[pt_cnt-1].x)
+			return TRUE;
+	}
+	return FALSE;
+	/*
 	// 방향이 설정되어 있지 않을 때,
 	if( direct == NONE ) 
 	{
@@ -860,12 +1011,14 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 	}
 	else 
 	{
-		if(
+		if(	// 방향이 바뀌는 경우
 				(direct == LEFT && rl_info == LEFT && flag) ||
 				(direct == LEFT && rl_info == RIGHT && !flag) ||
 				(direct == RIGHT && rl_info == LEFT && !flag) ||
 				(direct == RIGHT && rl_info == RIGHT && flag)
-		  ){
+		  )
+		{
+			pt[END].x = (pt[BOT].x + pt[END].x) / 2;
 			return TRUE;
 		}else if( pt[MID].x == pt_tmp->x)
 		{
@@ -883,33 +1036,35 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 	pt[END].y = pt_tmp->y;
 
 	return FALSE;
+	*/
 }
 
-int get_road_angle( struct p_point a, struct p_point b)
+int get_road_angle()
 {
-	int ret = (int)(atan2((double)(b.y-a.y), (double)(a.x-b.x)) * 180 / PI);
-	int angle  = 0 ;
-	int weight;
+	int i;
+	int sum = 0;
 
-	if( 0<=a.y && a.y<= 30){
-		weight = ret>90? (35-a.y) : (35-a.y);
-		angle = ( ret>45 || ret < 135) ? ret + (weight/2) : ret + weight; 
-
-		if(angle <0)
-			angle =1;
-
-		else if(angle >180)
-			angle =179;
-	}
-	else if( 60<a.y && a.y <=80)
-		angle =  (ret>90? ret-(a.y-CUTLINE/2)/3 : ret +(a.y-CUTLINE/2)/3); 
-	else 		
-		angle  = ret;
-
+	for(i = 0; i<pt_cnt-1; i++)
+	{
+		int angle;
+		angle = get_angle( pt[i], pt[i+1] );
+		angles[i] = angle;
 #ifdef DRIVE_DEBUG
-	printf(" org angle : %d / dist : %d /result angle : %d \n",ret,distan,angle);
+		printf("ange[%d]:%d ", i, angle);
 #endif
-	return angle;
+		sum += angle;
+	}
+	printf("\n");
+	
+	if(pt_cnt  == 1)
+		return 1000;
+
+	return sum/(pt_cnt-1);
+}
+
+int get_angle( struct p_point a, struct p_point b)
+{
+	return (int)(atan2((double)(b.y-a.y), (double)(a.x-b.x)) * 180 / PI);
 }
 
 int check_traffic_light()
@@ -918,6 +1073,7 @@ int check_traffic_light()
 	// return으로 정지(NONE), 좌회전(LEFT), 우회전(RIGHT)
 
 	int i, j;
+	int red_count = 0, yellow_count = 0, green_count = 0;
 
 	// cutline 위 부분을 확인
 	for(i = MAXWIDTH -1 ; i >= 0; i--)
@@ -927,38 +1083,45 @@ int check_traffic_light()
 			// Y, CB, CR값 테스트로 Red, Green, Yellow 구분 (+ 좌회전 화살표?)
 			if(IS_TRAFFIC_RED(i,j))
 			{
-				// 정지
-				printf("COLOR : RED!\n");
-				return NONE;
+				red_count++;
 			}
 			else if(IS_TRAFFIC_GREEN(i,j))	// 초록불인 경우
 			{
-				printf("COLOR : GREEN!\n");
-				// 그냥 초록불인 케이스와 좌회전 신호인 경우 확인
-				if(is_left_turn(i,j))		// 좌회전
-				{
-					// 좌회전 -> 좌회전 수행
-					// -> 좌회전을 어느정도 수행하면 영상처리로도 자동으로 좌회전을 수행하게 될듯
-					printf("LEFT TURN!\n");
-					return LEFT;
-				}
-				else						// 우회전
-				{
-					// 그냥 녹색불 -> 우회전 수행
-					// -> 우회전도 마찬가지
-					printf("RIGHT TURN!\n");
-					return RIGHT;
-				}
+				green_count++;
 			}
 			else if(IS_TRAFFIC_YELLOW(i,j))
 			{
-				printf("COLOR : YELLOW!\n");
-				return NONE;
+				yellow_count++;
 			}
 			else							// 그 외
 			{
 			}
 		}
+	}
+	
+	if(red_count >= 100)
+	{
+		printf("COLOR : RED!\n");
+		return NONE;
+	}
+	else if(yellow_count >= 100)
+	{
+		printf("COLOR : YELLOW!\n");
+		return NONE;
+	}
+	else if(green_count >= 250)
+	{
+		printf("RIGHT TURN!\n");
+		return RIGHT;
+	}
+	else if(green_count >= 100)
+	{
+		printf("LEFT TURN!\n");
+		return LEFT;
+	}
+	else
+	{
+		printf("Nothing! red : %d, yellow : %d, green : %d\n",red_count, yellow_count, green_count);
 	}
 }
 
@@ -988,13 +1151,14 @@ void init_point()
 	printf("init point\n");
 #endif
 	int i;
-	for( i = 0; i< 3; i++){
+	for( i = 0; i< PT_SIZE; i++){
 		pt[i].y	= -1;
 		pt[i].x = -1;
 	}
 
 	direct = NONE;
 	distan = -1;
+	pt_cnt = 0;
 }
 
 int get_width_scan_point()
@@ -1022,10 +1186,16 @@ void init_values(int handle)
 	find_right = FL_NONE;
 
 	// 버퍼 초기화 
-	camera_release_frame(cm_handle,vidbuf);
+	if(!first)
+		camera_release_frame(cm_handle,vidbuf);
+	else
+		first = 0;
+
 	vidbuf = camera_get_frame(cm_handle);
 	camera_release_frame(cm_handle,vidbuf);
 	vidbuf = camera_get_frame(cm_handle);
+	//camera_release_frame(cm_handle,vidbuf);
+	//vidbuf = camera_get_frame(cm_handle);
 }
 
 void sighandler(int signo)
@@ -1063,7 +1233,7 @@ void print_screen_y()
 {
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE; j>0 ; j--)
+	for(j = CUTLINE+40; j>0 ; j--)
 	{
 		printf("%3d:",j);
 
@@ -1148,7 +1318,7 @@ void print_screen_color()
 		printf("%d", i/100);
 	}
 	printf("\n");
-	for(i = 240; i>100 ; i--)
+	for(i = MAXHEIGHT-1; i>150 ; i--)
 	{
 		printf("%3d:",i);
 		for(j = MAXWIDTH-1; j>=0; j--)

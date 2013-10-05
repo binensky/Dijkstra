@@ -28,8 +28,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-//	drive();
-	direct_test();
+	drive();
+//	direct_test();
 	
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -57,7 +57,7 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 			printf("img angle %d\n", idata->angle);
 #endif
-			set_angle(idata->angle,idata->dist);
+			set_angle(idata->angle,idata->dist,idata->flag);
 			break;
 			case IF_CL_LEFT:
 			case IF_CL_RIGHT:
@@ -79,8 +79,9 @@ void drive(void)
 #endif
 	}
 }
-
 void traffic_drive(int flag){
+	int n = 0;
+
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
@@ -88,11 +89,25 @@ void traffic_drive(int flag){
 			break;
 
 		case IF_SG_LEFT:
-					
+			n = mDistance();
+			distance_set(1200);
+			forward_dis();
+			while(mDistance() - n < 1720){}
+			turn_set(2200);
+			while(mDistance() - n < 3800){}
+			turn_straight();
+			while(mDistance() - n < 4600){}
 			break;
 
 		case IF_SG_RIGHT:
-
+			n = mDistance();
+			distance_set(1200);
+			forward_dis();
+			while(mDistance() - n < 1720){}
+			turn_set(800);
+			while(mDistance() - n < 3800){}
+			turn_straight();
+			while(mDistance() - n < 4600){}
 			break;
 	}
 }
@@ -115,6 +130,8 @@ void init_drive()
 	reduction(0x2f);
 	usleep(2000);
 	distance_set(2000);
+	usleep(2000);
+	dm_speed_set(1);
 	line_stop();
 }
 
@@ -133,14 +150,13 @@ void direct_test()
 		{
 			case '0':
 				idata = line_check(cm_handle); // get image data 
-				//printf("angle : %d\n",idata->angle);
 				break;	
 			case '1':	
-				g_angle += 50;
+				g_angle += 100;
 				turn_set(g_angle);
 				break;
 			case '2':
-				g_angle -= 50;
+				g_angle -= 100;
 				turn_set(g_angle);
 				break;
 			case '3':

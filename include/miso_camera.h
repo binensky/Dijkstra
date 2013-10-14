@@ -69,16 +69,17 @@ struct image_data* line_check(int handle)
 {
 	int i,j,rl_info;
 	int ret, temp, weight, midangle, topangle;
+	int angle_bot, angle_end;
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
 	// init values
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	//print_screen_y();
+//	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
-	//print_screen_color();
+//	print_screen_color();
 	//check_traffic_light();
 	//exit(0);
 #endif
@@ -91,6 +92,8 @@ struct image_data* line_check(int handle)
 #ifdef TRACE
 		printf(" DF_CUR");
 #endif
+		//speed_set(1000);	
+
 		for(i = 1; i< CUTLINE ; i++)
 		{
 			if( (find_left == FL_NONE) && left_line_check(i))
@@ -115,8 +118,10 @@ struct image_data* line_check(int handle)
 		printf("DF_STR\n");
 #endif
 		// 도로 중간 값을 검사한다. 
-		//tmp = check_mid_line(140,100);
-		tmp = MID_DRIVE;	// 차선변경이 자꾸 떠서 일단 주석처리
+		tmp = check_mid_line(140,100);
+		printf("===========================================================tmp : %d\n", tmp);
+		//speed_set(1000);
+		//tmp = MID_DRIVE;	// 차선변경이 자꾸 떠서 일단 주석처리
 		if( tmp == MID_DRIVE)
 		{
 			for(i = 1; i< CUTLINE ; i++)
@@ -192,7 +197,6 @@ struct image_data* line_check(int handle)
 	}
 
 	midangle = get_road_angle();
-	
 #ifdef DRIVE_DEBUG
 	for(i=0; i<pt_cnt; i++)
 	{
@@ -201,12 +205,21 @@ struct image_data* line_check(int handle)
 	printf("\n");
 #endif
 	
-	if( (angles[BOT] < angles[pt_cnt-2] * 2) && pt[BOT].y < 15) 
-		img_data->flag = AF_STRAIGHT;
-	else if( (angles[BOT] < angles[pt_cnt-2] * 2) && pt[BOT].y >= 15) 
-		img_data->flag = AF_STRAIGHT_END;
-	else 
+	if(midangle > 90){
+		angle_bot = 180 - angles[BOT];
+		angle_end = 180 - angles[pt_cnt - 2];
+	} else{
+		angle_bot = angles[BOT];
+		angle_end = angles[pt_cnt - 2];
+
+	}
+
+	if( (angle_bot > angle_end * 2) || angle_bot < 10)
 		img_data->flag = AF_CURVE;
+	else if( pt[BOT].y < 15) 
+		img_data->flag = AF_STRAIGHT;
+	else
+		img_data->flag = AF_STRAIGHT_END;
 
 	img_data->angle = midangle;
 	img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
@@ -225,14 +238,14 @@ int left_line_check(int i)
 #endif
 	int w;
 
-	if(!IS_BLACK(width_scan_point,i))	// 중간 값이 1일때, scan point가 선에 겹친경우. 아웃라인을 찾아야 한다.
+	if(IS_YELLOW(width_scan_point,i))	// 중간 값이 1일때, scan point가 선에 겹친경우. 아웃라인을 찾아야 한다.
 	{
 		return find_outline(LEFT,i,width_scan_point);
 	}
 
 	for( w = width_scan_point+1 ; w < MAXWIDTH -1; w++)		// 중간값이 1이 아닌 경우 인라인을 찾아야 한다. 
 	{
-		if(!IS_BLACK(w,i)){
+		if(IS_YELLOW(w,i)){
 			return find_inline(LEFT,i,w);
 		}
 	}
@@ -248,13 +261,13 @@ int right_line_check(int i)
 
 	int w;
 
-	if( !IS_BLACK(width_scan_point,i))	// 중간 값이 1일때, scan point가 선에 겹친경우. 아웃라인을 찾아야 한다.
+	if( IS_YELLOW(width_scan_point,i))	// 중간 값이 1일때, scan point가 선에 겹친경우. 아웃라인을 찾아야 한다.
 	{
 		return find_outline(RIGHT,i,width_scan_point);
 	}
 	for( w = width_scan_point-1; w >= 0; w--)
 	{
-		if(!IS_BLACK(w,i)){
+		if(IS_YELLOW(w,i)){
 			return find_inline(RIGHT,i,w);
 		}
 	}
@@ -338,10 +351,11 @@ int find_outline(int rl_info, int y, int w)
 	{
 		for(x = w; x < MAXWIDTH-1; x++)
 		{									// (0,1) 이 잡히는 경우. 
-			if( IS_BLACK(x,y) && !IS_BLACK(x-1,y))
+			if( IS_BLACK(x,y) && IS_YELLOW(x-1,y))
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
+				pt_cnt += 1;
 
 				if(find_out_end_point(y, pt[BOT].x)) // sub_point를 찾는다. 
 				{
@@ -356,10 +370,11 @@ int find_outline(int rl_info, int y, int w)
 	{
 		for(x = w; x > 0; x--)
 		{
-			if( !IS_BLACK(x,y) && IS_BLACK(x-1,y)) 
+			if( IS_YELLOW(x,y) && IS_BLACK(x-1,y)) 
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
+				pt_cnt += 1;
 
 				if(find_out_end_point(y, pt[BOT].x))
 				{
@@ -494,8 +509,45 @@ int check_mid_line(int mid_line,int under_line)
 #ifdef TRACE
 	printf("in check_mid_line\n");
 #endif
-	// mid line 까지 올라가면서 검사한다. 
 
+#ifdef MID_LINE_DEBUG
+
+	//printf(" left color %d, right color  %d \n", left_color,right_color);
+	printf("Y value\n");
+	for(j = mid_line; j>under_line ; j--)
+	{
+		printf("%3d:",j);
+
+		for(i = MAXWIDTH-1; i>=0; i--)
+		{	
+			if(Y(i,j) >= THRESHOLD)
+			{
+				if(IS_RED(i,j))
+					printf("R");
+				else if(IS_YELLOW(i,j))
+					printf("1");
+				else if(IS_WHITE(i,j))
+					printf("2");
+				else
+					printf(" ");
+			}
+			else 
+				printf(" ");
+		}
+		printf("\n");
+	}
+	for( j = 0 ; j < MAXWIDTH; j++)
+	{
+		if( j == width_scan_point)
+			printf("^");
+		else 
+			printf(" " );
+	}
+	printf("\n");
+
+#endif
+
+	// mid line 까지 올라가면서 검사한다. 
 	for(i=0;i<mid_line;i++)
 	{
 		if(IS_YELLOW(MIDWIDTH,i))
@@ -506,7 +558,6 @@ int check_mid_line(int mid_line,int under_line)
 	{
 		if(!IS_BLACK(MIDWIDTH,i))
 			break;
-
 		// 왼쪽 탐색 
 		for( j = MIDWIDTH ; j < MAXWIDTH-3; j++)
 		{
@@ -532,7 +583,6 @@ int check_mid_line(int mid_line,int under_line)
 #ifdef	DEBUG
 					printf("left mid line white (%d,%d)\n",j,i);
 #endif
-
 					left_color = COL_WHITE;
 					break;
 				}
@@ -555,7 +605,6 @@ int check_mid_line(int mid_line,int under_line)
 #ifdef	MID_LINE_DEBUG
 					printf("right mid line yellow (%d,%d)\n",j,i);
 #endif
-
 					break;
 				}
 				else if(IS_WHITE(j+1,i) && IS_WHITE(j,i) && IS_BLACK(j-1,i) && IS_BLACK(j-2,i))
@@ -564,12 +613,12 @@ int check_mid_line(int mid_line,int under_line)
 #ifdef	MID_LINE_DEBUG
 					printf("left mid line white (%d,%d)\n",j,i);
 #endif
-
 					break;
 				}
 			}
-		} 
-		if(left_color == COL_YELLOW && right_color == COL_WHITE)
+		}
+
+/*		if(left_color == COL_YELLOW && right_color == COL_WHITE)
 			return MID_CL_RIGHT;
 
 		else if(left_color == COL_WHITE && right_color == COL_YELLOW)
@@ -578,44 +627,9 @@ int check_mid_line(int mid_line,int under_line)
 		else{
 			right_color = COL_UNKNOWN;
 			left_color = COL_UNKNOWN;
-		}
+		}*/
 
 	} // end vertical scan 
-
-#ifdef MID_LINE_DEBUG
-
-	printf(" left color %d, right color  %d \n", left_color,right_color);
-	printf("Y value\n");
-	for(j = mid_line; j>under_line ; j--)
-	{
-		printf("%3d:",j);
-
-		for(i = MAXWIDTH-1; i>=0; i--)
-		{	
-			if(Y(i,j) >= THRESHOLD)
-			{
-				if(IS_YELLOW(i,j))
-					printf("1");
-				else if(IS_WHITE(i,j))
-					printf("2");
-				else
-					printf("0");
-			}
-			else 
-				printf("0");
-		}
-		printf("\n");
-	}
-	for( j = 0 ; j < MAXWIDTH; j++)
-	{
-		if( j == width_scan_point)
-			printf("^");
-		else 
-			printf(" " );
-	}
-	printf("\n");
-
-#endif
 	return MID_DRIVE;			
 }
 
@@ -711,7 +725,7 @@ int find_in_point(int rl_info, int i, int offset)
 						distan = y;
 
 					// (1,0)을 찾은 경우 점을 저장하고 offset을 갱신한다.  
-					if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) )
+					if( IS_YELLOW(x,y) && IS_BLACK(x-1,y) )
 					{
 						if(pt_cnt == 1)
 						{
@@ -748,12 +762,17 @@ int find_in_point(int rl_info, int i, int offset)
 				// 오른쪽에서 1,0 을 못 찾은 경우
 				if(x == 0)
 				{
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;
+						return TRUE;
+					}
 				}
 			}
 			// 위 점이 0인 경우 왼쪽으로 순회하면서 (1,0)<- 찾는다. 
@@ -766,7 +785,7 @@ int find_in_point(int rl_info, int i, int offset)
 					if(x == MIDWIDTH)
 						distan = y;
 
-					if( IS_BLACK(x,y)  && !IS_BLACK(x+1,y))
+					if( IS_BLACK(x,y)  && IS_YELLOW(x+1,y))
 					{
 
 						if(pt_cnt == 1)
@@ -804,12 +823,17 @@ int find_in_point(int rl_info, int i, int offset)
 				}
 				// 왼쪽에서 (10)을 못 찾은 경우
 				if(x == MAXWIDTH-1){
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;
+						return TRUE;
+					}
 				}
 			}
 		}// end scan for top
@@ -827,7 +851,7 @@ int find_in_point(int rl_info, int i, int offset)
 					if(x == MIDWIDTH)
 						distan = y;
 
-					if(!IS_BLACK(x,y) && IS_BLACK(x-1,y))
+					if(IS_YELLOW(x,y) && IS_BLACK(x-1,y))
 					{
 
 						if(pt_cnt == 1)
@@ -860,12 +884,17 @@ int find_in_point(int rl_info, int i, int offset)
 
 				// 오른쪽에서 (0,1) 을 못 찾은 경우
 				if(x == 0){
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;					
+						return TRUE;
+					}
 				}
 
 			} // 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -877,7 +906,7 @@ int find_in_point(int rl_info, int i, int offset)
 					if(x == MIDWIDTH)
 						distan = y;
 
-					if( !IS_BLACK(x,y) && IS_BLACK(x+1,y))
+					if( IS_YELLOW(x,y) && IS_BLACK(x+1,y))
 					{
 
 						if(pt_cnt == 1)
@@ -911,12 +940,17 @@ int find_in_point(int rl_info, int i, int offset)
 				// 왼쪽에서 (0,1)을 못 찾은 경우
 				if(x == MAXWIDTH-1)
 				{
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;
+						return TRUE;
+					}
 				}
 			}
 		} // end scan for top 
@@ -934,6 +968,7 @@ int find_out_end_point(int i, int offset)
 #endif
 	int y, x;
 
+	distan = 0;
 	for( y = i+1; y <= CUTLINE ; y++)
 	{
 		// 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -941,30 +976,46 @@ int find_out_end_point(int i, int offset)
 		{
 			for( x = offset; x < MAXWIDTH-1; x++)
 			{
-				if( IS_BLACK(x+1, y) && !IS_BLACK(x,y))
+				if( IS_BLACK(x+1, y) && IS_YELLOW(x,y))
 				{
-					pt[END].y = y;
-					pt[END].x = x;
+					if(pt[pt_cnt-1].y + 10 == y)
+					{
+						pt[pt_cnt].y = y;
+						pt[pt_cnt].x = x;
+						pt_cnt += 1;
+					}
+
 					offset = x;
 					break;
 				}
 			}
-			if(pt[END].y == -1 && x == MAXWIDTH-1)
+			if(pt[BOT+1].x == -1 && x == MAXWIDTH-1)
+			{
+				init_point();
 				return FALSE;
+			}
 		}else	// 위 점이 0인 경우 오른으로 순회하면서 0,1 찾기
 		{
 			for( x = offset; x > 0; x--)
 			{
-				if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) )
+				if( IS_YELLOW(x,y) && IS_BLACK(x-1,y) )
 				{
-					pt[END].y = y;
-					pt[END].x = x;
+					if(pt[pt_cnt-1].y + 10 == y)
+					{
+						pt[pt_cnt].y = y;
+						pt[pt_cnt].x = x;
+						pt_cnt += 1;
+					}
+
 					offset = x;
 					break;
 				}
 			}
-			if(pt[END].y == -1 && x == 0 )
+			if(pt[BOT+1].x == -1 && x == 0 )
+			{
+				init_point();
 				return FALSE;
+			}
 		}
 	}
 	return TRUE;
@@ -1181,7 +1232,8 @@ void init_values(int handle)
 	int i=0;
 
 	init_point();
-	width_scan_point = MIDWIDTH;
+	width_scan_point = get_width_scan_point();
+	//width_scan_point = MIDWIDTH;
 	find_left = FL_NONE;
 	find_right = FL_NONE;
 
@@ -1192,8 +1244,8 @@ void init_values(int handle)
 		first = 0;
 
 	vidbuf = camera_get_frame(cm_handle);
-	camera_release_frame(cm_handle,vidbuf);
-	vidbuf = camera_get_frame(cm_handle);
+//	camera_release_frame(cm_handle,vidbuf);
+//	vidbuf = camera_get_frame(cm_handle);
 	//camera_release_frame(cm_handle,vidbuf);
 	//vidbuf = camera_get_frame(cm_handle);
 }

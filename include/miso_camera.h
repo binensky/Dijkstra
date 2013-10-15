@@ -69,12 +69,13 @@ struct image_data* line_check(int handle)
 {
 	int i,j,rl_info;
 	int ret, temp, weight, midangle, topangle;
+	int angle_bot, angle_end;
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
 	// init values
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	//print_screen_y();
+//	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
@@ -91,6 +92,7 @@ struct image_data* line_check(int handle)
 #ifdef TRACE
 		printf(" DF_CUR");
 #endif
+		speed_set(500);	
 		for(i = 1; i< CUTLINE ; i++)
 		{
 			if( (find_left == FL_NONE) && left_line_check(i))
@@ -116,6 +118,7 @@ struct image_data* line_check(int handle)
 #endif
 		// 도로 중간 값을 검사한다. 
 		//tmp = check_mid_line(140,100);
+		speed_set(1000);
 		tmp = MID_DRIVE;	// 차선변경이 자꾸 떠서 일단 주석처리
 		if( tmp == MID_DRIVE)
 		{
@@ -192,7 +195,6 @@ struct image_data* line_check(int handle)
 	}
 
 	midangle = get_road_angle();
-	
 #ifdef DRIVE_DEBUG
 	for(i=0; i<pt_cnt; i++)
 	{
@@ -201,12 +203,21 @@ struct image_data* line_check(int handle)
 	printf("\n");
 #endif
 	
-	if( (angles[BOT] < angles[pt_cnt-2] * 2) && pt[BOT].y < 15) 
-		img_data->flag = AF_STRAIGHT;
-	else if( (angles[BOT] < angles[pt_cnt-2] * 2) && pt[BOT].y >= 15) 
-		img_data->flag = AF_STRAIGHT_END;
-	else 
+	if(midangle > 90){
+		angle_bot = 180 - angles[BOT];
+		angle_end = 180 - angles[pt_cnt - 2];
+	} else{
+		angle_bot = angles[BOT];
+		angle_end = angles[pt_cnt - 2];
+
+	}
+
+	if( (angle_bot > angle_end * 2) || angle_bot < 10)
 		img_data->flag = AF_CURVE;
+	else if( pt[BOT].y < 15) 
+		img_data->flag = AF_STRAIGHT;
+	else
+		img_data->flag = AF_STRAIGHT_END;
 
 	img_data->angle = midangle;
 	img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
@@ -748,12 +759,17 @@ int find_in_point(int rl_info, int i, int offset)
 				// 오른쪽에서 1,0 을 못 찾은 경우
 				if(x == 0)
 				{
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;
+						return TRUE;
+					}
 				}
 			}
 			// 위 점이 0인 경우 왼쪽으로 순회하면서 (1,0)<- 찾는다. 
@@ -804,12 +820,17 @@ int find_in_point(int rl_info, int i, int offset)
 				}
 				// 왼쪽에서 (10)을 못 찾은 경우
 				if(x == MAXWIDTH-1){
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;
+						return TRUE;
+					}
 				}
 			}
 		}// end scan for top
@@ -860,12 +881,17 @@ int find_in_point(int rl_info, int i, int offset)
 
 				// 오른쪽에서 (0,1) 을 못 찾은 경우
 				if(x == 0){
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;					
+						return TRUE;
+					}
 				}
 
 			} // 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -911,12 +937,17 @@ int find_in_point(int rl_info, int i, int offset)
 				// 왼쪽에서 (0,1)을 못 찾은 경우
 				if(x == MAXWIDTH-1)
 				{
-					if(pt_cnt == 1)
+					if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
-					return TRUE;
+					else
+					{
+						if(pt_cnt == 1)
+							pt_cnt += 1;
+						return TRUE;
+					}
 				}
 			}
 		} // end scan for top 
@@ -1192,8 +1223,8 @@ void init_values(int handle)
 		first = 0;
 
 	vidbuf = camera_get_frame(cm_handle);
-	camera_release_frame(cm_handle,vidbuf);
-	vidbuf = camera_get_frame(cm_handle);
+//	camera_release_frame(cm_handle,vidbuf);
+//	vidbuf = camera_get_frame(cm_handle);
 	//camera_release_frame(cm_handle,vidbuf);
 	//vidbuf = camera_get_frame(cm_handle);
 }

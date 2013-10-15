@@ -79,18 +79,19 @@ void turn_left(int v,int dist, int flag)
 	int angle;
 //	angle =  (DM_STRAIGHT+((v-135)*(14))) / DM_INTERVAL + 2;
 	if(flag == AF_CURVE){
-		turn_set(right_angle[(dist-1)/5][v/3]);
+		turn_set(left_angle[(dist-1)/5][v/3]);
 	}
 	else if( flag == AF_STRAIGHT){
-		if(dist <= 90)
+		if(dist >= 90)
 			return ;
 		turn_set(2000);
 	}
 	else if( flag == AF_STRAIGHT_END)
 	{
-		if( v >= 155 && v <= 134)
+		if( v <= 155 && v >= 134){
 			turn_set(1533);
-		else if( (v > 134 && v < 90) || (v > 180 && v < 155) )
+		}
+		else if( (v < 134 && v > 90) || (v < 180 && v > 155) )
 			return ;
 			//turn_set(1000);
 	}
@@ -112,8 +113,9 @@ void turn_right(int v,int dist, int flag)
 	}
 	else if( flag == AF_STRAIGHT_END)
 	{
-		if( v >= 25 && v <= 46)
+		if( v >= 25 && v <= 46){
 			turn_set(1533);
+		}
 		else if( (v > 46 && v < 90) || (v > 0 && v < 25) )
 			return ;
 			//turn_set(1000);

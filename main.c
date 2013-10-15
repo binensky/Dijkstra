@@ -64,7 +64,6 @@ void drive(void)
 			case IF_SG_STOP:
 				traffic_drive(IF_SG_STOP);
 			break;
-
 			case IF_SG_LEFT:
 				traffic_drive(IF_SG_LEFT);
 				break;
@@ -123,11 +122,11 @@ void init_drive()
 	usleep(2000);
 	camera_straight();
 	usleep(2000);
-	speed_set(500);
+	speed_set(1000);
 	usleep(2000);
-	accel(0x02f);
+	//accel(0x02f);
 	usleep(2000);
-	reduction(0x2f);
+	//reduction(0x2f);
 	usleep(2000);
 	distance_set(2000);
 	usleep(2000);

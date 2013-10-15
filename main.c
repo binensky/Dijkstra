@@ -3,7 +3,6 @@
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-// hahahlelelelsisisiblabalbal
 #include <stdio.h>
 #include <pthread.h>
 

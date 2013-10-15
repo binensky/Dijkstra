@@ -25,15 +25,15 @@ int main(void)
 	cm_handle = init_camera();
 	car_connect();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	//pthread_create(&thread[2],NULL,distance_check,NULL);
+		pthread_create(&thread[1],NULL,sensor_handler,NULL);
+		pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	//	drive();
-	direct_test();
+		drive();
+	//direct_test();
 
 	pthread_join(thread[0],NULL);
-	//pthread_join(thread[1],NULL);
-	//pthread_join(thread[2],NULL);
+		pthread_join(thread[1],NULL);
+		pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -50,38 +50,42 @@ void drive(void)
 		switch(g_image_flag)
 		{			
 			case IF_STOP:
+				printf("===================================IF_STOP\n");
 				stop();
 				g_drive_flag = DF_STOP;
 				break;
+
 			case IF_DRIVE:
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
-				set_angle(idata->angle,idata->dist);
+				set_angle(idata->angle,idata->dist,idata->flag);
+				distance_set(500);		
+				forward_dis();
 				break;
+
 			case IF_CL_LEFT:
 			case IF_CL_RIGHT:
+
 			case IF_SG_STOP:
 				traffic_drive(IF_SG_STOP);
 				break;
-
 			case IF_SG_LEFT:
 				traffic_drive(IF_SG_LEFT);
 				break;
-
 			case IF_SG_RIGHT:
 				traffic_drive(IF_SG_RIGHT);
 				break;
 		}
 #ifdef DRIVE
-		distance_set(500);		
-		forward_dis();
+		//distance_set(500);		
+		//forward_dis();
 #endif
 	}
 }
-
 void traffic_drive(int flag){
-	int n;
+	int n = 0;
+
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
@@ -91,16 +95,19 @@ void traffic_drive(int flag){
 		case IF_SG_LEFT:
 			n = mDistance();
 			distance_set(1200);
+			speed_set(1000);	
 			forward_dis();
-			while(mDistance() - n < 1720){}
+			while(mDistance() - n < 1720){printf("%d\n", mDistance() - n);}
 			turn_set(2200);
 			while(mDistance() - n < 3800){}
 			turn_straight();
 			while(mDistance() - n < 4600){}
 			break;
+
 		case IF_SG_RIGHT:
 			n = mDistance();
 			distance_set(1200);
+			speed_set(1000);
 			forward_dis();
 			while(mDistance() - n < 1720){}
 			turn_set(800);
@@ -122,40 +129,41 @@ void init_drive()
 	usleep(2000);
 	camera_straight();
 	usleep(2000);
-	speed_set(500);
+	speed_set(1000);
 	usleep(2000);
 	accel(0x02f);
 	usleep(2000);
 	reduction(0x2f);
 	usleep(2000);
 	distance_set(2000);
-	line_stop();
+	usleep(2000);
+	dm_speed_set(1);
+	//line_stop();
 }
 
 void direct_test()
 {
 	struct image_data* idata;
-	int i = 0;
 	init_drive();
 	while(TRUE)
 	{
 		char input;
 		int n;
-		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. back, 6. traffic right, 7. traffic left\n");
+
+		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. back, 6. traffic left, 7. traffic right \n");
 		scanf("%c",&input);
 
 		switch(input)
 		{
 			case '0':
 				idata = line_check(cm_handle); // get image data 
-				//printf("angle : %d\n",idata->angle);
 				break;	
 			case '1':	
-				g_angle += 50;
+				g_angle += 100;
 				turn_set(g_angle);
 				break;
 			case '2':
-				g_angle -= 50;
+				g_angle -= 100;
 				turn_set(g_angle);
 				break;
 			case '3':
@@ -172,9 +180,10 @@ void direct_test()
 			case '6':
 				n = mDistance();
 				distance_set(1200);
+				speed_set(1000);	
 				forward_dis();
-				while(mDistance() - n < 1720){}
-				turn_set(800);
+				while(mDistance() - n < 1720){printf("%d\n", mDistance() - n);}
+				turn_set(2200);
 				while(mDistance() - n < 3800){}
 				turn_straight();
 				while(mDistance() - n < 4600){}
@@ -182,14 +191,15 @@ void direct_test()
 			case '7':
 				n = mDistance();
 				distance_set(1200);
+				speed_set(1000);	
 				forward_dis();
-				while(mDistance() - n < 1720){}
-				turn_set(2200);
+				while(mDistance() - n < 1720){printf("%d\n", mDistance() - n);}
+				turn_set(800);
 				while(mDistance() - n < 3800){}
 				turn_straight();
 				while(mDistance() - n < 4600){}
 				break;
-			default: 
+			default:
 				break;
 		}
 	}

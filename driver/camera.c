@@ -110,6 +110,7 @@ static void cambuf_to_ycbcr420(struct videobuf_dev* simple,
 }
 
 // VIDEOBUF_COUNT must be larger than STILLBUF_COUNT
+
 #define	VIDEOBUF_COUNT	3
 #define	STILLBUF_COUNT	2
 
@@ -373,14 +374,15 @@ struct pxa_video_buf*  camera_get_frame(int hcam)
 	ASSERT(extbuf);
 	vidbuf = &extbuf->pxabuf;
 	buffer = &extbuf->v4l2buf;
-        memset(buffer, 0, sizeof(struct v4l2_buffer));
-        buffer->type    = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        buffer->memory  = V4L2_MEMORY_MMAP;
+	
+	memset(buffer, 0, sizeof(struct v4l2_buffer));
+	buffer->type    = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	buffer->memory  = V4L2_MEMORY_MMAP;
 
-        if (ioctl (camera->handle, VIDIOC_DQBUF, buffer)<0) {
+	if (ioctl (camera->handle, VIDIOC_DQBUF, buffer)<0) {
 		ERRMSG("can't dequeue camera buffer\n");
 		return NULL;
-        }
+	}
 
 	// Return buffer information
 	if(camera->format==pxavid_rggb10){
@@ -391,11 +393,12 @@ struct pxa_video_buf*  camera_get_frame(int hcam)
 		vidbuf->rggb10.len = camera->cambuf[buffer->index].length;
 
 	}else if(camera->format==pxavid_ycbcr422){
-		cambuf_to_ycbcr422(&camera->cambuf[buffer->index],vidbuf,
+		cambuf_to_ycbcr422(&camera->cambuf[buffer->index+2],vidbuf,
 					camera->width,camera->height);
 	}else if(camera->format==pxavid_ycbcr420){
-		cambuf_to_ycbcr420(&camera->cambuf[buffer->index],vidbuf,
+		cambuf_to_ycbcr420(&camera->cambuf[buffer->index+2],vidbuf,
 					camera->width,camera->height);
+
 	}else {ASSERT(0);}
 
 	camera->ref_count++;

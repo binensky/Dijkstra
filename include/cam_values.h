@@ -3,8 +3,8 @@
 
 // VIDEOBUF_COUNT must be larger than STILLBUF_COUNT
 #define PI 3.14159265358979323846
-#define VIDEOBUF_COUNT  3
-#define STILLBUF_COUNT  2
+#define VIDEOBUF_COUNT  1
+#define STILLBUF_COUNT  0
 #define CAM_STATUS_INIT     0
 #define CAM_STATUS_READY    1
 #define CAM_STATUS_BUSY     2
@@ -32,7 +32,7 @@
 #define BOT 0
 #define MID 1
 #define END 2
-#define PT_SIZE 3
+#define PT_SIZE 11
 
 // find  line flag 
 #define FL_NONE 0
@@ -56,6 +56,10 @@
 #define COL_YELLOW 2
 #define COL_WHITE 3
 #define COL_RED 4
+
+// whell flag
+#define WHEEL_STRAIGHT 0
+#define WHEEL_TURN 1
 
 // macro function 
 #define Y(A,B) vidbuf->ycbcr.y[(B)*MAXWIDTH+(A)]

@@ -1,3 +1,5 @@
+// THIS IS asldkjflkajsdlkfj
+
 #define DEBUG
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
@@ -25,15 +27,15 @@ int main(void)
 	cm_handle = init_camera();
 	car_connect();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-		pthread_create(&thread[1],NULL,sensor_handler,NULL);
-		pthread_create(&thread[2],NULL,distance_check,NULL);
+	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-		drive();
-	//direct_test();
+	//drive();
+	direct_test();
 
 	pthread_join(thread[0],NULL);
-		pthread_join(thread[1],NULL);
-		pthread_join(thread[2],NULL);
+	//pthread_join(thread[1],NULL);
+	//pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -170,11 +172,11 @@ void direct_test()
 				turn_straight();
 				break;
 			case '4':
-				distance_set(50);
+				distance_set(150);
 				forward_dis();
 				break;
 			case '5':
-				distance_set(50);
+				distance_set(150);
 				backward_dis(0);
 				break;
 			case '6':

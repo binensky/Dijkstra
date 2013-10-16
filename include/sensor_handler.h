@@ -9,7 +9,7 @@
 void* sensor_handler(void* data)
 {
 	char ret;
-	sudden_stop(250);
+	//sudden_stop(250);
 
 	while(TRUE)
 	{
@@ -21,11 +21,11 @@ void* sensor_handler(void* data)
 		printf("ret : %d\n",ret);
 		if( ret == ON_STOP_LINE)
 		{
-			stop();
+			sudden_stop(250);
 			g_drive_flag = DF_STOP;
 		}
 		line_stop();
-		sleep(1);
+		usleep(2000);
 	}
 }
 

@@ -93,7 +93,7 @@ void turn_left(int v,int dist, int flag)
 		}
 		else if( (v < 134 && v > 90) || (v < 180 && v > 155) )
 			return ;
-		//	turn_set(2000);
+			//turn_set(1000);
 	}
 	else 
 		printf("ERROR : invalid flag in turn_left\n");

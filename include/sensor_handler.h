@@ -19,9 +19,10 @@ void* sensor_handler(void* data)
 		read(uart_fd,&read_buf[0],2);
 		ret = read_buf[0];
 		printf("ret : %d\n",ret);
-		if( ret == ON_STOP_LINE)
+		if( ret > 0)
 		{
-			sudden_stop(250);
+			stop();
+			//sudden_stop(250);
 			g_drive_flag = DF_STOP;
 		}
 		line_stop();

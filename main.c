@@ -3,7 +3,6 @@
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-///현빈짱짱맨`
 #include <stdio.h>
 #include <pthread.h>
 
@@ -27,10 +26,7 @@ int main(void)
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 //	pthread_create(&thread[2],NULL,distance_check,NULL);
-	speed_set(1000);
-	distance_set(1000);
-	forward_dis();
-//	drive();
+	drive();
 //	direct_test();
 
 	pthread_join(thread[0],NULL);
@@ -67,8 +63,11 @@ void drive(void)
 				break;
 
 			case IF_CL_LEFT:
+
+				break;
 			case IF_CL_RIGHT:
 
+				break;
 			case IF_SG_STOP:
 				traffic_drive(IF_SG_STOP);
 				break;
@@ -83,6 +82,19 @@ void drive(void)
 		//distance_set(500);		
 		//forward_dis();
 #endif
+	}
+}
+
+void change_Line(int flag){
+	int n = 0;
+	switch(flag){
+		case IF_CL_LEFT:
+
+			break;
+
+		case IF_CL_RIGHT:
+
+			break;
 	}
 }
 void traffic_drive(int flag){

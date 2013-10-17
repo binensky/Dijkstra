@@ -572,7 +572,7 @@ int check_mid_line(int mid_line,int under_line)
 				// 아웃 라인이 노랑일 때 
 				else if(IS_YELLOW(j-1,i) && IS_YELLOW(j,i) && IS_BLACK(j+1,i) && IS_BLACK(j+2,i))
 				{
-#ifdef	DEBUG
+#ifdef	MID_LINE_DEBUG
 					printf("left mid line yellow (%d,%d)\n",j,i);
 #endif
 					left_color = COL_YELLOW;
@@ -580,7 +580,7 @@ int check_mid_line(int mid_line,int under_line)
 				}// 아웃 라인이 흰색일 때 
 				else if(IS_WHITE(j-1,i) && IS_WHITE(j,i) && IS_BLACK(j+1,i) && IS_BLACK(j+2,i))
 				{
-#ifdef	DEBUG
+#ifdef	MID_LINE_DEBUG
 					printf("left mid line white (%d,%d)\n",j,i);
 #endif
 					left_color = COL_WHITE;

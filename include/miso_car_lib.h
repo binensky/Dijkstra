@@ -15,8 +15,9 @@
 // ANGLE RNAGES. 
 #define RANGE_STRAIGHT(X)	((X) == 1000)
 #define RANGE_NO_CHANGE(X) 	((X) == 0 || (X) == 90 || (X) == 180)
-#define RANGE_RIGHT(X)		(0<(X) && (X)<90)
-#define RANGE_LEFT(X)		(90<(X) && (X)<180)
+#define RANGE_RIGHT(X)		(0<(X) && (X)<40)
+#define RANGE_LEFT(X)		(140<(X) && (X)<180)
+#define RANGE_ELSE(X)		(40 <= (X) && (X) <= 140 && (X) != 90)
 
 static int g_sp = 0;
 static int g_angle = DM_STRAIGHT;
@@ -74,10 +75,11 @@ void turn_set(int v)
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
-void turn_left(int v,int dist, int flag)
+void turn_left(int v,int dist)
 {
 	int angle;
 //	angle =  (DM_STRAIGHT+((v-135)*(14))) / DM_INTERVAL + 2;
+/*
 	if(flag == AF_CURVE){
 		turn_set(left_angle[(dist-1)/5][v/3]);
 	}
@@ -97,12 +99,16 @@ void turn_left(int v,int dist, int flag)
 	}
 	else 
 		printf("ERROR : invalid flag in turn_left\n");
+*/
+	
+	turn_set(left_angle[(dist-1)/5][v/3]);
 }
 
-void turn_right(int v,int dist, int flag)
+void turn_right(int v,int dist)
 {
 	int angle;
-//	angle =  (DM_STRAIGHT-((45-v)*(16))) / DM_INTERVAL - 2;
+//	angle =  (DM_STRAIGHT-((45-v)*(16))) / DM_INTERVAL - 2
+/*;
 	if(flag == AF_CURVE){
 		turn_set(right_angle[(dist-1)/5][v/3]);
 	}
@@ -122,6 +128,8 @@ void turn_right(int v,int dist, int flag)
 	}
 	else 
 		printf("ERROR : invalid flag in turn_right\n");
+*/
+	turn_set(right_angle[(dist-1)/5][v/3]);
 }
 
 // cm_angle 
@@ -163,8 +171,9 @@ int mDistance(){
 	return read_buf[1]*65536+read_buf[2]*256+read_buf[3];
 }
 
-void set_angle(int angle,int dist, int flag)
+void set_angle(int angle,int dist)
 {
+	
 	if(RANGE_STRAIGHT(angle)){
 		g_drive_flag = DF_STR;
 	//	speed_set(1500);
@@ -172,16 +181,23 @@ void set_angle(int angle,int dist, int flag)
 	} 
 	else if( RANGE_RIGHT(angle)){
 		g_drive_flag = DF_CUR;
-	//	speed_down(10);		
-		turn_right(angle,dist,flag);
+		//speed_down(10);		
+		//turn_right(angle,dist);
+		turn_set(800);
 	} 
 	else if(RANGE_LEFT(angle)){
 		g_drive_flag = DF_CUR;		
-	//	speed_down(10);
-		turn_left(angle,dist,flag);
-	}else if(RANGE_NO_CHANGE(angle))
+		//speed_down(10);
+		//turn_left(angle,dist);
+		turn_set(2200);
+	}
+	else if(RANGE_NO_CHANGE(angle))
 	{
 		g_drive_flag = DF_CUR;
+	}
+	else if(RANGE_ELSE(angle))
+	{
+		turn_set( 420 + angle * 12 );
 	}
 }
 

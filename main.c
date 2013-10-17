@@ -61,7 +61,7 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
-				set_angle(idata->angle,idata->dist,idata->flag);
+				set_angle(idata->angle,idata->dist);
 				distance_set(500);		
 				forward_dis();
 				break;

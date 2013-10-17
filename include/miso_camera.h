@@ -39,6 +39,7 @@ void print_screen_cb();
 void print_screen_cr();
 void print_screen_color();
 
+void set_point_with_line_equation();
 int get_road_angle();
 int get_angle(struct p_point a, struct p_point b);
 int left_line_check(int h);
@@ -71,6 +72,7 @@ struct image_data* line_check(int handle)
 	int ret, temp, weight, midangle, topangle;
 	int angle_bot, angle_end;
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
+	struct p_point mid_bot_pt;
 	// init values
 	init_values(cm_handle);
 
@@ -196,22 +198,27 @@ struct image_data* line_check(int handle)
 		return img_data;
 	}
 
-	midangle = get_road_angle();
+	set_point_with_line_equation();
+
+	mid_bot_pt.x = MIDWIDTH;
+	mid_bot_pt.y = 0;
+
+	midangle = get_angle(mid_bot_pt, pt[CONTACT]);
 #ifdef DRIVE_DEBUG
-	for(i=0; i<pt_cnt; i++)
+	for(i=0; i<PT_SIZE; i++)
 	{
 		printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
 	}
 	printf("\n");
 #endif
-	
+
+/*	
 	if(midangle > 90){
 		angle_bot = 180 - angles[BOT];
 		angle_end = 180 - angles[pt_cnt - 2];
 	} else{
 		angle_bot = angles[BOT];
 		angle_end = angles[pt_cnt - 2];
-
 	}
 
 	if( (angle_bot > angle_end * 2) || angle_bot < 10)
@@ -220,14 +227,33 @@ struct image_data* line_check(int handle)
 		img_data->flag = AF_STRAIGHT;
 	else
 		img_data->flag = AF_STRAIGHT_END;
+*/
 
 	img_data->angle = midangle;
-	img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
+	//img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
 
 #ifdef DRIVE_DEBUG
-	printf("angle : %d, dist %d, flag %d\n",img_data->angle, img_data->dist, img_data->flag);
+	printf("angle : %d, dist %d\n",img_data->angle, img_data->dist);
 #endif
 	return img_data;
+}
+
+// 직선의 방정식으로 목적 지점을 결정
+void set_point_with_line_equation()
+{
+#ifdef TRACE
+	pritnf("set_point_with_line_equation\n");
+#endif
+	// y = ax + b
+	float a = 0.0f;
+	int b = 0;
+	
+	a = (float)((float)(pt[END].y - pt[BOT].y) / (float)(pt[BOT].x - pt[END].x));
+	b = pt[BOT].y;
+
+	pt[CONTACT].y = pt[END].y + 50;
+	pt[CONTACT].x = (int)((float)(pt[CONTACT].y - b) / a);
+
 }
 
 // 라인을 찾은 것인지를 TRUE FALSE로 리턴 
@@ -294,7 +320,6 @@ int find_inline(int rl_info, int y, int w)
 
 		pt[BOT].y = y;
 		pt[BOT].x = w;
-		pt_cnt += 1;
 
 #ifdef DRIVE_DEBUG
 		printf("set bot point <%d><%d>\n",w,y);
@@ -319,7 +344,6 @@ int find_inline(int rl_info, int y, int w)
 		}
 		pt[BOT].y = y;		
 		pt[BOT].x = w;
-		pt_cnt += 1;
 
 #ifdef DRIVE_DEBUG
 		printf("set bot point <%d><%d>\n",w,y);
@@ -355,7 +379,6 @@ int find_outline(int rl_info, int y, int w)
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
-				pt_cnt += 1;
 
 				if(find_out_end_point(y, pt[BOT].x)) // sub_point를 찾는다. 
 				{
@@ -374,7 +397,6 @@ int find_outline(int rl_info, int y, int w)
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
-				pt_cnt += 1;
 
 				if(find_out_end_point(y, pt[BOT].x))
 				{
@@ -402,7 +424,7 @@ int find_speed_bump_point(int w, int y)
 				{
 					pt[BOT].x = i+1;
 					pt[BOT].y = j;
-					printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
+					//printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
 
 					return find_speed_bump_in_point(i+1,j);
 				}
@@ -414,7 +436,7 @@ int find_speed_bump_point(int w, int y)
 				{
 					pt[BOT].x = i-1;
 					pt[BOT].y = j;
-					printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
+					//printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
 
 					return find_speed_bump_in_point(i-1,j);
 				}
@@ -706,7 +728,6 @@ int find_in_point(int rl_info, int i, int offset)
 #endif
 
 	int y, x,flag;
-	int direct = NONE;
 	struct p_point pt_tmp;
 
 	if(rl_info == LEFT)
@@ -727,27 +748,12 @@ int find_in_point(int rl_info, int i, int offset)
 					// (1,0)을 찾은 경우 점을 저장하고 offset을 갱신한다.  
 					if( IS_YELLOW(x,y) && IS_BLACK(x-1,y) )
 					{
-						if(pt_cnt == 1)
-						{
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x;
-						}
-
-						if(pt[pt_cnt-1].y + 10 == y)
-						{
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x;
-							pt_cnt += 1;
-						}
-
 						pt_tmp.y = y;
 						pt_tmp.x = x;
 						offset = x;
 						
 						if(set_end_point(rl_info, &pt_tmp,flag))
 						{
-							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
-								pt_cnt += 1;
 							return TRUE;
 						}
 						/*
@@ -762,17 +768,13 @@ int find_in_point(int rl_info, int i, int offset)
 				// 오른쪽에서 1,0 을 못 찾은 경우
 				if(x == 0)
 				{
-					if(pt[BOT+1].x == -1)
+					if(pt[END].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
 					else
-					{
-						if(pt_cnt == 1)
-							pt_cnt += 1;
 						return TRUE;
-					}
 				}
 			}
 			// 위 점이 0인 경우 왼쪽으로 순회하면서 (1,0)<- 찾는다. 
@@ -787,28 +789,12 @@ int find_in_point(int rl_info, int i, int offset)
 
 					if( IS_BLACK(x,y)  && IS_YELLOW(x+1,y))
 					{
-
-						if(pt_cnt == 1)
-						{
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x;
-						}
-
-						if(pt[pt_cnt-1].y + 10 == y)
-						{
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x+1;
-							pt_cnt += 1;
-						}
-
 						pt_tmp.y = y;
 						pt_tmp.x = x+1;
 						offset = x+1;
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
 						{
-							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
-								pt_cnt += 1;
 							return TRUE;
 						}
 
@@ -823,17 +809,13 @@ int find_in_point(int rl_info, int i, int offset)
 				}
 				// 왼쪽에서 (10)을 못 찾은 경우
 				if(x == MAXWIDTH-1){
-					if(pt[BOT+1].x == -1)
+					if(pt[END].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
 					else
-					{
-						if(pt_cnt == 1)
-							pt_cnt += 1;
 						return TRUE;
-					}
 				}
 			}
 		}// end scan for top
@@ -853,29 +835,12 @@ int find_in_point(int rl_info, int i, int offset)
 
 					if(IS_YELLOW(x,y) && IS_BLACK(x-1,y))
 					{
-
-						if(pt_cnt == 1)
-						{
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x;
-						}
-
-						if(pt[pt_cnt-1].y + 10 == y)
-						{
-							printf("set pt[%d] : (%d, %d)\n",pt_cnt,x,y);
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x-1;
-							pt_cnt += 1;
-						}
-
 						pt_tmp.y = y;
 						pt_tmp.x = x-1;
 						offset = x-1;
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
 						{
-							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
-								pt_cnt += 1;
 							return TRUE;
 						}
 						break;
@@ -884,17 +849,13 @@ int find_in_point(int rl_info, int i, int offset)
 
 				// 오른쪽에서 (0,1) 을 못 찾은 경우
 				if(x == 0){
-					if(pt[BOT+1].x == -1)
+					if(pt[END].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
 					else
-					{
-						if(pt_cnt == 1)
-							pt_cnt += 1;					
 						return TRUE;
-					}
 				}
 
 			} // 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -908,29 +869,12 @@ int find_in_point(int rl_info, int i, int offset)
 
 					if( IS_YELLOW(x,y) && IS_BLACK(x+1,y))
 					{
-
-						if(pt_cnt == 1)
-						{
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x;
-						}
-
-						if(pt[pt_cnt-1].y + 10 == y)
-						{
-							printf("set pt[%d] : (%d, %d)\n",pt_cnt,x,y);
-							pt[pt_cnt].y = y;
-							pt[pt_cnt].x = x;
-							pt_cnt += 1;
-						}
-
 						pt_tmp.y = y;
 						pt_tmp.x = x;
 						offset = x;
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
 						{
-							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
-								pt_cnt += 1;
 							return TRUE;
 						}
 
@@ -940,23 +884,17 @@ int find_in_point(int rl_info, int i, int offset)
 				// 왼쪽에서 (0,1)을 못 찾은 경우
 				if(x == MAXWIDTH-1)
 				{
-					if(pt[BOT+1].x == -1)
+					if(pt[END].x == -1)
 					{
 						init_point();
 						return FALSE;
 					}
 					else
-					{
-						if(pt_cnt == 1)
-							pt_cnt += 1;
 						return TRUE;
-					}
 				}
 			}
 		} // end scan for top 
 	} // end rl_info == RIGHT
-	if(pt_cnt == 1 && pt[pt_cnt].x != -1)
-		pt_cnt += 1;
 	return TRUE;
 }
 
@@ -978,21 +916,21 @@ int find_out_end_point(int i, int offset)
 			{
 				if( IS_BLACK(x+1, y) && IS_YELLOW(x,y))
 				{
-					if(pt[pt_cnt-1].y + 10 == y)
-					{
-						pt[pt_cnt].y = y;
-						pt[pt_cnt].x = x;
-						pt_cnt += 1;
-					}
-
+					pt[END].x = x;
+					pt[END].y = y;
 					offset = x;
 					break;
 				}
 			}
-			if(pt[BOT+1].x == -1 && x == MAXWIDTH-1)
+			if(x == MAXWIDTH-1)
 			{
-				init_point();
-				return FALSE;
+				if(pt[END].x == -1)
+				{
+					init_point();
+					return FALSE;
+				}
+				else
+					return TRUE;
 			}
 		}else	// 위 점이 0인 경우 오른으로 순회하면서 0,1 찾기
 		{
@@ -1000,21 +938,21 @@ int find_out_end_point(int i, int offset)
 			{
 				if( IS_YELLOW(x,y) && IS_BLACK(x-1,y) )
 				{
-					if(pt[pt_cnt-1].y + 10 == y)
-					{
-						pt[pt_cnt].y = y;
-						pt[pt_cnt].x = x;
-						pt_cnt += 1;
-					}
-
+					pt[END].x = x;
+					pt[END].y = y;
 					offset = x;
 					break;
 				}
 			}
-			if(pt[BOT+1].x == -1 && x == 0 )
+			if(x == 0)
 			{
-				init_point();
-				return FALSE;
+				if(pt[END].x == -1)
+				{
+					init_point();
+					return FALSE;
+				}
+				else
+					return TRUE;
 			}
 		}
 	}
@@ -1026,6 +964,7 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 #ifdef TRACE
 	printf("set_end_point\n");
 #endif
+/*
 	if(direct == NONE)
 	{
 		if( pt_tmp->x > pt[pt_cnt-1].x)
@@ -1041,7 +980,7 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 			return TRUE;
 	}
 	return FALSE;
-	/*
+*/
 	// 방향이 설정되어 있지 않을 때,
 	if( direct == NONE ) 
 	{
@@ -1069,9 +1008,10 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 				(direct == RIGHT && rl_info == RIGHT && flag)
 		  )
 		{
-			pt[END].x = (pt[BOT].x + pt[END].x) / 2;
+//			pt[END].x = (pt[BOT].x + pt[END].x) / 2;
 			return TRUE;
-		}else if( pt[MID].x == pt_tmp->x)
+		}
+		else if( pt[END].x == pt_tmp->x)
 		{
 			dir_count+=1;
 			if( dir_count >3)
@@ -1080,6 +1020,8 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 				return TRUE;
 			}
 		}
+		else
+			dir_count = 0;
 
 	}
 
@@ -1087,7 +1029,6 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 	pt[END].y = pt_tmp->y;
 
 	return FALSE;
-	*/
 }
 
 int get_road_angle()
@@ -1115,6 +1056,7 @@ int get_road_angle()
 
 int get_angle( struct p_point a, struct p_point b)
 {
+	printf("point a : (%d,%d) , point b : (%d,%d)\n", a.x, a.y, b.x, b.y);
 	return (int)(atan2((double)(b.y-a.y), (double)(a.x-b.x)) * 180 / PI);
 }
 

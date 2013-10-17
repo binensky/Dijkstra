@@ -48,7 +48,6 @@ struct image_data
 {
 	int angle;	
 	int dist;
-	int flag;
 };
 
 // flags

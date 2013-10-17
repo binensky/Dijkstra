@@ -5,7 +5,7 @@
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-
+///현빈짱짱맨`
 #include <stdio.h>
 #include <pthread.h>
 
@@ -104,6 +104,7 @@ void traffic_drive(int flag){
 			while(mDistance() - n < 3800){}
 			turn_straight();
 			while(mDistance() - n < 4600){}
+			stop();
 			break;
 
 		case IF_SG_RIGHT:
@@ -116,6 +117,7 @@ void traffic_drive(int flag){
 			while(mDistance() - n < 3800){}
 			turn_straight();
 			while(mDistance() - n < 4600){}
+			stop();
 			break;
 	}
 }

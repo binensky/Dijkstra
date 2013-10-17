@@ -80,7 +80,7 @@ struct image_data* line_check(int handle)
 //	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
-	//print_screen_cr();
+//	print_screen_cr();
 //	print_screen_color();
 	//check_traffic_light();
 	//exit(0);

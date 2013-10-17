@@ -63,20 +63,25 @@ void drive(void)
 				break;
 
 			case IF_CL_LEFT:
-
+				change_Line(IF_CL_LEFT);
 				break;
+
 			case IF_CL_RIGHT:
-
+				change_Line(IF_CL_RIGHT);
 				break;
+
 			case IF_SG_STOP:
 				traffic_drive(IF_SG_STOP);
 				break;
+
 			case IF_SG_LEFT:
 				traffic_drive(IF_SG_LEFT);
 				break;
+
 			case IF_SG_RIGHT:
 				traffic_drive(IF_SG_RIGHT);
 				break;
+
 		}
 #ifdef DRIVE
 		//distance_set(500);		
@@ -93,6 +98,10 @@ void change_Line(int flag){
 			break;
 
 		case IF_CL_RIGHT:
+
+			break;
+
+		default:
 
 			break;
 	}

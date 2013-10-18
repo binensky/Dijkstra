@@ -11,7 +11,7 @@
 
 // -------- MISO Defined Value ----------
 
-#define CUTLINE 100
+#define CUTLINE 140
 #define GAP 10
 
 // threshold
@@ -33,7 +33,7 @@
 #define MID 1
 #define END 2
 #define CONTACT 3
-#define PT_SIZE 4
+#define PT_SIZE 11
 
 // find  line flag 
 #define FL_NONE 0

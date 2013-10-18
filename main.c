@@ -1,11 +1,8 @@
-// THIS IS asldkjflkajsdlkfj
-
-#define DEBUG
+//#define DEBUG
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-///현빈짱짱맨`
 #include <stdio.h>
 #include <pthread.h>
 
@@ -30,8 +27,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	//drive();
-	direct_test();
+	drive();
+	//direct_test();
 
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -46,6 +43,7 @@ void drive(void)
 	init_drive();
 
 	while(TRUE)
+
 	{			
 		idata = line_check(cm_handle); // get image data 
 

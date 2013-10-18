@@ -40,9 +40,10 @@
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1533
 
-#define AF_CURVE 0
-#define AF_STRAIGHT 1
-#define AF_STRAIGHT_END 2
+#define LF_INIT -1
+#define LF_STRAIGHT 0
+#define LF_CURVE 1
+#define LF_CURVE_STRAIGHT 2
 
 struct image_data
 {
@@ -50,9 +51,15 @@ struct image_data
 	int dist;
 };
 
+struct line_equation
+{
+	float gradient;
+	int intercept;
+};
+
 // flags
 static int g_drive_flag = DF_STR;
 static int g_image_flag = IF_DRIVE;
-
+static int line_flag = LF_INIT;
 
 #endif

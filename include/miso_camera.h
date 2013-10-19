@@ -39,7 +39,6 @@ void print_screen_cb();
 void print_screen_cr();
 void print_screen_color();
 
-void set_line_equation();
 int get_road_angle();
 int get_angle(struct p_point a, struct p_point b);
 int left_line_check(int h);
@@ -62,8 +61,9 @@ int dir_count = 0;
 int is_speed_bump;
 int distan = -1; // default
 int pt_cnt = 0;
+int first = 1;
 int angles[10];
-struct line_equation line_left, line_right;
+
 
 struct image_data* line_check(int handle)
 {
@@ -71,7 +71,6 @@ struct image_data* line_check(int handle)
 	int ret, temp, weight, midangle, topangle;
 	int angle_bot, angle_end;
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
-	struct p_point mid_bot_pt;
 	// init values
 	init_values(cm_handle);
 
@@ -79,7 +78,7 @@ struct image_data* line_check(int handle)
 //	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
-//	print_screen_cr();
+	//print_screen_cr();
 //	print_screen_color();
 	//check_traffic_light();
 	//exit(0);
@@ -106,8 +105,7 @@ struct image_data* line_check(int handle)
 				rl_info = RIGHT;
 			}
 
-			//if( find_right == FL_FIND || find_left == FL_FIND)
-			if(line_flag == LF_CURVE || line_flag == LF_CURVE_STRAIGHT)
+			if( find_right == FL_FIND || find_left == FL_FIND)
 			{
 				g_image_flag = IF_DRIVE;
 				break;
@@ -120,8 +118,9 @@ struct image_data* line_check(int handle)
 		printf("DF_STR\n");
 #endif
 		// 도로 중간 값을 검사한다. 
-		//speed_set(1000);
-		tmp = MID_DRIVE;	// 차선변경이 자꾸 떠서 일단 주석처리
+		tmp = check_mid_line();
+		printf("check mid line : %d\n", tmp);
+
 		if( tmp == MID_DRIVE)
 		{
 			for(i = 1; i< CUTLINE ; i++)
@@ -130,13 +129,13 @@ struct image_data* line_check(int handle)
 				{
 					rl_info = LEFT;
 				}
-				
-				if((find_right == FL_NONE) && right_line_check(i))
+				else if((find_right == FL_NONE) && right_line_check(i))
 				{
 					rl_info = RIGHT;
 				}
 
-				if(line_flag == LF_CURVE || line_flag == LF_CURVE_STRAIGHT)
+				// 두 선중에 하나라도 제대로 된 선을 찾았으면 멈춘다. 
+				if( find_right == FL_FIND || find_left == FL_FIND)
 				{
 					g_image_flag = IF_DRIVE;
 					break;
@@ -196,109 +195,30 @@ struct image_data* line_check(int handle)
 		return img_data;
 	}
 
-	mid_bot_pt.x = MIDWIDTH;
-	mid_bot_pt.y = 0;
+	midangle = get_road_angle();
+	
+	// 각도 -> 기울기
+	if(midangle == 1000)	// 직진  ex) 점이 하나 잡힌경우...
+		printf("gradient : infinite.. , go straight?\n");
+	else
+		printf("line equation : y = %fx + %d ",tan((float)midangle), pt[BOT].y);
 
 #ifdef DRIVE_DEBUG
-	printf("line_flag : %d\n",line_flag);
-	if(find_left == FL_FIND)
-		printf("line_left : y = %fx + %d\n",line_left.gradient, line_left.intercept);
-	if(find_right == FL_FIND)
-		printf("line_right : y = %fx + %d\n",line_right.gradient, line_right.intercept);
-#endif
-
-	if(line_flag == LF_STRAIGHT)
-	{
-		/*
-		int left_end_point, right_end_point;
-		left_end_point = (int)((CUTLINE - line_left.intercept) / line_left.gradient);
-		right_end_point = (int)((CUTLINE - line_right.intercept) / line_right.gradient);
-		
-		pt[CONTACT].x = (left_end_point + right_end_point) / 2;
-		pt[CONTACT].y = CUTLINE;
-
-		midangle = get_angle(mid_bot_pt, pt[CONTACT]);
-		*/
-		img_data->angle = 1000;
-		img_data->dist = 0;
-		return img_data;
-
-	}
-	else if(line_flag == LF_CURVE)
-	{
-		// 이 각도는 직선꺼, 바꿔야됨.
-		midangle = get_road_angle();
-	}
-	else if(line_flag == LF_CURVE_STRAIGHT)
-	{
-		img_data->angle = 1000;
-		img_data->dist = 0;
-		return img_data;
-	}
-
-#ifdef DRIVE_DEBUG
-	for(i=0; i<PT_SIZE; i++)
+	for(i=0; i<pt_cnt; i++)
 	{
 		printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
 	}
 	printf("\n");
 #endif
 
-/*	
-	if(midangle > 90){
-		angle_bot = 180 - angles[BOT];
-		angle_end = 180 - angles[pt_cnt - 2];
-	} else{
-		angle_bot = angles[BOT];
-		angle_end = angles[pt_cnt - 2];
-	}
-
-	if( (angle_bot > angle_end * 2) || angle_bot < 10)
-		img_data->flag = AF_CURVE;
-	else if( pt[BOT].y < 15) 
-		img_data->flag = AF_STRAIGHT;
-	else
-		img_data->flag = AF_STRAIGHT_END;
-*/
-
 	img_data->angle = midangle;
-	//img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
+//	ima_data->dist = height;
+//	img_data->dist = (distan == -1) ? pt[pt_cnt-1].y : distan;
 
 #ifdef DRIVE_DEBUG
-	printf("angle : %d, dist %d\n",img_data->angle, img_data->dist);
+	printf("angle : %d, dist %d, flag %d\n",img_data->angle, img_data->dist, img_data->flag);
 #endif
 	return img_data;
-}
-
-// 직선의 방정식으로 목적 지점을 결정
-void set_line_equation(int rl_info)
-{
-#ifdef TRACE
-	printf("set_point_with_line_equation\n");
-#endif
-
-	// y = ax + b
-	float a = 0.0f;
-	int b = 0;
-
-	printf("pt[BOT] : (%d,%d), pt[END] : (%d,%d)\n",pt[BOT].x, pt[BOT].y, pt[END].x, pt[END].y);
-
-	a = (float)((float)(pt[END].y - pt[BOT].y) / (float)(pt[END].x - pt[BOT].x));
-	b = pt[BOT].y;
-
-	pt[CONTACT].y = pt[END].y + 50;
-	pt[CONTACT].x = (int)((float)(pt[CONTACT].y - b) / a);
-
-	if(rl_info == LEFT)
-	{
-		line_left.gradient = a;
-		line_left.intercept = b;
-	}
-	else
-	{
-		line_right.gradient = a;
-		line_right.intercept = b;
-	}
 }
 
 // 라인을 찾은 것인지를 TRUE FALSE로 리턴 
@@ -374,19 +294,6 @@ int find_inline(int rl_info, int y, int w)
 		if(find_in_point(LEFT, y, w)) // sub_point를 찾는다. 
 		{
 			find_left = FL_FIND;
-			set_line_equation(LEFT);
-
-/*
-			int height = MIDWIDTH * line_left.gradient + line_left.intercept;
-			printf("height : %d\n",height);
-			if( height >= CUTLINE )
-				line_flag = LF_STRAIGHT;
-			else if( height > 50 )
-				line_flag = LF_CURVE_STRAIGHT;
-			else
-				line_flag = LF_CURVE;
-
-*/
 			return TRUE;
 		}else{
 
@@ -403,6 +310,7 @@ int find_inline(int rl_info, int y, int w)
 		}
 		pt[BOT].y = y;		
 		pt[BOT].x = w;
+		pt_cnt += 1;
 
 #ifdef DRIVE_DEBUG
 		printf("set bot point <%d><%d>\n",w,y);
@@ -411,19 +319,6 @@ int find_inline(int rl_info, int y, int w)
 		if(find_in_point(RIGHT, y, pt[BOT].x))
 		{
 			find_right =FL_FIND;
-			set_line_equation(RIGHT);
-
-/*
-			int height = (50 - line_right.intercept) / line_right.gradient ;
-			printf("height : %d\n",height);
-			if( height >= CUTLINE )
-				line_flag = LF_STRAIGHT;
-			else if( height > 50 )
-				line_flag = LF_CURVE_STRAIGHT;
-			else
-				line_flag = LF_CURVE;
-*/
-
 			return TRUE;
 		}else{ 
 
@@ -451,6 +346,7 @@ int find_outline(int rl_info, int y, int w)
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
+				pt_cnt += 1;
 
 				if(find_out_end_point(y, pt[BOT].x)) // sub_point를 찾는다. 
 				{
@@ -469,6 +365,7 @@ int find_outline(int rl_info, int y, int w)
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
+				pt_cnt += 1;
 
 				if(find_out_end_point(y, pt[BOT].x))
 				{
@@ -496,7 +393,7 @@ int find_speed_bump_point(int w, int y)
 				{
 					pt[BOT].x = i+1;
 					pt[BOT].y = j;
-					//printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
+					printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
 
 					return find_speed_bump_in_point(i+1,j);
 				}
@@ -508,7 +405,7 @@ int find_speed_bump_point(int w, int y)
 				{
 					pt[BOT].x = i-1;
 					pt[BOT].y = j;
-					//printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
+					printf("bot point %d, %d\n", pt[BOT].x, pt[BOT].y);
 
 					return find_speed_bump_in_point(i-1,j);
 				}
@@ -591,15 +488,15 @@ int find_speed_bump_in_point(int i, int j)
 	find_right = TRUE;
 	return TRUE;
 }
-
 int check_mid_line()
 {
 	// return 되는 가지의 수 
 	// 빨간 표지판, 차선 변경, 직진, 곧 곡선구간 
 
 	int i,j,k;
-	int height = -1;
-	int red_cnt = 0;
+	int height = -1, height_white = -1, height_change_line = -1;
+	int change_cnt = 0, red_cnt = 0, change_line_cnt = 0;
+	int color = COL_UNKNOWN;
 
 #ifdef TRACE
 	printf("in check_mid_line\n");
@@ -609,7 +506,7 @@ int check_mid_line()
 
 	//printf(" left color %d, right color  %d \n", left_color,right_color);
 	printf("Y value\n");
-	for(j = CUTLINE-1; j>0; j--)
+	for(j = CUTLINE + 40; j>0; j--)
 	{
 		printf("%3d:",j);
 
@@ -644,41 +541,131 @@ int check_mid_line()
 
 
 	// mid line 까지 올라가면서 검사한다. 
-	for(i=0;i<CUTLINE;i++)
+	for(i=0;i<CUTLINE+40;i++)
 	{
 		// 선 찾기
-		if(IS_YELLOW(MIDWIDTH,i))
+		if(!IS_BLACK(MIDWIDTH,i))
 		{
-			height = i;
+			// 노란선 : 회전, 방지턱
+			if(IS_YELLOW(MIDWIDTH, i))
+			{
+				if(height < 0)
+				{
+					height = i;
+					color = COL_YELLOW;
+				}
+				// 일정 횟수 이상 색이 바뀌면 방지턱
+				else if( color == COL_WHITE )
+				{
+					color = COL_YELLOW;
+					if(change_cnt++ > 4)
+					{
+#ifdef MID_LINE_DEBUG
+						printf("find speed bump at %d\n", height);
+#endif
+						return MID_SPEED_BUMP;
+					}
+				}
+			}
+
+			// 흰선 : 정지선, 방지턱
+			else if(IS_WHITE(MIDWIDTH-1, i) && IS_WHITE(MIDWIDTH,i) && IS_WHITE(MIDWIDTH+1, i))
+			{
+				// 방지턱 체크
+				if(color == COL_YELLOW && height < 0)
+				{
+					color = COL_WHITE;
+					if(change_cnt++ > 4)
+					{
+#ifdef MID_LINE_DEBUG
+						printf("find speed bump at %d\n", height);
+#endif
+						return MID_SPEED_BUMP;
+					}
+				}
+				// 정지선 체크
+				else if(height_white < 0)
+				{
+					if(color == COL_UNKNOWN)
+						height_white = i;
+				}
+				// 일정 크기 이상, 색 변한적 없음.
+				else if( 5 < i - height_white && change_cnt == 0)
+				{
+#ifdef MID_LINE_DEBUG
+					printf("find stop line at %d\n",height_white);
+#endif
+					return MID_SPEED_DOWN;
+				}
+			}
 			break;
 		}
 		
-		// 우선정지 표지판 찾기
-		if( i >= 70 )
+		// 우선정지 표지판, 60 이하에서는 10마다
+		if( (i >= 60) || ( (i < 60) && (i % 10 == 0) ) )
 		{
+			red_cnt = 0;
 			for(j = 0; j < MAXWIDTH-1; j++)
 			{
 				if(IS_RED(j,i))
 				{
-					red_cnt++;
+					// 한 줄에 30개 이상 나오면 정지
+					if(red_cnt++ > 30)
+					{
+#ifdef MID_LINE_DEBUG
+						printf("find stop sign at %d\n",i);
+#endif
+						return MID_STOP;
+					}
 				}
 			}
 		}
-		else if( i <= 100 && i % 10 == 0)
+
+		// 차선변경 
+		if(i >= 90)
 		{
- 
-		}
-		else if( i <= CUTLINE )
-		{
-		
+			int color_right = COL_UNKNOWN, color_left = COL_UNKNOWN;
+			// 오른쪽 탐색
+			for(j = MIDWIDTH-1; j > 0; j--)
+			{
+				// 오른쪽이 노란색 ?
+				if(IS_YELLOW(j+2,i) && IS_YELLOW(j+1,i) && IS_BLACK(j,i) && IS_BLACK(j-1,i))
+				{
+					color_right = COL_YELLOW;
+				}
+
+				// 오른쪽이 흰색 ?
+				else if(IS_WHITE(j+2,i) && IS_WHITE(j+1,i) && IS_BLACK(j,i) && IS_BLACK(j-1,i))
+				{
+					color_right = COL_WHITE;
+				}
+			}
+
+			// 왼쪽 탐색
+			for(j = MIDWIDTH; j < MAXWIDTH-1; j++)
+			{
+				// 왼쪽이 노란색
+				if(IS_YELLOW(j-1,i) && IS_YELLOW(j,i) && IS_BLACK(j+1,i) && IS_BLACK(j+2,i))
+				{
+					color_left = COL_YELLOW;
+				}
+				
+				// 왼쪽이 흰색
+				else if(IS_WHITE(j-1,i) && IS_WHITE(j,i) && IS_BLACK(j+1,i) && IS_BLACK(j+2,i))
+				{
+					color_left = COL_WHITE;
+				}
+			}
 		}
 	}
+			// 카운트 증가, 연속 판단 추가
 
-	if( 0 < height && height < 60)
+
+	if( 0 < height && height < CUTLINE_CURVE)
 	{
 		line_flag = LF_CURVE;
 	}
-	else if(60 <= height && height < CUTLINE )
+	else if(CUTLINE_CURVE <= height && height < CUTLINE+40 )
 	{
 		line_flag = LF_CURVE_STRAIGHT;
 	}
@@ -687,84 +674,7 @@ int check_mid_line()
 		line_flag = LF_STRAIGHT;
 	}
 
-/*
-	for( i = under_line ; i < mid_line; i++)
-	{
-		if(!IS_BLACK(MIDWIDTH,i))
-			break;
-		// 왼쪽 탐색 
-		for( j = MIDWIDTH ; j < MAXWIDTH-3; j++)
-		{
-			if( !IS_BLACK(j,i) )
-			{
-				if(IS_RED(j,i))
-				{
-					if( i == under_line )
-						return MID_STOP;
-					return MID_DRIVE;
-				}
-				// 아웃 라인이 노랑일 때 
-				else if(IS_YELLOW(j-1,i) && IS_YELLOW(j,i) && IS_BLACK(j+1,i) && IS_BLACK(j+2,i))
-				{
-#ifdef	DEBUG
-					printf("left mid line yellow (%d,%d)\n",j,i);
-#endif
-					left_color = COL_YELLOW;
-					break;
-				}// 아웃 라인이 흰색일 때 
-				else if(IS_WHITE(j-1,i) && IS_WHITE(j,i) && IS_BLACK(j+1,i) && IS_BLACK(j+2,i))
-				{
-#ifdef	DEBUG
-					printf("left mid line white (%d,%d)\n",j,i);
-#endif
-					left_color = COL_WHITE;
-					break;
-				}
-			}
-		} 
-		// 오른 쪽 탐색 
-		for( j = MIDWIDTH -1; j > 2 ; j--)
-		{
-			if( !IS_BLACK(j,i) )
-			{
-				if(IS_RED(j,i))
-				{
-					if( i == under_line)
-						return MID_STOP;
-					return MID_DRIVE;
-				}
-				else if(IS_YELLOW(j+1,i) && IS_YELLOW(j,i) && IS_BLACK(j-1,i) && IS_BLACK(j-2,i))
-				{
-					right_color = COL_YELLOW;
-#ifdef	MID_LINE_DEBUG
-					printf("right mid line yellow (%d,%d)\n",j,i);
-#endif
-					break;
-				}
-				else if(IS_WHITE(j+1,i) && IS_WHITE(j,i) && IS_BLACK(j-1,i) && IS_BLACK(j-2,i))
-				{
-					right_color = COL_WHITE;
-#ifdef	MID_LINE_DEBUG
-					printf("left mid line white (%d,%d)\n",j,i);
-#endif
-					break;
-				}
-			}
-		}
-
-		if(left_color == COL_YELLOW && right_color == COL_WHITE)
-			return MID_CL_RIGHT;
-
-		else if(left_color == COL_WHITE && right_color == COL_YELLOW)
-			return MID_CL_LEFT;
-
-		else{
-			right_color = COL_UNKNOWN;
-			left_color = COL_UNKNOWN;
-		}*/
-
-	} // end vertical scan 
-	return MID_DRIVE;			
+	return MID_DRIVE;	
 }
 
 int check_speed_bump(int rl_info, int w, int y)
@@ -828,7 +738,6 @@ int check_speed_bump(int rl_info, int w, int y)
 			}
 			if(count >= 4)
 				return TRUE;
-// asdf
 		}
 	}
 	return FALSE;
@@ -841,6 +750,7 @@ int find_in_point(int rl_info, int i, int offset)
 #endif
 
 	int y, x,flag;
+	int direct = NONE;
 	struct p_point pt_tmp;
 
 	if(rl_info == LEFT)
@@ -880,7 +790,6 @@ int find_in_point(int rl_info, int i, int offset)
 						
 						if(set_end_point(rl_info, &pt_tmp,flag))
 						{
-							//set_line_equation(rl_info);
 							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
 								pt_cnt += 1;
 							return TRUE;
@@ -908,15 +817,6 @@ int find_in_point(int rl_info, int i, int offset)
 							pt_cnt += 1;
 						return TRUE;
 					}
-/*
-					if(pt[END].x == -1)
-					{
-						init_point();
-						return FALSE;
-					}
-					else
-						return TRUE;
-*/
 				}
 			}
 			// 위 점이 0인 경우 왼쪽으로 순회하면서 (1,0)<- 찾는다. 
@@ -931,6 +831,7 @@ int find_in_point(int rl_info, int i, int offset)
 
 					if( IS_BLACK(x,y)  && IS_YELLOW(x+1,y))
 					{
+
 						if(pt_cnt == 1)
 						{
 							pt[pt_cnt].y = y;
@@ -950,7 +851,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
 						{
-							//set_line_equation(rl_info);
 							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
 								pt_cnt += 1;
 							return TRUE;
@@ -978,15 +878,6 @@ int find_in_point(int rl_info, int i, int offset)
 							pt_cnt += 1;
 						return TRUE;
 					}
-/*
-					if(pt[END].x == -1)
-					{
-						init_point();
-						return FALSE;
-					}
-					else
-						return TRUE;
-*/
 				}
 			}
 		}// end scan for top
@@ -1006,6 +897,7 @@ int find_in_point(int rl_info, int i, int offset)
 
 					if(IS_YELLOW(x,y) && IS_BLACK(x-1,y))
 					{
+
 						if(pt_cnt == 1)
 						{
 							pt[pt_cnt].y = y;
@@ -1014,7 +906,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 						if(pt[pt_cnt-1].y + 10 == y)
 						{
-							printf("set pt[%d] : (%d, %d)\n",pt_cnt,x,y);
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x-1;
 							pt_cnt += 1;
@@ -1026,7 +917,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
 						{
-							//set_line_equation(rl_info);
 							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
 								pt_cnt += 1;
 							return TRUE;
@@ -1048,15 +938,6 @@ int find_in_point(int rl_info, int i, int offset)
 							pt_cnt += 1;					
 						return TRUE;
 					}
-/*
-					if(pt[END].x == -1)
-					{
-						init_point();
-						return FALSE;
-					}
-					else
-						return TRUE;
-*/
 				}
 
 			} // 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -1070,6 +951,7 @@ int find_in_point(int rl_info, int i, int offset)
 
 					if( IS_YELLOW(x,y) && IS_BLACK(x+1,y))
 					{
+
 						if(pt_cnt == 1)
 						{
 							pt[pt_cnt].y = y;
@@ -1090,7 +972,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 						if(set_end_point(rl_info,&pt_tmp,flag))
 						{
-							//set_line_equation(rl_info);
 							if(pt_cnt == 1 && pt[pt_cnt].x != -1)
 								pt_cnt += 1;
 							return TRUE;
@@ -1113,15 +994,6 @@ int find_in_point(int rl_info, int i, int offset)
 							pt_cnt += 1;
 						return TRUE;
 					}
-/*
-					if(pt[END].x == -1)
-					{
-						init_point();
-						return FALSE;
-					}
-					else
-						return TRUE;
-*/
 				}
 			}
 		} // end scan for top 
@@ -1155,23 +1027,15 @@ int find_out_end_point(int i, int offset)
 						pt[pt_cnt].x = x;
 						pt_cnt += 1;
 					}
-/*
-					pt[END].x = x;
-					pt[END].y = y;
-*/
+
 					offset = x;
 					break;
 				}
 			}
-			if(x == MAXWIDTH-1)
+			if(pt[BOT+1].x == -1 && x == MAXWIDTH-1)
 			{
-				if(pt[BOT+1].x == -1)
-				{
-					init_point();
-					return FALSE;
-				}
-				else
-					return TRUE;
+				init_point();
+				return FALSE;
 			}
 		}else	// 위 점이 0인 경우 오른으로 순회하면서 0,1 찾기
 		{
@@ -1185,23 +1049,15 @@ int find_out_end_point(int i, int offset)
 						pt[pt_cnt].x = x;
 						pt_cnt += 1;
 					}
-/*
-					pt[END].x = x;
-					pt[END].y = y;
-*/
+
 					offset = x;
 					break;
 				}
 			}
-			if(x == 0)
+			if(pt[BOT+1].x == -1 && x == 0 )
 			{
-				if(pt[BOT+1].x == -1)
-				{
-					init_point();
-					return FALSE;
-				}
-				else
-					return TRUE;
+				init_point();
+				return FALSE;
 			}
 		}
 	}
@@ -1213,7 +1069,6 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 #ifdef TRACE
 	printf("set_end_point\n");
 #endif
-
 	if(direct == NONE)
 	{
 		if( pt_tmp->x > pt[pt_cnt-1].x)
@@ -1229,7 +1084,7 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 			return TRUE;
 	}
 	return FALSE;
-/*
+	/*
 	// 방향이 설정되어 있지 않을 때,
 	if( direct == NONE ) 
 	{
@@ -1257,10 +1112,9 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 				(direct == RIGHT && rl_info == RIGHT && flag)
 		  )
 		{
-//			pt[END].x = (pt[BOT].x + pt[END].x) / 2;
+			pt[END].x = (pt[BOT].x + pt[END].x) / 2;
 			return TRUE;
-		}
-		else if( pt[END].x == pt_tmp->x)
+		}else if( pt[MID].x == pt_tmp->x)
 		{
 			dir_count+=1;
 			if( dir_count >3)
@@ -1269,8 +1123,6 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 				return TRUE;
 			}
 		}
-		else
-			dir_count = 0;
 
 	}
 
@@ -1306,14 +1158,13 @@ int get_road_angle()
 
 int get_angle( struct p_point a, struct p_point b)
 {
-	//printf("point a : (%d,%d) , point b : (%d,%d)\n", a.x, a.y, b.x, b.y);
 	return 180 - (int)(atan2((double)(b.y-a.y), (double)(b.x-a.x)) * 180 / PI);
 }
 
 int check_traffic_light()
 {
 	// 정지선에 의한 차량 정지 시 신호등 확인 부분 수행
-	// return으로 정지(NONE), 좌회전(LEFT), 우회전(RIGHT)
+	// return으로 정지(NONE), 좌회전(LEFT), 우회전(
 
 	int i, j;
 	int red_count = 0, yellow_count = 0, green_count = 0;
@@ -1424,17 +1275,22 @@ void init_values(int handle)
 	int i=0;
 
 	init_point();
-	width_scan_point = MIDWIDTH;
+	width_scan_point = get_width_scan_point();
+	//width_scan_point = MIDWIDTH;
 	find_left = FL_NONE;
 	find_right = FL_NONE;
-	line_flag = LF_INIT;
 
 	// 버퍼 초기화 
-	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
-
-	if(camera->ref_count>0)
+	if(!first)
 		camera_release_frame(cm_handle,vidbuf);
+	else
+		first = 0;
+
 	vidbuf = camera_get_frame(cm_handle);
+//	camera_release_frame(cm_handle,vidbuf);
+//	vidbuf = camera_get_frame(cm_handle);
+	//camera_release_frame(cm_handle,vidbuf);
+	//vidbuf = camera_get_frame(cm_handle);
 }
 
 void sighandler(int signo)
@@ -1472,7 +1328,7 @@ void print_screen_y()
 {
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE; j>0 ; j--)
+	for(j = CUTLINE+40; j>0 ; j--)
 	{
 		printf("%3d:",j);
 

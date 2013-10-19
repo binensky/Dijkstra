@@ -11,7 +11,8 @@
 
 // -------- MISO Defined Value ----------
 
-#define CUTLINE 140
+#define CUTLINE 100
+#define CUTLINE_CURVE 60
 #define GAP 10
 
 // threshold
@@ -32,8 +33,7 @@
 #define BOT 0
 #define MID 1
 #define END 2
-#define CONTACT 3
-#define PT_SIZE 11
+#define PT_SIZE 12
 
 // find  line flag 
 #define FL_NONE 0
@@ -45,6 +45,8 @@
 #define MID_STOP 2 
 #define MID_CL_LEFT 3
 #define MID_CL_RIGHT 4
+#define MID_SPEED_BUMP 5
+#define MID_SPEED_DOWN 6
 
 // screen size 
 #define MAXHEIGHT 240

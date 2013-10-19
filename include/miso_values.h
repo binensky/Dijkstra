@@ -49,12 +49,7 @@ struct image_data
 {
 	int angle;	
 	int dist;
-};
-
-struct line_equation
-{
-	float gradient;
-	int intercept;
+	int flag;
 };
 
 // flags

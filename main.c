@@ -1,8 +1,9 @@
-//#define DEBUG
+#define DEBUG
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
+
 #include <stdio.h>
 #include <pthread.h>
 
@@ -27,8 +28,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	drive();
-	//direct_test();
+	//drive();
+	direct_test();
 
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -59,7 +60,7 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
-				set_angle(idata->angle,idata->dist);
+				set_angle(idata->angle);
 				distance_set(500);		
 				forward_dis();
 				break;

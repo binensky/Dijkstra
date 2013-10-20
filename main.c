@@ -18,6 +18,10 @@
 
 pthread_t thread[3];	// 0:key handling , 1:sensor handling, 2:distance_check
 
+struct image_data* img_head;
+struct image_data* img_it;
+struct image_data* img_tail;
+
 void init_drive(void);
 void drive(void);
 void direct_test(void);
@@ -49,6 +53,12 @@ void drive(void)
 
 	{			
 		idata = line_check(cm_handle); // get image data 
+	
+		idata->prev = img_it;
+		idata->next = img_it->next;
+		img_it->next =idata;
+		img_it->next->prev =idata;
+		img_it=idata;
 
 		switch(g_image_flag)
 		{			
@@ -58,11 +68,14 @@ void drive(void)
 				g_drive_flag = DF_STOP;
 				break;
 
-			case IF_DRIVE:
+			case IF_LEFT:
+			case IF_RIGHT:
+			case IF_BOTH:
+			case IF_STRAIGHT:
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
-				set_angle(idata->angle);
+//				set_angle(idata->angle);
 				distance_set(500);		
 				forward_dis();
 				break;
@@ -143,7 +156,16 @@ void init_drive()
 	distance_set(2000);
 	usleep(2000);
 	dm_speed_set(1);
-	//line_stop();
+	line_stop();
+
+	img_head = (struct img_data*)malloc(sizeof(struct image_data));
+	img_tail = (struct img_data*)malloc(sizeof(struct image_data));
+
+	img_head->next = img_tail;
+	img_head->prev = NULL;
+	img_tail->prev = img_head;
+	img_tail->next = NULL;
+	img_it = img_head;
 }
 
 void direct_test()

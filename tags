@@ -3,13 +3,11 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 ADC_1CH	include/car_lib.h	18;"	d
 ADC_2CH	include/car_lib.h	19;"	d
 ADC_3CH	include/car_lib.h	20;"	d
 ADC_4CH	include/car_lib.h	21;"	d
-AF_CURVE	include/miso_values.h	43;"	d
-AF_STRAIGHT	include/miso_values.h	44;"	d
 APP_data	include/videodev2.h	/^	char APP_data[60];      \/* Data in the JPEG APPn segment. *\/$/;"	m	struct:v4l2_jpegcompression
 APP_len	include/videodev2.h	/^	int  APP_len;           \/* Length of data in JPEG APPn segment *\/$/;"	m	struct:v4l2_jpegcompression
 APPn	include/videodev2.h	/^	int  APPn;              \/* Number of APP segment to be written,$/;"	m	struct:v4l2_jpegcompression
@@ -17,7 +15,7 @@ ASSERT	include/pxa_dbg.h	24;"	d
 ASSERT	include/pxa_dbg.h	31;"	d
 BASE_VIDIOC_PRIVATE	include/videodev2.h	1457;"	d
 BAUDRATE	include/car_lib.h	29;"	d
-BOT	include/cam_values.h	32;"	d
+BOT	include/cam_values.h	33;"	d
 CAMERA_IMAGE_FORMAT_RAW10	include/pxa_camera_zl.h	75;"	d
 CAMERA_IMAGE_FORMAT_RAW8	include/pxa_camera_zl.h	73;"	d
 CAMERA_IMAGE_FORMAT_RAW9	include/pxa_camera_zl.h	74;"	d
@@ -46,7 +44,7 @@ CAM_STATUS_INIT	include/cam_values.h	8;"	d
 CAM_STATUS_READY	driver/camera.c	118;"	d	file:
 CAM_STATUS_READY	include/cam_values.h	9;"	d
 CAPTURE_TYPE_STILL	include/pxa_camera_zl.h	114;"	d
-CB	include/cam_values.h	67;"	d
+CB	include/cam_values.h	70;"	d
 CC	Makefile	/^CC=\/usr\/local\/arm-linux-4.1.1\/bin\/arm-linux-gcc -lpthread -lm$/;"	m
 CI_SSU_SCALE	include/pxa_camera_zl.h	/^} CI_SSU_SCALE;$/;"	t	typeref:enum:__anon2
 CI_SSU_SCALE_DISABLE	include/pxa_camera_zl.h	/^    CI_SSU_SCALE_DISABLE   = 0,    \/\/ disabled$/;"	e	enum:__anon2
@@ -55,18 +53,19 @@ CI_SSU_SCALE_QUARTER	include/pxa_camera_zl.h	/^    CI_SSU_SCALE_QUARTER   = 2   
 CM_SPEED_MAX	include/miso_values.h	17;"	d
 CM_SPEED_MIN	include/miso_values.h	18;"	d
 CM_STRAIGHT	include/miso_values.h	41;"	d
-COL_PASS	include/cam_values.h	55;"	d
-COL_RED	include/cam_values.h	58;"	d
-COL_UNKNOWN	include/cam_values.h	54;"	d
-COL_WHITE	include/cam_values.h	57;"	d
-COL_YELLOW	include/cam_values.h	56;"	d
+COL_PASS	include/cam_values.h	58;"	d
+COL_RED	include/cam_values.h	61;"	d
+COL_UNKNOWN	include/cam_values.h	57;"	d
+COL_WHITE	include/cam_values.h	60;"	d
+COL_YELLOW	include/cam_values.h	59;"	d
 COM_data	include/videodev2.h	/^	char COM_data[60];      \/* Data in JPEG COM segment *\/$/;"	m	struct:v4l2_jpegcompression
 COM_len	include/videodev2.h	/^	int  COM_len;           \/* Length of data in JPEG COM segment *\/$/;"	m	struct:v4l2_jpegcompression
-CR	include/cam_values.h	68;"	d
+CR	include/cam_values.h	71;"	d
 CUTLINE	include/cam_values.h	14;"	d
+CUTLINE_CURVE	include/cam_values.h	15;"	d
 DBGMSG	include/pxa_dbg.h	25;"	d
 DBGMSG	include/pxa_dbg.h	30;"	d
-DEBUG	main.c	1;"	d	file:
+DEBUG	main.c	3;"	d	file:
 DF_CUR	include/miso_values.h	23;"	d
 DF_END	include/miso_values.h	26;"	d
 DF_PPARK	include/miso_values.h	25;"	d
@@ -81,19 +80,20 @@ DM_INTERVAL	include/miso_car_lib.h	9;"	d
 DM_STRAIGHT	include/miso_values.h	40;"	d
 DPRINTF	include/pxa_dbg.h	23;"	d
 DPRINTF	include/pxa_dbg.h	29;"	d
-DRIVE_DEBUG	main.c	2;"	d	file:
+DRIVE	main.c	6;"	d	file:
+DRIVE_DEBUG	main.c	4;"	d	file:
 EMERGENCY	include/car_lib.h	27;"	d
-END	include/cam_values.h	34;"	d
+END	include/cam_values.h	35;"	d
 ENTER	include/pxa_dbg.h	26;"	d
 ENTER	include/pxa_dbg.h	32;"	d
 ERRMSG	include/pxa_dbg.h	36;"	d
 FALSE	include/miso_values.h	8;"	d
-FL_FIND	include/cam_values.h	39;"	d
-FL_NONE	include/cam_values.h	38;"	d
-FL_PASS	include/cam_values.h	40;"	d
+FL_FIND	include/cam_values.h	40;"	d
+FL_NONE	include/cam_values.h	39;"	d
+FL_PASS	include/cam_values.h	41;"	d
 FORMAT_PLANAR_420	driver/overlay2.c	37;"	d	file:
 FORMAT_PLANAR_422	driver/overlay2.c	36;"	d	file:
-GAP	include/cam_values.h	15;"	d
+GAP	include/cam_values.h	16;"	d
 HIGH	include/miso_car_lib.h	12;"	d
 HST_COLOR_BLUE	include/pxa_camera_zl.h	/^    HST_COLOR_BLUE,$/;"	e	enum:__anon1
 HST_COLOR_GREEN1	include/pxa_camera_zl.h	/^    HST_COLOR_GREEN1,$/;"	e	enum:__anon1
@@ -107,35 +107,41 @@ IF_SG_LEFT	include/miso_values.h	37;"	d
 IF_SG_RIGHT	include/miso_values.h	38;"	d
 IF_SG_STOP	include/miso_values.h	36;"	d
 IF_STOP	include/miso_values.h	31;"	d
-IS_BLACK	include/cam_values.h	73;"	d
-IS_BLACK_SPEED_BUMP	include/cam_values.h	78;"	d
-IS_RED	include/cam_values.h	74;"	d
-IS_TRAFFIC_GREEN	include/cam_values.h	82;"	d
-IS_TRAFFIC_RED	include/cam_values.h	80;"	d
-IS_TRAFFIC_YELLOW	include/cam_values.h	81;"	d
-IS_UNKNOWN	include/cam_values.h	70;"	d
-IS_WHITE	include/cam_values.h	72;"	d
-IS_WHITE_SPEED_BUMP	include/cam_values.h	77;"	d
-IS_YELLOW	include/cam_values.h	71;"	d
-IS_YELLOW_SPEED_BUMP	include/cam_values.h	76;"	d
+IS_BLACK	include/cam_values.h	76;"	d
+IS_BLACK_SPEED_BUMP	include/cam_values.h	81;"	d
+IS_RED	include/cam_values.h	77;"	d
+IS_TRAFFIC_GREEN	include/cam_values.h	85;"	d
+IS_TRAFFIC_RED	include/cam_values.h	83;"	d
+IS_TRAFFIC_YELLOW	include/cam_values.h	84;"	d
+IS_UNKNOWN	include/cam_values.h	73;"	d
+IS_WHITE	include/cam_values.h	75;"	d
+IS_WHITE_SPEED_BUMP	include/cam_values.h	80;"	d
+IS_YELLOW	include/cam_values.h	74;"	d
+IS_YELLOW_SPEED_BUMP	include/cam_values.h	79;"	d
 KEY1	include/key_handler.h	9;"	d
 KEY2	include/key_handler.h	10;"	d
 KEY3	include/key_handler.h	11;"	d
 LEAVE	include/pxa_dbg.h	27;"	d
 LEAVE	include/pxa_dbg.h	33;"	d
 LEFT	include/car_lib.h	25;"	d
+LF_CURVE	include/miso_values.h	45;"	d
+LF_CURVE_STRAIGHT	include/miso_values.h	46;"	d
+LF_INIT	include/miso_values.h	43;"	d
+LF_STRAIGHT	include/miso_values.h	44;"	d
 LOW	include/miso_car_lib.h	13;"	d
 LSPEED_MAX	include/miso_values.h	11;"	d
 LSPEED_MIN	include/miso_values.h	12;"	d
 MAX	include/gaussian_filter.h	4;"	d
-MAXHEIGHT	include/cam_values.h	49;"	d
-MAXWIDTH	include/cam_values.h	50;"	d
-MID	include/cam_values.h	33;"	d
-MIDWIDTH	include/cam_values.h	51;"	d
-MID_CL_LEFT	include/cam_values.h	45;"	d
-MID_CL_RIGHT	include/cam_values.h	46;"	d
-MID_DRIVE	include/cam_values.h	43;"	d
-MID_STOP	include/cam_values.h	44;"	d
+MAXHEIGHT	include/cam_values.h	52;"	d
+MAXWIDTH	include/cam_values.h	53;"	d
+MID	include/cam_values.h	34;"	d
+MIDWIDTH	include/cam_values.h	54;"	d
+MID_CL_LEFT	include/cam_values.h	46;"	d
+MID_CL_RIGHT	include/cam_values.h	47;"	d
+MID_DRIVE	include/cam_values.h	44;"	d
+MID_SPEED_BUMP	include/cam_values.h	48;"	d
+MID_SPEED_DOWN	include/cam_values.h	49;"	d
+MID_STOP	include/cam_values.h	45;"	d
 MIN	driver/overlay2.c	38;"	d	file:
 MODEDEVICE	include/car_lib.h	30;"	d
 NONE	include/miso_values.h	5;"	d
@@ -148,7 +154,8 @@ OV7660_SENSOR	include/pxa_camera_zl.h	119;"	d
 PAGE_MASK	driver/camera.c	48;"	d	file:
 PAGE_SIZE	driver/camera.c	47;"	d	file:
 PI	include/cam_values.h	5;"	d
-PT_SIZE	include/cam_values.h	35;"	d
+PT_SIZE	include/cam_values.h	36;"	d
+RANGE_ELSE	include/miso_car_lib.h	20;"	d
 RANGE_LEFT	include/miso_car_lib.h	19;"	d
 RANGE_NO_CHANGE	include/miso_car_lib.h	17;"	d
 RANGE_RIGHT	include/miso_car_lib.h	18;"	d
@@ -164,17 +171,17 @@ STATE_TOKEN	include/state_manage.h	2;"	d
 STILLBUF_COUNT	driver/camera.c	115;"	d	file:
 STILLBUF_COUNT	include/cam_values.h	7;"	d
 STILL_IMAGE	include/pxa_camera_zl.h	107;"	d
-THRESHOLD	include/cam_values.h	18;"	d
-THRESHOLD_CB	include/cam_values.h	19;"	d
-THRESHOLD_GREEN_CB	include/cam_values.h	26;"	d
-THRESHOLD_GREEN_CR	include/cam_values.h	27;"	d
-THRESHOLD_RED_CB	include/cam_values.h	22;"	d
-THRESHOLD_RED_CR	include/cam_values.h	23;"	d
-THRESHOLD_RED_MIN_CB	include/cam_values.h	21;"	d
-THRESHOLD_STOP_CB	include/cam_values.h	29;"	d
-THRESHOLD_STOP_CR	include/cam_values.h	30;"	d
-THRESHOLD_YELLOW_CB	include/cam_values.h	24;"	d
-THRESHOLD_YELLOW_CR	include/cam_values.h	25;"	d
+THRESHOLD	include/cam_values.h	19;"	d
+THRESHOLD_CB	include/cam_values.h	20;"	d
+THRESHOLD_GREEN_CB	include/cam_values.h	27;"	d
+THRESHOLD_GREEN_CR	include/cam_values.h	28;"	d
+THRESHOLD_RED_CB	include/cam_values.h	23;"	d
+THRESHOLD_RED_CR	include/cam_values.h	24;"	d
+THRESHOLD_RED_MIN_CB	include/cam_values.h	22;"	d
+THRESHOLD_STOP_CB	include/cam_values.h	30;"	d
+THRESHOLD_STOP_CR	include/cam_values.h	31;"	d
+THRESHOLD_YELLOW_CB	include/cam_values.h	25;"	d
+THRESHOLD_YELLOW_CR	include/cam_values.h	26;"	d
 TRUE	include/miso_values.h	7;"	d
 V4L2_AUDCAP_AVL	include/videodev2.h	1181;"	d
 V4L2_AUDCAP_STEREO	include/videodev2.h	1180;"	d
@@ -699,9 +706,9 @@ WCAM_VIDIOCGINFOR	include/pxa_camera_zl.h	68;"	d
 WCAM_VIDIOCSCAMREG	include/pxa_camera_zl.h	63;"	d
 WCAM_VIDIOCSCIREG	include/pxa_camera_zl.h	65;"	d
 WCAM_VIDIOCSINFOR	include/pxa_camera_zl.h	67;"	d
-WHEEL_STRAIGHT	include/cam_values.h	61;"	d
-WHEEL_TURN	include/cam_values.h	62;"	d
-Y	include/cam_values.h	65;"	d
+WHEEL_STRAIGHT	include/cam_values.h	64;"	d
+WHEEL_TURN	include/cam_values.h	65;"	d
+Y	include/cam_values.h	68;"	d
 YUV422_BPP	include/pxa_camera_zl.h	99;"	d
 _PXA3XX_MEDIA_LIB_HEADER_	include/pxa_lib.h	16;"	d
 __CAMERA_H__	include/miso_camera.h	2;"	d
@@ -720,7 +727,7 @@ act	include/miso_camera.h	/^struct sigaction act;$/;"	v	typeref:struct:sigaction
 add_states	include/state_manage.h	/^void add_states(struct img_data* idata)$/;"	f
 afc	include/videodev2.h	/^	__s32			afc;$/;"	m	struct:v4l2_tuner
 angle	include/miso_values.h	/^	int angle;	$/;"	m	struct:image_data
-angle_flag	include/miso_values.h	/^	int angle_flag;$/;"	m	struct:image_data
+angles	include/miso_camera.h	/^int angles[10];$/;"	v
 au_bitrate	include/videodev2.h	/^	struct v4l2_bitrate		au_bitrate;$/;"	m	struct:v4l2_mpeg_compression	typeref:struct:v4l2_mpeg_compression::v4l2_bitrate
 au_pesid	include/videodev2.h	/^	__u8                            au_pesid;$/;"	m	struct:v4l2_mpeg_compression
 au_sample_rate	include/videodev2.h	/^	__u32				au_sample_rate;$/;"	m	struct:v4l2_mpeg_compression
@@ -782,7 +789,7 @@ cb	include/pxa_lib.h	/^			unsigned char *y,*cb,*cr;$/;"	m	struct:pxa_video_buf::
 cbstep	include/pxa_lib.h	/^			unsigned int ystep,cbstep,crstep;$/;"	m	struct:pxa_video_buf::__anon3::__anon5
 change_line	include/miso_car_lib.h	/^void change_line(int v)$/;"	f
 check_distance	include/car_lib.h	/^char check_distance(int ch)$/;"	f
-check_mid_line	include/miso_camera.h	/^int check_mid_line(int mid_line,int under_line)$/;"	f
+check_mid_line	include/miso_camera.h	/^int check_mid_line()$/;"	f
 check_speed_bump	include/miso_camera.h	/^int check_speed_bump(int rl_info, int w, int y)$/;"	f
 check_traffic_light	include/miso_camera.h	/^int check_traffic_light()$/;"	f
 chromakey	include/videodev2.h	/^	__u32			chromakey;$/;"	m	struct:v4l2_window
@@ -853,6 +860,7 @@ find_outline	include/miso_camera.h	/^int find_outline(int rl_info, int y, int w)
 find_right	include/cam_values.h	/^int find_left = FL_NONE, find_right = FL_NONE;$/;"	v
 find_speed_bump_in_point	include/miso_camera.h	/^int find_speed_bump_in_point(int i, int j)$/;"	f
 find_speed_bump_point	include/miso_camera.h	/^int find_speed_bump_point(int w, int y)$/;"	f
+flag	include/miso_values.h	/^	int flag;$/;"	m	struct:image_data
 flags	include/videodev2.h	/^	__u32			flags;$/;"	m	struct:v4l2_buffer
 flags	include/videodev2.h	/^	__u32			flags;$/;"	m	struct:v4l2_framebuffer
 flags	include/videodev2.h	/^	__u32	flags;			\/* V4L2_VBI_* *\/$/;"	m	struct:v4l2_vbi_format
@@ -940,7 +948,7 @@ key_handler	include/key_handler.h	/^void* key_handler(void* data)$/;"	f
 lcd_disp_num	include/car_lib.h	/^void lcd_disp_num(int num)$/;"	f
 lcd_disp_pic	include/car_lib.h	/^void lcd_disp_pic(char* pic)$/;"	f
 left	include/videodev2.h	/^	__s32   left;$/;"	m	struct:v4l2_rect
-left_angle	include/angle_table.h	/^int left_angle[18][30] ={$/;"	v
+left_angle	include/angle_table.h	/^int left_angle[21][30] ={$/;"	v
 left_line_check	include/miso_camera.h	/^int left_line_check(int i)$/;"	f
 len	include/pxa_lib.h	/^			unsigned int len;$/;"	m	struct:pxa_video_buf::__anon3::__anon4
 length	driver/camera.c	/^	unsigned int length;$/;"	m	struct:videobuf_dev	file:
@@ -949,6 +957,7 @@ length	include/videodev2.h	/^	__u32 length;$/;"	m	struct:v4l2_enc_idx_entry
 limit	include/gaussian_filter.h	/^unsigned char limit(double a)$/;"	f
 line	include/videodev2.h	/^	__u32   line;           \/* 1-23 *\/$/;"	m	struct:v4l2_sliced_vbi_data
 line_check	include/miso_camera.h	/^struct image_data* line_check(int handle)$/;"	f
+line_flag	include/miso_values.h	/^static int line_flag = LF_INIT;$/;"	v
 line_start	include/car_lib.h	/^void line_start(void)$/;"	f
 line_stop	include/car_lib.h	/^void line_stop(void)$/;"	f
 lm_break	include/car_lib.h	/^char lm_break(char* brea)$/;"	f
@@ -956,6 +965,7 @@ lm_speed	include/car_lib.h	/^char lm_speed(char* speed1, char* speed2)$/;"	f
 lm_step	include/car_lib.h	/^char lm_step(char* step1, char* step2)$/;"	f
 load_car_state_	include/state_manage.h	/^struct car_state** load_car_state_() \/\/ 배열 동적 할당. $/;"	f
 m	include/videodev2.h	/^	} m;$/;"	m	struct:v4l2_buffer	typeref:union:v4l2_buffer::__anon8
+mDistance	include/miso_car_lib.h	/^int mDistance(){$/;"	f
 main	main.c	/^int main(void)$/;"	f
 map	driver/overlay2.c	/^	unsigned char*	map;$/;"	m	struct:overlay2_object	file:
 match_chip	include/videodev2.h	/^	__u32 match_chip; \/* Match this chip, meaning determined by match_type *\/$/;"	m	struct:v4l2_register
@@ -1089,7 +1099,7 @@ reserved_3	include/videodev2.h	/^	__u8                            reserved_3[3];
 reserved_4	include/videodev2.h	/^	__u32                           reserved_4:30; \/* align *\/$/;"	m	struct:v4l2_mpeg_compression
 reserved_5	include/videodev2.h	/^	__u32				reserved_5[8];$/;"	m	struct:v4l2_mpeg_compression
 rggb10	include/pxa_lib.h	/^		}rggb10;$/;"	m	union:pxa_video_buf::__anon3	typeref:struct:pxa_video_buf::__anon3::__anon4
-right_angle	include/angle_table.h	/^int right_angle[19][30] = {$/;"	v
+right_angle	include/angle_table.h	/^int right_angle[21][30] = {$/;"	v
 right_line_check	include/miso_camera.h	/^int right_line_check(int i)$/;"	f
 rxbuf	include/car_lib.h	/^unsigned short rxbuf[4];$/;"	v
 rxsubchans	include/videodev2.h	/^	__u32			rxsubchans;$/;"	m	struct:v4l2_tuner

@@ -11,7 +11,7 @@
 
 // -------- MISO Defined Value ----------
 
-#define CUTLINE 100
+#define CUTLINE 140
 #define CUTLINE_CURVE 60
 #define GAP 10
 
@@ -41,12 +41,14 @@
 #define FL_PASS 2
 
 // mid line flag
-#define MID_DRIVE 1
-#define MID_STOP 2 
-#define MID_CL_LEFT 3
-#define MID_CL_RIGHT 4
-#define MID_SPEED_BUMP 5
-#define MID_SPEED_DOWN 6
+#define MID_STRAIGHT 0
+#define MID_CURVE_STRAIGHT 1
+#define MID_CURVE 2
+#define MID_STOP 3
+#define MID_CL_LEFT 4
+#define MID_CL_RIGHT 5
+#define MID_SPEED_BUMP 6
+#define MID_SPEED_DOWN 7
 
 // screen size 
 #define MAXHEIGHT 240
@@ -91,8 +93,11 @@ struct p_point
 	int y;		// y좌표 (0~239)
 };
 
+struct p_point pt[PT_SIZE];
 
-struct p_point pt[PT_SIZE]; // 잡힌 점 
+struct sigaction act;
+struct pxa_video_buf* vidbuf;
+struct pxacam_setting camset;
 
 static int cm_handle;
 static int fd;
@@ -101,5 +106,6 @@ int find_left = FL_NONE, find_right = FL_NONE;
 int img_buf_y[MAXHEIGHT][MAXWIDTH];
 int width_scan_point = MIDWIDTH;
 
+void sighandler(int signo);
 
 #endif

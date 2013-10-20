@@ -3,6 +3,7 @@
 #define __MISO_VALUES_H__
 
 #define NONE -1
+#define STOP 0
 
 #define TRUE 0xff
 #define FALSE 0x00
@@ -19,42 +20,39 @@
 
 // drive flag
 #define DF_STOP 0
-#define DF_STR 1
-#define DF_CUR 2
+#define DF_DRIVE 1
 #define DF_VPARK 3
 #define DF_PPARK 4
 #define DF_END 9
 
 // image flag 
 #define IF_NO_PROCESS -1
-
 #define IF_STOP 0
-#define IF_DRIVE 1
-#define IF_CL_LEFT 2
-#define IF_CL_RIGHT 3
+#define IF_LEFT 1
+#define IF_RIGHT 2
+#define IF_BOTH 3
+#define IF_STRAIGHT 5
 
 #define IF_SG_STOP 10
 #define IF_SG_LEFT 12
 #define IF_SG_RIGHT 13
+#define IF_CL_LEFT 21
+#define IF_CL_RIGHT 22
 
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1533
 
-#define LF_INIT -1
-#define LF_STRAIGHT 0
-#define LF_CURVE 1
-#define LF_CURVE_STRAIGHT 2
-
 struct image_data
 {
-	int angle;	
-	int dist;
-	int flag;
+	struct image_data* prev;
+	struct image_data* next;
+
+	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
+	int angle[3];
+	int dist[3];
 };
 
 // flags
-static int g_drive_flag = DF_STR;
-static int g_image_flag = IF_DRIVE;
-static int line_flag = LF_INIT;
-
+static int g_drive_flag = DF_DRIVE;
+static int g_image_flag = IF_NO_PROCESS;
 #endif

@@ -203,6 +203,21 @@ struct image_data* line_check(int handle)
 	else
 		printf("line equation : y = %fx + %d ",tan((float)midangle), pt[BOT].y);
 
+	if(line_flag == LF_STRAIGHT)
+	{
+		// 차량을 중앙으로
+		midangle == 1000;
+	}
+	else if(line_flag == LF_CURVE)
+	{
+		// 중간 가운데랑 각도 구하기
+	}
+	else if(line_flag == LF_CURVE_STRAIGHT)
+	{
+		// 커브 이전 직진
+		midangle == 1000;
+	}
+
 #ifdef DRIVE_DEBUG
 	for(i=0; i<pt_cnt; i++)
 	{

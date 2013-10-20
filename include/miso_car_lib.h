@@ -15,8 +15,8 @@
 // ANGLE RNAGES. 
 #define RANGE_STRAIGHT(X)	((X) == 1000)
 #define RANGE_NO_CHANGE(X) 	((X) == 0 || (X) == 90 || (X) == 180)
-#define RANGE_RIGHT(X)		(0<(X) && (X)<40)
-#define RANGE_LEFT(X)		(140<(X) && (X)<180)
+#define RANGE_LEFT(X)		(0<(X) && (X)<40)
+#define RANGE_RIGHT(X)		(140<(X) && (X)<180)
 #define RANGE_ELSE(X)		(40 <= (X) && (X) <= 140 && (X) != 90)
 
 static int g_sp = 0;
@@ -71,21 +71,9 @@ void turn_set(int v)
 	else
 		g_angle = v;
 
-	printf("#set angle %d \n",g_angle);
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
-void turn_left(int v,int dist)
-{
-	int angle;
-	turn_set(left_angle[(dist-1)/5][v/3]);
-}
-
-void turn_right(int v,int dist)
-{
-	int angle;
-	turn_set(right_angle[(dist-1)/5][v/3]);
-}
 
 // cm_angle 
 void camera_straight()
@@ -120,21 +108,18 @@ int mDistance(){
 	return read_buf[1]*65536+read_buf[2]*256+read_buf[3];
 }
 
-void set_angle(int angle,int dist)
+void set_angle(int angle)
 {
-	
 	if(RANGE_STRAIGHT(angle)){
-	//	speed_set(1500);
+		//g_drive_flag = DF_STR;
 		turn_straight();
 	} 
 	else if( RANGE_RIGHT(angle)){
-		//speed_down(10);		
-		//turn_right(angle,dist);
+		//g_drive_flag = DF_CUR;
 		turn_set(800);
 	} 
 	else if(RANGE_LEFT(angle)){
-		//speed_down(10);
-		//turn_left(angle,dist);
+		//g_drive_flag = DF_CUR;		
 		turn_set(2200);
 	}
 	else if(RANGE_NO_CHANGE(angle))
@@ -142,7 +127,7 @@ void set_angle(int angle,int dist)
 	}
 	else if(RANGE_ELSE(angle))
 	{
-		turn_set( 420 + angle * 12 );
+		turn_set( 2580 - angle * 12 );
 	}
 }
 

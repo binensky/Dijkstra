@@ -89,6 +89,7 @@ struct image_data* line_check(int handle)
 
 		// 도로 중간 값을 검사한다. 
 		tmp = check_mid_line();
+
 		printf("check mid line : %d\n", tmp);
 
 		if( tmp == MID_STRAIGHT)
@@ -100,7 +101,7 @@ struct image_data* line_check(int handle)
 					img_data->flag += IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle(LEFT);
 					img_data->dist[LEFT] = pt[0].y;
-#ifdef drive_debug
+#ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 						printf("pt[%d] : (%d,%d)  ", i, pt[LEFT][i].x, pt[LEFT][i].y);
 					printf("\n");
@@ -122,9 +123,11 @@ struct image_data* line_check(int handle)
 
 				}
 			}
+			if(find_left == FL_NONE && find_right == FL_NONE)
+				img_data->flag = IF_STRAIGHT;
+			return img_data;
 		}else if(tmp == MID_CURVE_STRAIGHT)
 		{
-			// go straight;
 			img_data->flag = IF_STRAIGHT;
 			return img_data;
 		}
@@ -145,7 +148,7 @@ struct image_data* line_check(int handle)
 					}
 					printf("\n");
 #endif
-
+					return img_data;
 				}
 				else if((find_right == FL_NONE) && right_line_check(i))
 				{
@@ -160,10 +163,9 @@ struct image_data* line_check(int handle)
 					}
 					printf("\n");
 #endif
+					return img_data;
 				}
 			}
-
-			return img_data;
 		}
 		else if( tmp == MID_STOP){
 			img_data->flag = IF_STOP;
@@ -190,7 +192,6 @@ struct image_data* line_check(int handle)
 			img_data->flag = IF_SG_RIGHT;
 			return img_data;
 		}
-		// 신호등, 정지선  처리
 		break;
 
 		default:
@@ -305,8 +306,46 @@ int find_outline(int rl_info, int y, int w)
 {
 	int x;
 
-}
+	if(rl_info == LEFT)					// 왼쪽 선이라면 
+	{
+		for(x = w; x < MAXWIDTH-1; x++)
+		{									// (0,1) 이 잡히는 경우. 
+			if( IS_BLACK(x,y) && IS_YELLOW(x-1,y))
+			{
+				pt[BOT].y = y;
+				pt[BOT].x = x-1;
+				pt_cnt += 1;
 
+				if(find_out_end_point(y, pt[BOT].x)) // sub_point를 찾는다. 
+				{
+					find_left =  FL_FIND;
+					return TRUE;
+				}else 
+					return FALSE;
+			}
+		}
+	}
+	else if(rl_info == RIGHT)
+	{
+		for(x = w; x > 0; x--)
+		{
+			if( IS_YELLOW(x,y) && IS_BLACK(x-1,y)) 
+			{
+				pt[BOT].y = y;
+				pt[BOT].x = x-1;
+				pt_cnt += 1;
+
+				if(find_out_end_point(y, pt[BOT].x))
+				{
+					find_right = FL_FIND;
+					return TRUE;
+				}else 
+					return FALSE;
+			}
+		}
+	}
+
+}
 
 int check_mid_line()
 {
@@ -321,7 +360,6 @@ int check_mid_line()
 	// 미드라인 수직 검사 
 	for(i=0;i<CUTLINE;i++)
 	{
-
 		// check cross stop 
 		if( IS_BLACK(MIDWIDTH,i) && (i > 60) )
 		{
@@ -338,22 +376,23 @@ int check_mid_line()
 		else if(!IS_BLACK(MIDWIDTH,i))
 		{
 			height = i;
-
+			printf("height %d \n",height);
 			// if yellow speed bump check 
 			if(IS_YELLOW(MIDWIDTH, i))
 			{
 				if(check_speed_bump(j,i))
 					return MID_SPEED_BUMP;	// speed bump check.
-
 			}
 			// if white stop line check 
+			/*
 			else if(IS_WHITE(MIDWIDTH-1, i) && 
 					IS_WHITE(MIDWIDTH,i) && 
 					IS_WHITE(MIDWIDTH+1, i))
 				return MID_SPEED_DOWN;
-
+*/
+			break;
 		}else if(IS_RED(j,i))
-		{
+		{	
 			return MID_STOP;
 		}
 	}
@@ -455,12 +494,6 @@ int find_in_point(int rl_info, int i, int offset)
 								pt_cnt += 1;
 							return TRUE;
 						}
-						/*
-						   else if(x < offset - 100){ // 한 행에서 너무 많이 x이동을 수행하게 되면 
-						   if(set_end_point(rl_info,&pt_tmp,flag))
-						   return TRUE;
-						   }
-						 */
 						break;
 					}
 				}
@@ -517,12 +550,6 @@ int find_in_point(int rl_info, int i, int offset)
 							return TRUE;
 						}
 
-						/*
-						   else if(x > offset + 100){ // 한 행에서 너무 많이 x이동을 수행하게 되면 
-						   if(set_end_point(rl_info,&pt_tmp,flag))
-						   return TRUE;
-						   }
-						 */
 						break;
 					}
 				}
@@ -621,7 +648,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 						if(pt[pt_cnt-1].y + 10 == y)
 						{
-							printf("set pt[%d] : (%d, %d)\n",pt_cnt,x,y);
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 							pt_cnt += 1;
@@ -772,7 +798,7 @@ int get_road_angle(int rl_info)
 
 int get_angle( struct p_point a, struct p_point b)
 {
-	return 180 - (int)(atan2((double)(b.y-a.y), (double)(b.x-a.x)) * 180 / PI);
+	return (int)(atan2((double)(b.y-a.y), (double)(b.x-a.x)) * 180 / PI);
 }
 
 int check_traffic_light()

@@ -1,10 +1,8 @@
-// WHY NOT
-
-#define DEBUG
-#define DRIVE_DEBUG
+//#define DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-//#define TRACE
+#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -34,8 +32,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	//drive();
-	direct_test();
+	drive();
+	//direct_test();
 
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -46,7 +44,9 @@ int main(void)
 void drive(void)
 {
 	struct image_data* idata;
-	int angle,input;
+	struct p_point mid_bot, dest;
+	double gradient;
+	int angle,input,intercept;
 	init_drive();
 
 	while(TRUE)
@@ -60,7 +60,7 @@ void drive(void)
 		img_it->next->prev =idata;
 		img_it=idata;
 
-		switch(g_image_flag)
+		switch(idata->flag)
 		{			
 			case IF_STOP:
 				printf("===================================IF_STOP\n");
@@ -69,15 +69,44 @@ void drive(void)
 				break;
 
 			case IF_LEFT:
-			case IF_RIGHT:
-			case IF_BOTH:
-			case IF_STRAIGHT:
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
-//				set_angle(idata->angle);
-				distance_set(500);		
-				forward_dis();
+				gradient = tan( (double)idata->angle[LEFT] *PI /180);
+				intercept = -320 * gradient + idata->dist[LEFT];
+				mid_bot.y = 0;
+				mid_bot.x = MIDWIDTH;
+				dest.y = 100;
+				dest.x = (int)((dest.y - intercept) / gradient);
+
+				set_angle(get_angle(mid_bot, dest));
+				break;
+
+			case IF_RIGHT:
+#ifdef DRIVE_DEBUG
+				printf("img angle %d\n", idata->angle);
+#endif
+				gradient = tan( (double)idata->angle[RIGHT] *PI /180);
+				intercept = idata->dist[RIGHT];
+				mid_bot.y = 0;
+				mid_bot.x = MIDWIDTH;
+				dest.y = 100;
+				dest.x = (int)((dest.y - intercept) / gradient);
+
+				set_angle(get_angle(mid_bot, dest));
+				break;
+
+			case IF_BOTH:
+#ifdef DRIVE_DEBUG
+				printf("img angle %d\n", idata->angle);
+#endif
+
+				// 선 두개가 만나는 지점을 dest로
+				// 일단 직진, 수정하기
+				turn_straight();
+
+			case IF_STRAIGHT:
+				turn_straight();
 				break;
 
 			case IF_CL_LEFT:
@@ -93,9 +122,10 @@ void drive(void)
 				traffic_drive(IF_SG_RIGHT);
 				break;
 		}
+
 #ifdef DRIVE
-		//distance_set(500);		
-		//forward_dis();
+		distance_set(500);		
+		forward_dis();
 #endif
 	}
 }
@@ -113,7 +143,8 @@ void traffic_drive(int flag){
 			distance_set(1200);
 			speed_set(1000);	
 			forward_dis();
-			while(mDistance() - n < 1720){printf("%d\n", mDistance() - n);}
+			while(mDistance() - n < 1720){//printf("%d\n", mDistance() - n);
+			}
 			turn_set(2200);
 			while(mDistance() - n < 3800){}
 			turn_straight();

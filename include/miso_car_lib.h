@@ -64,6 +64,7 @@ void turn_straight()
 
 void turn_set(int v)
 {
+	printf("-------turn_set %d-------\n",v);
 	if( v > DM_ANGLE_MAX )
 		g_angle = DM_ANGLE_MAX;
 	else if( v < DM_ANGLE_MIN)

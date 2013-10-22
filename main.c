@@ -72,6 +72,11 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
+				if(idata->angle[LEFT] < 90)
+				{
+					turn_set(2200);
+					break;
+				}
 				gradient = tan( (double)idata->angle[LEFT] *PI /180);
 				intercept = -320 * gradient + idata->dist[LEFT];
 				mid_bot.y = 0;
@@ -86,6 +91,12 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle);
 #endif
+				if(idata->angle[RIGHT] > 90)
+				{
+					turn_set(800);
+					break;
+				}
+
 				gradient = tan( (double)idata->angle[RIGHT] *PI /180);
 				intercept = idata->dist[RIGHT];
 				mid_bot.y = 0;
@@ -107,6 +118,14 @@ void drive(void)
 
 			case IF_STRAIGHT:
 				turn_straight();
+				break;
+
+			case IF_OUTLINE:
+				if(g_angle < 1533)
+					turn_set(800);
+				else
+					turn_set(2200);
+
 				break;
 
 			case IF_CL_LEFT:

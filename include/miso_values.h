@@ -32,6 +32,7 @@
 #define IF_RIGHT 2
 #define IF_BOTH 3
 #define IF_STRAIGHT 5
+#define IF_OUTLINE 6
 
 #define IF_SG_STOP 10
 #define IF_SG_LEFT 12

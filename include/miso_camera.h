@@ -125,8 +125,10 @@ struct image_data* line_check(int handle)
 			}
 			if(find_left == FL_NONE && find_right == FL_NONE)
 				img_data->flag = IF_STRAIGHT;
+			
 			return img_data;
-		}else if(tmp == MID_CURVE_STRAIGHT)
+		}
+		else if(tmp == MID_CURVE_STRAIGHT)
 		{
 			img_data->flag = IF_STRAIGHT;
 			return img_data;
@@ -171,6 +173,11 @@ struct image_data* line_check(int handle)
 			img_data->flag = IF_STOP;
 			return img_data;
 		}
+		else if( tmp == MID_OUTLINE )
+		{
+			img_data->flag = IF_OUTLINE;
+			return img_data;
+		}	
 
 		break;
 
@@ -220,11 +227,6 @@ int left_line_check(int i)
 #endif
 	int w;
 
-	if(IS_YELLOW(width_scan_point,i))	// 중간 값이 1일때, scan point가 선에 겹친경우. 아웃라인을 찾아야 한다.
-	{
-		return find_outline(LEFT,i,width_scan_point);
-	}
-
 	for( w = width_scan_point+1 ; w < MAXWIDTH -1; w++)		// 중간값이 1이 아닌 경우 인라인을 찾아야 한다. 
 	{
 		if(IS_YELLOW(w,i)){
@@ -243,10 +245,6 @@ int right_line_check(int i)
 
 	int w;
 
-	if( IS_YELLOW(width_scan_point,i))	// 중간 값이 1일때, scan point가 선에 겹친경우. 아웃라인을 찾아야 한다.
-	{
-		return find_outline(RIGHT,i,width_scan_point);
-	}
 	for( w = width_scan_point-1; w >= 0; w--)
 	{
 		if(IS_YELLOW(w,i)){
@@ -301,6 +299,7 @@ int find_inline(int rl_info, int y, int w)
 		}
 	}
 }
+
 
 int find_outline(int rl_info, int y, int w)
 {
@@ -382,6 +381,10 @@ int check_mid_line()
 			{
 				if(check_speed_bump(j,i))
 					return MID_SPEED_BUMP;	// speed bump check.
+				if(height == 0)
+				{
+					return MID_OUTLINE;
+				}
 			}
 			// if white stop line check 
 			/*
@@ -788,7 +791,6 @@ int get_road_angle(int rl_info)
 #endif
 		sum += angle;
 	}
-	printf("\n");
 
 	if(pt_cnt  == 1)
 		return 1000;

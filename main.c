@@ -1,8 +1,8 @@
 //#define DEBUG
-//#define DRIVE_DEBUG
+#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-#define TRACE
+//#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -50,7 +50,6 @@ void drive(void)
 	init_drive();
 
 	while(TRUE)
-
 	{			
 		idata = line_check(cm_handle); // get image data 
 	
@@ -115,6 +114,7 @@ void drive(void)
 				// 선 두개가 만나는 지점을 dest로
 				// 일단 직진, 수정하기
 				turn_straight();
+				break;
 
 			case IF_STRAIGHT:
 				turn_straight();
@@ -234,6 +234,7 @@ void direct_test()
 		{
 			case '0':
 				idata = line_check(cm_handle); // get image data 
+				printf("idata flag : %d\n", idata->flag);
 				break;	
 			case '1':	
 				g_angle += 100;

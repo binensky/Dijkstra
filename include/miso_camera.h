@@ -103,10 +103,10 @@ struct image_data* line_check(int handle)
 					img_data->dist[LEFT] = pt[0].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
-						printf("pt[%d] : (%d,%d)  ", i, pt[LEFT][i].x, pt[LEFT][i].y);
+						printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
 					printf("\n");
 #endif
-
+					init_point();
 				}
 				if((find_right == FL_NONE) && right_line_check(i))
 				{
@@ -120,7 +120,7 @@ struct image_data* line_check(int handle)
 					}
 					printf("\n");
 #endif
-
+					init_point();
 				}
 			}
 			if(find_left == FL_NONE && find_right == FL_NONE)
@@ -357,7 +357,7 @@ int check_mid_line()
 	printf("in check_mid_line\n");
 #endif
 	// 미드라인 수직 검사 
-	for(i=0;i<CUTLINE;i++)
+	for(i=1;i<CUTLINE;i++)
 	{
 		// check cross stop 
 		if( IS_BLACK(MIDWIDTH,i) && (i > 60) )
@@ -787,7 +787,7 @@ int get_road_angle(int rl_info)
 		angle = get_angle( pt[i], pt[i+1] );
 		angles[i] = angle;
 #ifdef DRIVE_DEBUG
-		printf("ange[%d]:%d ", i, angle);
+		printf("angle[%d]:%d ", i, angle);
 #endif
 		sum += angle;
 	}
@@ -966,7 +966,7 @@ void print_screen_y()
 {
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE+40; j>0 ; j--)
+	for(j = CUTLINE+40; j>=0 ; j--)
 	{
 		printf("%3d:",j);
 

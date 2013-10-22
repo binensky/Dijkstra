@@ -58,19 +58,21 @@ void speed_down(int v)
 // direction
 void turn_straight()
 {
+	printf("-------turn_straight-------\n");
 	g_angle = DM_STRAIGHT;
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
 void turn_set(int v)
 {
-	printf("-------turn_set %d-------\n",v);
 	if( v > DM_ANGLE_MAX )
 		g_angle = DM_ANGLE_MAX;
 	else if( v < DM_ANGLE_MIN)
 		g_angle = DM_ANGLE_MIN;
 	else
 		g_angle = v;
+
+	printf("-------turn_set %d-------\n",g_angle);
 
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }

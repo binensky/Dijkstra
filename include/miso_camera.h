@@ -34,7 +34,7 @@ void print_screen_cb();
 void print_screen_cr();
 void print_screen_color();
 
-int get_road_angle(int rl_info);
+int get_road_angle();
 int get_angle(struct p_point a, struct p_point b);
 int left_line_check(int h);
 int right_line_check(int h);
@@ -81,12 +81,15 @@ struct image_data* line_check(int handle)
 	//exit(0);
 #endif
 
+	printf("   drive flag : %d\n",g_drive_flag);
+
 	switch(g_drive_flag)
 	{
 		int tmp;
 
 		case DF_DRIVE:
 
+		printf("DF_DRIVE\n");
 		// 도로 중간 값을 검사한다. 
 		tmp = check_mid_line();
 
@@ -99,8 +102,9 @@ struct image_data* line_check(int handle)
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
 					img_data->flag += IF_LEFT;
-					img_data->angle[LEFT] = get_road_angle(LEFT);
-					img_data->dist[LEFT] = pt[0].y;
+					img_data->angle[LEFT] = get_road_angle();
+					printf(" l:%d b:%d d:%d y:%d\n",LEFT, BOT, img_data->dist[LEFT],pt[BOT].y);
+					img_data->dist[LEFT] = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 						printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
@@ -108,11 +112,12 @@ struct image_data* line_check(int handle)
 #endif
 					init_point();
 				}
-				if((find_right == FL_NONE) && right_line_check(i))
+				else if((find_right == FL_NONE) && right_line_check(i))
 				{
 					img_data->flag += IF_RIGHT;
-					img_data->angle[RIGHT] = get_road_angle(RIGHT);
-					img_data->dist[RIGHT] = pt[0].y;
+					img_data->angle[RIGHT] = get_road_angle();
+					printf("after angle right = get road angle\n");
+					img_data->dist[RIGHT] = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -125,7 +130,7 @@ struct image_data* line_check(int handle)
 			}
 			if(find_left == FL_NONE && find_right == FL_NONE)
 				img_data->flag = IF_STRAIGHT;
-			
+
 			return img_data;
 		}
 		else if(tmp == MID_CURVE_STRAIGHT)
@@ -141,12 +146,13 @@ struct image_data* line_check(int handle)
 				{
 					// 왼쪽 각도 설정하여 idata에 넣는다. 
 					img_data->flag = IF_LEFT;
-					img_data->angle[LEFT] = get_road_angle(LEFT);
-					img_data->dist[LEFT] = pt[0].y;
-#ifdef drive_debug
+					img_data->angle[LEFT] = get_road_angle();
+					printf(" l:%d b:%d d:%d y:%d\n",LEFT, BOT, img_data->dist[LEFT],pt[BOT].y);
+					img_data->dist[LEFT] = pt[BOT].y;
+#ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
-						printf("pt[%d] : (%d,%d)  ", i, pt[LEFT][i].x, pt[LEFT][i].y);
+						printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
 					}
 					printf("\n");
 #endif
@@ -156,8 +162,9 @@ struct image_data* line_check(int handle)
 				{
 					// 오른쪽 각도 설정하여 idata에 넣는다. 
 					img_data->flag = IF_RIGHT;
-					img_data->angle[RIGHT] = get_road_angle(RIGHT);
-					img_data->dist[RIGHT] = pt[0].y;
+					img_data->angle[RIGHT] = get_road_angle();
+					printf("after angle right = get road angle\n");
+					img_data->dist[RIGHT] = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -222,10 +229,10 @@ struct image_data* line_check(int handle)
 // 라인을 찾은 것인지를 TRUE FALSE로 리턴 
 int left_line_check(int i)
 {
+	int w;
 #ifdef TRACE
 	printf("left line check\n");
 #endif
-	int w;
 
 	for( w = width_scan_point+1 ; w < MAXWIDTH -1; w++)		// 중간값이 1이 아닌 경우 인라인을 찾아야 한다. 
 	{
@@ -238,12 +245,10 @@ int left_line_check(int i)
 
 int right_line_check(int i)
 {
-
+	int w;
 #ifdef TRACE
 	printf("right line check\n");
 #endif
-
-	int w;
 
 	for( w = width_scan_point-1; w >= 0; w--)
 	{
@@ -256,10 +261,10 @@ int right_line_check(int i)
 
 int find_inline(int rl_info, int y, int w)
 {
+	int x, a;
 #ifdef TRACE
 	printf("find inline\n");
 #endif
-	int x, a;
 	if(rl_info == LEFT)					// 왼쪽 선이라면 
 	{
 		pt[BOT].y = y;
@@ -291,7 +296,7 @@ int find_inline(int rl_info, int y, int w)
 
 		if(find_in_point(RIGHT, y, pt[BOT].x))
 		{
-			find_right =FL_FIND;
+			find_right = FL_FIND;
 			return TRUE;
 		}else{ 
 
@@ -348,60 +353,69 @@ int find_outline(int rl_info, int y, int w)
 
 int check_mid_line()
 {
-	int i,j,k;
-	int height = -1, height_white = -1, height_change_line = -1;
-	int change_cnt = 0, red_cnt = 0, change_line_cnt = 0;
-	int color = COL_UNKNOWN;
+	int i,j;
+	int height = -1;
+	int red_cnt = 0, change_line_cnt = 0;
 
 #ifdef TRACE
-	printf("in check_mid_line\n");
+	printf("check_mid_line\n");
 #endif
+
 	// 미드라인 수직 검사 
-	for(i=1;i<CUTLINE;i++)
+	for(i=1; i<CUTLINE; i++)
 	{
-		// check cross stop 
-		if( IS_BLACK(MIDWIDTH,i) && (i > 60) )
-		{
-			for( j = 0 ; j < 320 ; j+=10)
-			{
-				if(IS_RED(j,i))
-					red_cnt ++;	
-			}
-
-			if( red_cnt > 30)
-				return MID_STOP;
-
-		}
-		else if(!IS_BLACK(MIDWIDTH,i))
+		if(IS_YELLOW(MIDWIDTH, i))
 		{
 			height = i;
-			printf("height %d \n",height);
-			// if yellow speed bump check 
-			if(IS_YELLOW(MIDWIDTH, i))
+			printf("yellow height %d \n",height);
+
+			//if(check_speed_bump(MIDWIDTH,i))
+			//	return MID_SPEED_BUMP;	// speed bump check.
+			if(height <= 10)
 			{
-				if(check_speed_bump(j,i))
-					return MID_SPEED_BUMP;	// speed bump check.
-				if(height == 0)
-				{
-					return MID_OUTLINE;
-				}
+				return MID_OUTLINE;
 			}
-			// if white stop line check 
-			/*
-			else if(IS_WHITE(MIDWIDTH-1, i) && 
-					IS_WHITE(MIDWIDTH,i) && 
-					IS_WHITE(MIDWIDTH+1, i))
-				return MID_SPEED_DOWN;
-*/
+
 			break;
-		}else if(IS_RED(j,i))
-		{	
+		}else if( IS_WHITE(MIDWIDTH,i)) 
+		{
+			int white_cnt = 0;
+			height = i;
+			printf("white height %d \n",height);
+
+			for( j = i ; j < CUTLINE;j++)
+			{
+				if( IS_BLACK(MIDWIDTH,j) || IS_YELLOW(MIDWIDTH,j))
+					break;
+				else
+					white_cnt+=1;
+			}
+			if( white_cnt > 10)
+				return MID_SPEED_DOWN;
+			break;
+		}else if(IS_RED(MIDWIDTH,i))
+		{
+			printf(" RED \n"); 
 			return MID_STOP;
 		}
-	}
+		else
+		{
+
+			if( i > 60 )
+			{
+				for( j = 0 ; j < 320 ; j+=3)
+					if(IS_RED(j,i))
+						red_cnt ++;	
+				if( red_cnt > 10)
+					return MID_STOP;
+				else if( red_cnt >3)
+					return MID_SPEED_DOWN;
+			}
+		}// end else
+	} // end for 
 
 	// if red cross stop check 
-	if( 0 < height && height<CUTLINE_CURVE)
+	if( 0 < height && height < CUTLINE_CURVE)
 		return  MID_CURVE;
 	else if(CUTLINE_CURVE <= height && height < CUTLINE )
 		return  MID_CURVE_STRAIGHT;
@@ -416,7 +430,12 @@ int check_speed_bump(int w, int y)
 	int is_break = FALSE;
 	int i, j;
 
-	//printf("in check_speed_bump %d, %d, %d\n", rl_info, w, y);
+#ifdef TRACE
+
+	printf("in check_speed_bump %d, %d\n", w, y);
+
+#endif
+
 	for(j = y; j < CUTLINE; j++)
 	{
 		count = 0;
@@ -448,13 +467,12 @@ int check_speed_bump(int w, int y)
 
 int find_in_point(int rl_info, int i, int offset)
 {
-#ifdef TRACE
-	printf("find in point\n");
-#endif
-
 	int y, x,flag;
 	int direct = NONE;
 	struct p_point pt_tmp;
+#ifdef TRACE
+	printf("find in point\n");
+#endif
 
 	if(rl_info == LEFT)
 	{
@@ -695,11 +713,10 @@ int find_in_point(int rl_info, int i, int offset)
 
 int find_out_end_point(int i, int offset)
 {
-
+	int y, x;
 #ifdef TRACE
 	printf("find out point\n");
 #endif
-	int y, x;
 
 	distan = 0;
 	for( y = i+1; y <= CUTLINE ; y++)
@@ -776,10 +793,17 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 	return FALSE;
 }
 
-int get_road_angle(int rl_info)
+int get_road_angle()
 {
 	int i;
 	int sum = 0;
+#ifdef TRACE
+	printf("get road angle\n");
+#endif
+
+#ifdef DRIVE_DEBUG
+	printf("pt_cnt : %d\n", pt_cnt);
+#endif
 
 	for(i = 0; i<pt_cnt-1; i++)
 	{
@@ -791,6 +815,9 @@ int get_road_angle(int rl_info)
 #endif
 		sum += angle;
 	}
+#ifdef DRIVE_DEBUG
+	printf("\n");
+#endif
 
 	if(pt_cnt  == 1)
 		return 1000;
@@ -884,15 +911,14 @@ int is_left_turn(int x, int y)
 
 void init_point()
 {
+	int i;
 #ifdef TRACE
 	printf("init point\n");
 #endif
-	int i;
 	for( i = 0; i< PT_SIZE; i++){
 		pt[i].y	= -1;
 		pt[i].x = -1;
 	}
-
 	direct = NONE;
 	distan = -1;
 	pt_cnt = 0;
@@ -912,23 +938,32 @@ int get_width_scan_point()
 
 void init_values(int handle)
 {
+	int i=0;
 #ifdef TRACE
 	printf("init values\n");
 #endif
-	int i=0;
 
 	init_point();
-	width_scan_point = get_width_scan_point();
-	//width_scan_point = MIDWIDTH;
+	//width_scan_point = get_width_scan_point();
+	width_scan_point = MIDWIDTH;
 	find_left = FL_NONE;
 	find_right = FL_NONE;
 
 	// 버퍼 초기화 
 	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
-	if(camera->ref_count > 0)
+	if(camera->ref_count > 0){
 		camera_release_frame(cm_handle,vidbuf);
-
+	}
+//	printf("   WTF1\n");
+//	sleep(1);
+	
 	vidbuf = camera_get_frame(cm_handle);
+	camera_release_frame(cm_handle,vidbuf);
+	vidbuf = camera_get_frame(cm_handle);
+	camera_release_frame(cm_handle,vidbuf);
+	vidbuf = camera_get_frame(cm_handle);
+//	printf("   WTF5");
+//	sleep(1);
 }
 
 void sighandler(int signo)
@@ -1077,7 +1112,7 @@ int init_camera(){
 	if(cm_handle < 0)
 		return -1;
 
-	system("echo b > /proc/invert/tb"); //LCD DriverIC top-bottom invert ctrl
+	//	system("echo b > /proc/invert/tb"); //LCD DriverIC top-bottom invert ctrl
 
 	memset(&camset,0,sizeof(camset));
 	camset.mode = CAM_MODE_VIDEO;

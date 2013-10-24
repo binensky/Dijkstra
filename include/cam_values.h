@@ -33,7 +33,7 @@
 #define BOT 0
 #define MID 1
 #define END 2
-#define PT_SIZE 12
+#define PT_SIZE 10
 
 // find  line flag 
 #define FL_NONE 0

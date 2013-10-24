@@ -1,8 +1,8 @@
 //#define DEBUG
-#define DRIVE_DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-//#define TRACE
+#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -27,6 +27,7 @@ void direct_test(void);
 int main(void)
 {
 	cm_handle = init_camera();
+
 	car_connect();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
@@ -47,54 +48,67 @@ void drive(void)
 	struct p_point mid_bot, dest;
 	double gradient;
 	int angle,input,intercept;
+	int i = 0;
+	
 	init_drive();
 
 	while(TRUE)
-	{			
+	{
 		idata = line_check(cm_handle); // get image data 
-	
+	/*
 		idata->prev = img_it;
 		idata->next = img_it->next;
 		img_it->next =idata;
 		img_it->next->prev =idata;
 		img_it=idata;
-
+*/
+		printf(" %dth loop idata flag %d \n",i++,idata->flag );  
 		switch(idata->flag)
 		{			
 			case IF_STOP:
-				printf("===================================IF_STOP\n");
 				stop();
 				g_drive_flag = DF_STOP;
 				break;
 
 			case IF_LEFT:
 #ifdef DRIVE_DEBUG
-				printf("img angle %d\n", idata->angle);
+				printf("img angle %d\n", idata->angle[LEFT]);
 #endif
+				/*
 				if(idata->angle[LEFT] < 90)
 				{
 					turn_set(2200);
 					break;
 				}
-				gradient = tan( (double)idata->angle[LEFT] *PI /180);
+				*/
+
+				printf("img angle %d\n", idata->angle[LEFT]);
+				gradient = tan( (double)idata->angle[LEFT] * PI /180);
+				printf("gradient %lf\n", gradient);
 				intercept = -320 * gradient + idata->dist[LEFT];
+				printf("intercept %d\n", intercept);
 				mid_bot.y = 0;
 				mid_bot.x = MIDWIDTH;
 				dest.y = 100;
 				dest.x = (int)((dest.y - intercept) / gradient);
+				printf("dest y %d\n", dest.x);
 
-				set_angle(get_angle(mid_bot, dest));
+				//printf("get angle %d\n", get_angle(mid_bot,dest));
+				//set_angle(get_angle(mid_bot, dest));
+				//printf("get angle %d\n", get_angle(mid_bot,dest));
 				break;
 
 			case IF_RIGHT:
 #ifdef DRIVE_DEBUG
-				printf("img angle %d\n", idata->angle);
+				printf("img angle %d\n", idata->angle[RIGHT]);
 #endif
+				/*
 				if(idata->angle[RIGHT] > 90)
 				{
 					turn_set(800);
 					break;
 				}
+				*/
 
 				gradient = tan( (double)idata->angle[RIGHT] *PI /180);
 				intercept = idata->dist[RIGHT];
@@ -108,7 +122,7 @@ void drive(void)
 
 			case IF_BOTH:
 #ifdef DRIVE_DEBUG
-				printf("img angle %d\n", idata->angle);
+				printf("img angle left : %d right : %d\n", idata->angle[LEFT], idata->angle[RIGHT]);
 #endif
 
 				// 선 두개가 만나는 지점을 dest로
@@ -143,8 +157,8 @@ void drive(void)
 		}
 
 #ifdef DRIVE
-		distance_set(500);		
-		forward_dis();
+		//distance_set(500);		
+		//forward_dis();
 #endif
 	}
 }
@@ -208,13 +222,13 @@ void init_drive()
 	dm_speed_set(1);
 	line_stop();
 
-	img_head = (struct img_data*)malloc(sizeof(struct image_data));
-	img_tail = (struct img_data*)malloc(sizeof(struct image_data));
+	img_head = (struct image_data*)malloc(sizeof(struct image_data));
+	img_tail = (struct image_data*)malloc(sizeof(struct image_data));
 
 	img_head->next = img_tail;
-	img_head->prev = NULL;
+	img_head->prev = img_head;
 	img_tail->prev = img_head;
-	img_tail->next = NULL;
+	img_tail->next = img_tail;
 	img_it = img_head;
 }
 

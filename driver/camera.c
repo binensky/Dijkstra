@@ -111,8 +111,8 @@ static void cambuf_to_ycbcr420(struct videobuf_dev* simple,
 
 // VIDEOBUF_COUNT must be larger than STILLBUF_COUNT
 
-#define	VIDEOBUF_COUNT	3
-#define	STILLBUF_COUNT	2
+#define	VIDEOBUF_COUNT	2
+#define	STILLBUF_COUNT	1
 
 #define	CAM_STATUS_INIT		0
 #define	CAM_STATUS_READY	1
@@ -204,7 +204,6 @@ int camera_config(int hcam,struct pxacam_setting* setting)
 	streamparm.parm.capture.capturemode = mode;
 	streamparm.parm.capture.extendedmode = CI_SSU_SCALE_DISABLE;
 
-	printf("camera_config :  streamparm.type = %d\n",  streamparm.type);
 	if(ioctl(camera->handle, VIDIOC_S_PARM, &streamparm)<0) { 
 		ERRMSG("can't set camera parameter\n");
 		return -1;
@@ -258,7 +257,6 @@ int camera_config(int hcam,struct pxacam_setting* setting)
 	requestbuffers.type     = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	requestbuffers.memory   = V4L2_MEMORY_MMAP;
 	requestbuffers.count    = count;
-	printf("count = %d\n", count);
 	if(ioctl(camera->handle, VIDIOC_REQBUFS, &requestbuffers)<0) {
         	DBGMSG("can't require camera buffer");
 		goto FAIL_EXIT;
@@ -357,6 +355,7 @@ struct pxa_video_buf*  camera_get_frame(int hcam)
 	struct	ext_video_buf*	extbuf;
 	struct	pxa_video_buf*	vidbuf;
 
+
 	// set video stream parameter
 	camera = (struct pxa_camera*)hcam;
 	ASSERT(camera->status==CAM_STATUS_BUSY);
@@ -393,21 +392,23 @@ struct pxa_video_buf*  camera_get_frame(int hcam)
 		vidbuf->rggb10.len = camera->cambuf[buffer->index].length;
 
 	}else if(camera->format==pxavid_ycbcr422){
-		cambuf_to_ycbcr422(&camera->cambuf[buffer->index+2],vidbuf,
+		cambuf_to_ycbcr422(&camera->cambuf[(buffer->index+1)%2],vidbuf,
 					camera->width,camera->height);
 	}else if(camera->format==pxavid_ycbcr420){
-		cambuf_to_ycbcr420(&camera->cambuf[buffer->index+2],vidbuf,
+		cambuf_to_ycbcr420(&camera->cambuf[buffer->index],vidbuf,
 					camera->width,camera->height);
 
 	}else {ASSERT(0);}
 
 	camera->ref_count++;
 
+
 	return (struct pxa_video_buf*)extbuf;
 }
 
 int camera_release_frame(int hcam,struct pxa_video_buf* vidbuf)
 {
+
 	struct	pxa_camera* camera;
 	struct	ext_video_buf* extbuf;
 	// set video stream parameter

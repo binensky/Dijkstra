@@ -58,7 +58,6 @@ void speed_down(int v)
 // direction
 void turn_straight()
 {
-	printf("-------turn_straight-------\n");
 	g_angle = DM_STRAIGHT;
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
@@ -71,8 +70,6 @@ void turn_set(int v)
 		g_angle = DM_ANGLE_MIN;
 	else
 		g_angle = v;
-
-	printf("-------turn_set %d-------\n",g_angle);
 
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
@@ -118,11 +115,9 @@ void set_angle(int angle)
 		turn_straight();
 	} 
 	else if( RANGE_RIGHT(angle)){
-		//g_drive_flag = DF_CUR;
 		turn_set(800);
 	} 
 	else if(RANGE_LEFT(angle)){
-		//g_drive_flag = DF_CUR;		
 		turn_set(2200);
 	}
 	else if(RANGE_NO_CHANGE(angle))

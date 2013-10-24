@@ -72,7 +72,7 @@ struct image_data* line_check(int handle)
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	//print_screen_y();
+	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
@@ -361,19 +361,25 @@ int check_mid_line()
 	for(i=0;i<CUTLINE;i++)
 	{
 		// check cross stop 
-		if( IS_BLACK(MIDWIDTH,i) && (i > 60) )
+		if( i > 60 )	// IS_BLACK 조건 삭제 
 		{
-			for( j = 0 ; j < 320 ; j+=10)
+			for( j = 0 ; j < MAXWIDTH ; j+=3)
 			{
 				if(IS_RED(j,i))
+				{
+					printf("IS_RED(%d,%d)\n",j,i);
 					red_cnt ++;	
+				}
 			}
 
-			if( red_cnt > 30)
+			if( red_cnt > 10)
+			{
+				printf("MID_STOP in %d\n", i);
 				return MID_STOP;
+			}
 
 		}
-		else if(!IS_BLACK(MIDWIDTH,i))
+		if(!IS_BLACK(MIDWIDTH,i))
 		{
 			height = i;
 			printf("height %d \n",height);
@@ -970,17 +976,19 @@ void print_screen_y()
 
 		for(i = MAXWIDTH-1; i>=0; i--)
 		{	
-			if(Y(i,j) >= THRESHOLD)
+			if(Y(i,j) >= THRESHOLD_RED_STOP)
 			{
-				if(IS_YELLOW(i,j))
+				if(IS_RED(i,j))
+					printf("R");
+				else if(IS_YELLOW(i,j))
 					printf("1");
 				else if(IS_WHITE(i,j))
 					printf("2");
 				else
-					printf("0");
+					printf(" ");
 			}
 			else 
-				printf("0");
+				printf(" ");
 		}
 		printf("\n");
 	}

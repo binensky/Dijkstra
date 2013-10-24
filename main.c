@@ -1,8 +1,8 @@
-//#define DEBUG
+#define DEBUG
 //#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
-#define DRIVE
-#define TRACE
+//#define DRIVE
+//#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -32,8 +32,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	drive();
-	//direct_test();
+	//drive();
+	direct_test();
 
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -53,7 +53,7 @@ void drive(void)
 
 	{			
 		idata = line_check(cm_handle); // get image data 
-	
+
 		idata->prev = img_it;
 		idata->next = img_it->next;
 		img_it->next =idata;
@@ -80,6 +80,11 @@ void drive(void)
 				dest.x = (int)((dest.y - intercept) / gradient);
 
 				set_angle(get_angle(mid_bot, dest));
+#ifdef DRIVE
+				distance_set(500);		
+				forward_dis();
+#endif
+
 				break;
 
 			case IF_RIGHT:
@@ -94,6 +99,11 @@ void drive(void)
 				dest.x = (int)((dest.y - intercept) / gradient);
 
 				set_angle(get_angle(mid_bot, dest));
+#ifdef DRIVE
+				distance_set(500);		
+				forward_dis();
+#endif
+
 				break;
 
 			case IF_BOTH:
@@ -104,13 +114,27 @@ void drive(void)
 				// 선 두개가 만나는 지점을 dest로
 				// 일단 직진, 수정하기
 				turn_straight();
+#ifdef DRIVE
+				distance_set(500);		
+				forward_dis();
+#endif
+
+				break;
 
 			case IF_STRAIGHT:
 				turn_straight();
+#ifdef DRIVE
+				distance_set(500);		
+				forward_dis();
+#endif
+
 				break;
 
 			case IF_CL_LEFT:
+				break;
+
 			case IF_CL_RIGHT:
+				break;
 
 			case IF_SG_STOP:
 				traffic_drive(IF_SG_STOP);
@@ -122,11 +146,6 @@ void drive(void)
 				traffic_drive(IF_SG_RIGHT);
 				break;
 		}
-
-#ifdef DRIVE
-		distance_set(500);		
-		forward_dis();
-#endif
 	}
 }
 void traffic_drive(int flag){

@@ -2,7 +2,7 @@
 //#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-#define TRACE
+//#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -74,13 +74,11 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[LEFT]);
 #endif
-				/*
 				if(idata->angle[LEFT] < 90)
 				{
 					turn_set(2200);
 					break;
 				}
-				*/
 
 				printf("img angle %d\n", idata->angle[LEFT]);
 				gradient = tan( (double)idata->angle[LEFT] * PI /180);
@@ -93,22 +91,21 @@ void drive(void)
 				dest.x = (int)((dest.y - intercept) / gradient);
 				printf("dest y %d\n", dest.x);
 
-				//printf("get angle %d\n", get_angle(mid_bot,dest));
-				//set_angle(get_angle(mid_bot, dest));
-				//printf("get angle %d\n", get_angle(mid_bot,dest));
+				set_angle(get_angle(mid_bot, dest));
+
+				distance_set(500);		
+				forward_dis();
 				break;
 
 			case IF_RIGHT:
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[RIGHT]);
 #endif
-				/*
 				if(idata->angle[RIGHT] > 90)
 				{
 					turn_set(800);
 					break;
 				}
-				*/
 
 				gradient = tan( (double)idata->angle[RIGHT] *PI /180);
 				intercept = idata->dist[RIGHT];
@@ -118,6 +115,9 @@ void drive(void)
 				dest.x = (int)((dest.y - intercept) / gradient);
 
 				set_angle(get_angle(mid_bot, dest));
+
+				distance_set(500);		
+				forward_dis();
 				break;
 
 			case IF_BOTH:
@@ -128,10 +128,14 @@ void drive(void)
 				// 선 두개가 만나는 지점을 dest로
 				// 일단 직진, 수정하기
 				turn_straight();
+				distance_set(500);		
+				forward_dis();
 				break;
 
 			case IF_STRAIGHT:
 				turn_straight();
+				distance_set(500);		
+				forward_dis();
 				break;
 
 			case IF_OUTLINE:
@@ -140,6 +144,8 @@ void drive(void)
 				else
 					turn_set(2200);
 
+				distance_set(500);		
+				forward_dis();
 				break;
 
 			case IF_CL_LEFT:

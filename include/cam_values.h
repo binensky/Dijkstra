@@ -12,6 +12,7 @@
 // -------- MISO Defined Value ----------
 
 #define CUTLINE 140
+#define CUTLINE_POINT 100
 #define CUTLINE_CURVE 80
 #define GAP 10
 

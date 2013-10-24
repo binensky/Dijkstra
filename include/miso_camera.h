@@ -97,7 +97,7 @@ struct image_data* line_check(int handle)
 
 		if( tmp == MID_STRAIGHT)
 		{
-			for(i = 1; i< CUTLINE ; i++)
+			for(i = 1; i< CUTLINE_POINT ; i++)
 			{
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
@@ -140,7 +140,7 @@ struct image_data* line_check(int handle)
 		}
 		else if( tmp == MID_CURVE)
 		{
-			for(i = 1; i< CUTLINE ; i++)
+			for(i = 1; i< CUTLINE_POINT ; i++)
 			{
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
@@ -476,7 +476,7 @@ int find_in_point(int rl_info, int i, int offset)
 
 	if(rl_info == LEFT)
 	{
-		for( y = i+1; y <= CUTLINE ; y++)
+		for( y = i+1; y <= CUTLINE_POINT ; y++)
 		{
 			// 위 점이 1인 경우 오른쪽으로 진행중. 
 			// 오른쪽으로 돌면서 ->(1,0)을 찾는다. 
@@ -593,7 +593,7 @@ int find_in_point(int rl_info, int i, int offset)
 	} // end rl_info == LEFT
 	else
 	{
-		for( y = i+1; y <= CUTLINE ; y++)
+		for( y = i+1; y <= CUTLINE_POINT ; y++)
 		{
 			if( IS_BLACK(offset,y))
 			{
@@ -1001,7 +1001,7 @@ void print_screen_y()
 {
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE+40; j>=0 ; j--)
+	for(j = CUTLINE; j>=0 ; j--)
 	{
 		printf("%3d:",j);
 

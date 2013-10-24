@@ -1232,16 +1232,15 @@ void init_values(int handle)
 	int i=0;
 
 	init_point();
-	width_scan_point = get_width_scan_point();
-	//width_scan_point = MIDWIDTH;
+	//width_scan_point = get_width_scan_point();
+	width_scan_point = MIDWIDTH;
 	find_left = FL_NONE;
 	find_right = FL_NONE;
 
-	// 버퍼 초기화 
-	if(!first)
+	// 버퍼 초기화
+	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
+	if(camera->ref_count >0 )
 		camera_release_frame(cm_handle,vidbuf);
-	else
-		first = 0;
 
 	vidbuf = camera_get_frame(cm_handle);
 //	camera_release_frame(cm_handle,vidbuf);

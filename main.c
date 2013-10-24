@@ -3,7 +3,7 @@
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-///현빈짱짱맨`
+
 #include <stdio.h>
 #include <pthread.h>
 
@@ -25,16 +25,14 @@ int main(void)
 	cm_handle = init_camera();
 	car_connect();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	pthread_create(&thread[1],NULL,sensor_handler,NULL);
+//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 //	pthread_create(&thread[2],NULL,distance_check,NULL);
-	speed_set(1000);
-	distance_set(1000);
-	forward_dis();
-//	drive();
+
+	drive();
 //	direct_test();
 
 	pthread_join(thread[0],NULL);
-	pthread_join(thread[1],NULL);
+//	pthread_join(thread[1],NULL);
 //	pthread_join(thread[2],NULL);
 	return 0;
 }

@@ -34,7 +34,6 @@
 char cmd[100];
 unsigned short rxbuf[4];
 int uart_fd;
-int sensor[4];
 unsigned char buf[3];
 unsigned char read_buf[3];
 unsigned char write_buf[3];
@@ -97,14 +96,14 @@ void line_start(void)
 {
 	buf[0] = 0x82;
 	write(uart_fd, &buf[0], 1);
-	printf("Line Start\n");
+//	printf("Line Start\n");
 }
 
 void line_stop(void)
 {
 	buf[0] = 0x83;
 	write(uart_fd, &buf[0], 1);
-	printf("Line Stop\n");
+//	printf("Line Stop\n");
 }
 
 void control_led(int mode, char* value)
@@ -191,7 +190,7 @@ char sudden_stop(char* sud)
 	buf[0] = 0xae;
 	buf[1] = sud; //1-FA
 	write(uart_fd, &buf[0], 2); 
-	printf("Set SuddenStop %d\n", sud);
+//	printf("Set SuddenStop %d\n", sud);
 
 	return sud;
 }
@@ -221,14 +220,6 @@ int read_sensor(void)
 	read(uart_fd, &read_buf[0], 1);
 	printf("Sensor Value is %d\n", read_buf[0]);
 
-	if(read_buf[0] != 0)
-	    printf("Sensor value is %d\n", read_buf[0]);
-
-	///////////////////
-	printf("buf[0] = %x, buf[1] = %x, buf[2] = %x\n",buf[0], buf[1], buf[2]);
-	printf("read_buf[0] = %x, read_buf[1] = %x, read_buf[2] = %x\n", read_buf[0], read_buf[1], read_buf[2]);
-	//////////////////
-
 	return read_buf[0];
 }
 
@@ -238,13 +229,6 @@ char read_sensor_while(void)
 	write(uart_fd, &buf[0], 1);
 	read(uart_fd, &read_buf, 2);
 	printf("Sensor Value is %x\n", read_buf[0]);
-	////////////////////////
-	
-	///////////////////
-	printf("buf[0] = %x, buf[1] = %x, buf[2] = %x\n",buf[0], buf[1], buf[2]);
-	printf("read_buf[0] = %x, read_buf[1] = %x, read_buf[2] = %x\n", read_buf[0], read_buf[1], read_buf[2]);
-	//////////////////
-
 
 	return read_buf[0];
 }
@@ -285,7 +269,7 @@ void forward_dis(void)
 //	printf("Go Distance\n");
 }
 
-void backward_dis(void)
+void backward_dis(int x)
 {
 	buf[0] = 0xc9;
 	write(uart_fd, &buf[0], 1);
@@ -307,66 +291,12 @@ char read_speed(void)
 	printf("Speed is %x%x\n", read_buf[0], read_buf[1]);
 }
 
-int total_distance_back(void) //total distance 
-{
-        /*
-        time_t ltime;
-        struct tm *cur_time;
-        
-        time(&ltime);
-        
-        cur_time  = localtime(&ltime)*/
-/////////////////////////////////////////////////////////////////////////////////////////////////
-        
-	int temp; //cm 
-	int temp2; //original domain
-
-        buf[0] = 0xce;
-	write(uart_fd, &buf[0], 1);
-	read(uart_fd, &read_buf[0], 4);
-
-	read_buf[0] = 255 - read_buf[0];
-	read_buf[1] = 255 - read_buf[1];
-	read_buf[2] = 255 - read_buf[2];
-	read_buf[3] = 255 - read_buf[3];
-	
-
-	temp2 =((int)read_buf[0]*255*255*255) + ((int)read_buf[1]*255*255) + ((int)read_buf[2]*255)
-	       + (int)read_buf[3]; //original 
-
-	temp = temp2 / 36; //cm 
-
-	//printf("Current Time :%02d Hours/ %02d Minutes/ %02d secs/\n"
-	  //      ,cur_time->tm_hour,cur_time->tm_min,cur_time->tm_sec );
-	        
-	printf("Total Distance is %d%d%d%d ==> %d(original) ==>%d(cm)\n",
-	        read_buf[0], read_buf[1], read_buf[2], read_buf[3],temp2,temp);
-        usleep(100000); //0.1sec
-	return temp;
-}
-
 char total_distance(void)
 {
-
-	int temp; //cm 
-	int temp2; //original domain
-
-        buf[0] = 0xce;
+	buf[0] = 0xce;
 	write(uart_fd, &buf[0], 1);
 	read(uart_fd, &read_buf[0], 4);
-
-	temp2 =((int)read_buf[0]*255*255*255) + ((int)read_buf[1]*255*255) + ((int)read_buf[2]*255)
-	       + (int)read_buf[3]; //original 
-
-	temp = temp2 / 36; //cm 
-
-	//printf("Current Time :%02d Hours/ %02d Minutes/ %02d secs/\n"
-	  //      ,cur_time->tm_hour,cur_time->tm_min,cur_time->tm_sec );
-	        
-	printf("Total Distance is %d%d%d%d ==> %d(original) ==>%d(cm)\n",
-	        read_buf[0], read_buf[1], read_buf[2], read_buf[3],temp2,temp);
-        usleep(100000); //0.1sec
-	return temp;
+	printf("Tatal Distance is %d%d%d%d\n", read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
 }
 
 void distance_reset(void)
@@ -592,10 +522,10 @@ void ps_kill(char* kill)
 	system(cmd);
 }
 
-int check_distance_inner(int ch, int total)
+char check_distance(int ch)
 {
-
-	int fd;
+	int fd, i;
+	struct timeval start, end;
 
 	if((fd = open("/dev/FOUR_ADC", O_RDONLY )) < 0)
 	{         // KEY open
@@ -605,47 +535,11 @@ int check_distance_inner(int ch, int total)
 
 
 	read(fd, rxbuf, sizeof(rxbuf));	// ADC READ
-	close(fd);
+	// printf("ch1 %04d,  ch2 %04d,  ch3 %04d,  ch4 %04d\n", rxbuf[0], rxbuf[1], rxbuf[2] ,rxbuf[3]);
 
-	total+=(int)rxbuf[ch-1];
-	return total;
-}
+	usleep(50000); //0.1 sec
 
-char check_distance(int ch)
-{
-
-	int fd, i, j, k, total, sensor_value_default, sensor_value_mm;
-	
-	total = 0;
-	sensor_value_default = 0;
-	int sensor1;
-	int sensor2;
-	//sensor_value_mm = 0;	
-
-	for(j=0; j<4; j++)
-	    sensor[j] = 0;
-	
-	
-	for(k=0; k<20; k++)
-		total = check_distance_inner(ch,total);
-
-	sensor1 = total / 20;
-
-	total = 0;
-
-        for(k=0; k<20; k++)
-                total = check_distance_inner(ch,total);
-
-        sensor2 = total / 20;
-	
-	if(sensor2-sensor1 < 0)
-	    sensor_value_default = sensor1-sensor2;
-	else
-	    sensor_value_default = sensor2-sensor1;
-
-	printf("sensor before = %d\n",sensor_value_default);
-	total=0;
-	return sensor_value_default;
+	return rxbuf[ch-1];
 }
 
 char complete(void)

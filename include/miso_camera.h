@@ -34,6 +34,7 @@ void print_screen_cb();
 void print_screen_cr();
 void print_screen_color();
 
+int red_count();
 int get_road_angle();
 int get_angle(struct p_point a, struct p_point b);
 int left_line_check(int h);
@@ -72,7 +73,7 @@ struct image_data* line_check(int handle)
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	print_screen_y();
+	//	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
@@ -97,19 +98,14 @@ struct image_data* line_check(int handle)
 
 		if( tmp == MID_STRAIGHT)
 		{
-			////임시/////////////////
-			img_data->flag = IF_STRAIGHT;
-			return img_data;
-			/////////////////임시////
-
 			for(i = 1; i< CUTLINE_POINT ; i++)
 			{
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
 					img_data->flag += IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle();
-					printf(" l:%d b:%d d:%d y:%d\n",LEFT, BOT, img_data->dist[LEFT],pt[BOT].y);
-					img_data->dist[LEFT] = pt[BOT].y;
+					img_data->bot[LEFT].x = pt[BOT].x;
+					img_data->bot[LEFT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 						printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
@@ -117,12 +113,12 @@ struct image_data* line_check(int handle)
 #endif
 					init_point();
 				}
-				else if((find_right == FL_NONE) && right_line_check(i))
+				if((find_right == FL_NONE) && right_line_check(i))
 				{
 					img_data->flag += IF_RIGHT;
 					img_data->angle[RIGHT] = get_road_angle();
-					printf("after angle right = get road angle\n");
-					img_data->dist[RIGHT] = pt[BOT].y;
+					img_data->bot[RIGHT].x = pt[BOT].x;
+					img_data->bot[RIGHT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -138,11 +134,6 @@ struct image_data* line_check(int handle)
 
 			return img_data;
 		}
-		else if(tmp == MID_CURVE_STRAIGHT)
-		{
-			img_data->flag = IF_STRAIGHT;
-			return img_data;
-		}
 		else if( tmp == MID_CURVE)
 		{
 			for(i = 1; i< CUTLINE_POINT ; i++)
@@ -152,8 +143,8 @@ struct image_data* line_check(int handle)
 					// 왼쪽 각도 설정하여 idata에 넣는다. 
 					img_data->flag = IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle();
-					printf(" l:%d b:%d d:%d y:%d\n",LEFT, BOT, img_data->dist[LEFT],pt[BOT].y);
-					img_data->dist[LEFT] = pt[BOT].y;
+					img_data->bot[LEFT].x = pt[BOT].x;
+					img_data->bot[LEFT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -168,8 +159,8 @@ struct image_data* line_check(int handle)
 					// 오른쪽 각도 설정하여 idata에 넣는다. 
 					img_data->flag = IF_RIGHT;
 					img_data->angle[RIGHT] = get_road_angle();
-					printf("after angle right = get road angle\n");
-					img_data->dist[RIGHT] = pt[BOT].y;
+					img_data->bot[RIGHT].x = pt[BOT].x;
+					img_data->bot[RIGHT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -190,6 +181,11 @@ struct image_data* line_check(int handle)
 			img_data->flag = IF_OUTLINE;
 			return img_data;
 		}	
+		else if( tmp == MID_SPEED_DOWN)
+		{
+			img_data->flag = IF_SPEED_DOWN;
+			return img_data;
+		}
 
 		break;
 
@@ -225,9 +221,6 @@ struct image_data* line_check(int handle)
 		return img_data;
 	}
 
-#ifdef DRIVE_DEBUG
-	printf("angle : %d, dist %d, flag %d\n",img_data->angle, img_data->dist, img_data->flag);
-#endif
 	return img_data;
 }
 
@@ -355,22 +348,57 @@ int find_outline(int rl_info, int y, int w)
 	}
 
 }
+int red_count(){
+	int i = 0, j = 0;
+	int red_cnt = 0;
 
+	for(i = 150 ; i > 70; i --){
+		for( j = 0 ; j < MAXWIDTH ; j+=3)
+		{
+			if(IS_RED(j,i))
+			{
+				printf("IS_RED(%d,%d)\n",j,i);
+				red_cnt ++;	
+			}
+		}
+
+		if( red_cnt > 10)
+		{
+			if( i < 120){
+				printf("MID_STOP in %d\n", i);
+				return MID_STOP;
+			} else if(i > 140){
+				printf("SLow Down in %d\n", i);
+				return MID_SPEED_DOWN;
+			}
+		}
+	}
+
+}
 int check_mid_line()
 {
 	int i,j;
 	int height = -1;
 	int red_cnt = 0, change_line_cnt = 0;
+	int red_flag;
 
 #ifdef TRACE
 	printf("check_mid_line\n");
 #endif
 
+	red_flag = red_count();
+
+	if(red_flag == MID_SPEED_DOWN)
+		return MID_SPEED_DOWN;
+	else if(red_flag == MID_STOP)
+		return MID_STOP;
+
+
 	// 미드라인 수직 검사 
 	for(i=1; i<CUTLINE; i++)
 	{
 		// check cross stop 
-		if( i > 60 )	// IS_BLACK 조건 삭제 
+/*		if( i > 60 )	// IS_BLACK 조건 삭제 
 		{
 			for( j = 0 ; j < MAXWIDTH ; j+=3)
 			{
@@ -383,12 +411,19 @@ int check_mid_line()
 
 			if( red_cnt > 10)
 			{
-				printf("MID_STOP in %d\n", i);
-				return MID_STOP;
+				if(i > 140){
+					printf("SLow Down in %d\n", i);
+					return MID_SPEED_DOWN;
+				}
+
+				else if(i < 120){
+					printf("MID_STOP in %d\n", i);
+					return MID_STOP;
+				}
 			}
 
-		}
-		else if(IS_YELLOW(MIDWIDTH, i))
+		}*/
+		if(IS_YELLOW(MIDWIDTH, i))
 		{
 			height = i;
 			printf("yellow height %d \n",height);
@@ -439,10 +474,8 @@ int check_mid_line()
 	} // end for 
 
 	// if red cross stop check 
-	if( 0 < height && height < CUTLINE_CURVE)
+	if( 0 < height && height < CUTLINE)
 		return  MID_CURVE;
-	else if(CUTLINE_CURVE <= height && height < CUTLINE )
-		return  MID_CURVE_STRAIGHT;
 	else 
 		return MID_STRAIGHT;
 }

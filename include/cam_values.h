@@ -13,7 +13,7 @@
 
 #define CUTLINE 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 80
+#define CUTLINE_CURVE 50
 #define GAP 10
 
 // threshold
@@ -48,14 +48,13 @@
 
 // mid line flag
 #define MID_STRAIGHT 0
-#define MID_CURVE_STRAIGHT 1
-#define MID_CURVE 2
-#define MID_STOP 3
-#define MID_CL_LEFT 4
-#define MID_CL_RIGHT 5
-#define MID_SPEED_BUMP 6
-#define MID_SPEED_DOWN 7
-#define MID_OUTLINE 8
+#define MID_CURVE 1
+#define MID_STOP 2
+#define MID_CL_LEFT 3
+#define MID_CL_RIGHT 4
+#define MID_SPEED_BUMP 5
+#define MID_SPEED_DOWN 6
+#define MID_OUTLINE 7
 
 // screen size 
 #define MAXHEIGHT 240
@@ -92,13 +91,6 @@
 #define IS_TRAFFIC_RED(X,Z) (Y(X,Z) >= THRESHOLD && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_RED_CR)
 #define IS_TRAFFIC_YELLOW(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_YELLOW_CR && CR(X,Z) < THRESHOLD_RED_CR)
 #define IS_TRAFFIC_GREEN(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) < THRESHOLD_GREEN_CR)
-
-// struct 
-struct p_point
-{
-	int x;		// x좌표 (0~319)
-	int y;		// y좌표 (0~239)
-};
 
 struct p_point pt[PT_SIZE];
 

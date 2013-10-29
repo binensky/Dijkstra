@@ -103,8 +103,8 @@ struct image_data* line_check(int handle)
 				{
 					img_data->flag += IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle();
-					printf(" l:%d b:%d d:%d y:%d\n",LEFT, BOT, img_data->dist[LEFT],pt[BOT].y);
-					img_data->dist[LEFT] = pt[BOT].y;
+					img_data->bot[LEFT].x = pt[BOT].x;
+					img_data->bot[LEFT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 						printf("pt[%d] : (%d,%d)  ", i, pt[i].x, pt[i].y);
@@ -112,12 +112,12 @@ struct image_data* line_check(int handle)
 #endif
 					init_point();
 				}
-				else if((find_right == FL_NONE) && right_line_check(i))
+				if((find_right == FL_NONE) && right_line_check(i))
 				{
 					img_data->flag += IF_RIGHT;
 					img_data->angle[RIGHT] = get_road_angle();
-					printf("after angle right = get road angle\n");
-					img_data->dist[RIGHT] = pt[BOT].y;
+					img_data->bot[RIGHT].x = pt[BOT].x;
+					img_data->bot[RIGHT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -133,11 +133,6 @@ struct image_data* line_check(int handle)
 
 			return img_data;
 		}
-		else if(tmp == MID_CURVE_STRAIGHT)
-		{
-			img_data->flag = IF_STRAIGHT;
-			return img_data;
-		}
 		else if( tmp == MID_CURVE)
 		{
 			for(i = 1; i< CUTLINE_POINT ; i++)
@@ -147,8 +142,8 @@ struct image_data* line_check(int handle)
 					// 왼쪽 각도 설정하여 idata에 넣는다. 
 					img_data->flag = IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle();
-					printf(" l:%d b:%d d:%d y:%d\n",LEFT, BOT, img_data->dist[LEFT],pt[BOT].y);
-					img_data->dist[LEFT] = pt[BOT].y;
+					img_data->bot[LEFT].x = pt[BOT].x;
+					img_data->bot[LEFT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -163,8 +158,8 @@ struct image_data* line_check(int handle)
 					// 오른쪽 각도 설정하여 idata에 넣는다. 
 					img_data->flag = IF_RIGHT;
 					img_data->angle[RIGHT] = get_road_angle();
-					printf("after angle right = get road angle\n");
-					img_data->dist[RIGHT] = pt[BOT].y;
+					img_data->bot[RIGHT].x = pt[BOT].x;
+					img_data->bot[RIGHT].y = pt[BOT].y;
 #ifdef DRIVE_DEBUG
 					for(i=0; i<pt_cnt; i++)
 					{
@@ -220,9 +215,6 @@ struct image_data* line_check(int handle)
 		return img_data;
 	}
 
-#ifdef DRIVE_DEBUG
-	printf("angle : %d, dist %d, flag %d\n",img_data->angle, img_data->dist, img_data->flag);
-#endif
 	return img_data;
 }
 
@@ -415,10 +407,8 @@ int check_mid_line()
 	} // end for 
 
 	// if red cross stop check 
-	if( 0 < height && height < CUTLINE_CURVE)
+	if( 0 < height && height < CUTLINE)
 		return  MID_CURVE;
-	else if(CUTLINE_CURVE <= height && height < CUTLINE )
-		return  MID_CURVE_STRAIGHT;
 	else 
 		return MID_STRAIGHT;
 }

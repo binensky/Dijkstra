@@ -43,6 +43,12 @@
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1533
 
+struct p_point
+{
+	int x;		// x좌표 (0~319)
+	int y;		// y좌표 (0~239)
+};
+
 struct image_data
 {
 	struct image_data* prev;
@@ -50,7 +56,7 @@ struct image_data
 
 	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
 	int angle[3];
-	int dist[3];
+	struct p_point bot[3];
 };
 
 // flags

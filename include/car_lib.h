@@ -157,6 +157,7 @@ char distance(char* dis1, char* dis2)
 	buf[0] = 0xa7;
 	buf[1] = dis1; //0-FF
 	buf[2] = dis2; //0-FF
+	printf("qwerasdfzxcv\n");
 	write(uart_fd, &buf[0], 3);
 
 //	printf("Set Distance %x%x\n", dis1, dis2);

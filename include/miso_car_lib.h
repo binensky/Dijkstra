@@ -115,11 +115,9 @@ void set_angle(int angle)
 		turn_straight();
 	} 
 	else if( RANGE_RIGHT(angle)){
-		//g_drive_flag = DF_CUR;
 		turn_set(800);
 	} 
 	else if(RANGE_LEFT(angle)){
-		//g_drive_flag = DF_CUR;		
 		turn_set(2200);
 	}
 	else if(RANGE_NO_CHANGE(angle))

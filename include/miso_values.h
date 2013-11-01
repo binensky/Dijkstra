@@ -55,6 +55,7 @@ struct image_data
 	struct image_data* next;
 
 	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
+	int mid_flag;
 	int angle[3];
 	struct p_point bot[3];
 };

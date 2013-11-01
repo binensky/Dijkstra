@@ -611,41 +611,53 @@ int check_distance_inner(int ch, int total)
 	return total;
 }
 
-char check_distance(int ch)
+int check_distance(int ch)
 {
 
-	int fd, i, j, k, total, sensor_value_default, sensor_value_mm;
+	int fd, i, j, k, total_s, sensor_value_default, sensor_value_mm;
 	
-	total = 0;
+	total_s = 0;
 	sensor_value_default = 0;
 	int sensor1;
-	int sensor2;
+	int sensor_total;
 	//sensor_value_mm = 0;	
 
 	for(j=0; j<4; j++)
 	    sensor[j] = 0;
-	
-	
-	for(k=0; k<20; k++)
-		total = check_distance_inner(ch,total);
 
-	sensor1 = total / 20;
+    sensor_total = 0;
 
+    for(i=0; i<5; i++) 
+    {
+        total_s = 0;
+
+	for(k=0; k<5; k++)
+		total_s = check_distance_inner(ch,total_s);
+
+	sensor1 = total_s / 5;
+
+	sensor_total+=sensor1;
+        
+    }
+        /*
 	total = 0;
 
-        for(k=0; k<20; k++)
+        for(k=0; k<10; k++)
                 total = check_distance_inner(ch,total);
 
-        sensor2 = total / 20;
+        sensor2 = total / 10;
 	
 	if(sensor2-sensor1 < 0)
 	    sensor_value_default = sensor1-sensor2;
 	else
 	    sensor_value_default = sensor2-sensor1;
 
-	printf("sensor before = %d\n",sensor_value_default);
-	total=0;
-	return sensor_value_default;
+        
+
+        */
+	printf("sensor before = %d\n",sensor_total);
+	
+	return sensor_total;
 }
 
 char complete(void)

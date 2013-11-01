@@ -1,5 +1,5 @@
 //#define DEBUG
-#define DRIVE_DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
@@ -22,6 +22,7 @@ struct image_data* img_tail;
 
 void init_drive(void);
 void drive(void);
+void go_ahead(void);
 void direct_test(void);
 
 int main(void)
@@ -47,12 +48,19 @@ void drive(void)
 	struct image_data* idata;
 	struct p_point mid_bot, dest;
 	double gradient_left, gradient_right;
-	int angle,input,intercept_left,intercept_right,dest_angle, height;
+	int angle,input,intercept_left,intercept_right,dest_angle, height, temp_flag;
 	
 	init_drive();
 
 	while(TRUE)
 	{
+		if(g_drive_flag == DF_VPARK || g_drive_flag == DF_PPARK)
+		{
+			stop();
+			while(g_drive_flag != DF_DRIVE);
+		}
+			
+
 		idata = line_check(cm_handle); // get image data 
 	
 		idata->prev = img_it;
@@ -77,9 +85,10 @@ void drive(void)
 				{
 					turn_set(DM_ANGLE_MAX);
 #ifdef DRIVE
-					distance_set(500);	
-					forward_dis();
+					if(g_drive_flag == DF_DRIVE)
+						go_ahead();
 #endif
+					//speed_set(1000);
 					break;
 				}
 
@@ -95,15 +104,46 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("height in main : %d\n", height);
 #endif
-				if((height > CUTLINE) ||
-					(height > CUTLINE_CURVE && height <= CUTLINE && g_angle == DM_STRAIGHT))
+
+				// set temp flag
+				if(idata->mid_flag == MID_STRAIGHT )
 				{
+					if(height > CUTLINE + 20)
+						temp_flag = MID_STRAIGHT;
+					else
+					{
+						if(idata->prev->mid_flag == MID_STRAIGHT)
+							temp_flag = MID_STRAIGHT;
+						else
+							temp_flag = MID_CURVE_STRAIGHT;
+					}
+				}
+				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
+				{
+					if(idata->prev->mid_flag == MID_STRAIGHT)
+						temp_flag = MID_STRAIGHT;
+					else
+						temp_flag = MID_CURVE_STRAIGHT;
+				}
+				else if(idata->mid_flag == MID_CURVE)
+				{
+						temp_flag = MID_CURVE;
+				}
+
+				printf("temp flag : %d \n",temp_flag);
+				// set angle
+				if(temp_flag == MID_STRAIGHT)
+				{
+					//speed_set(2000);
+					idata->mid_flag = MID_STRAIGHT;
 					turn_straight();
 				}
-				else{
+				else
+				{
+					//speed_set(1000);
 					mid_bot.y = 0;
 					mid_bot.x = MIDWIDTH;
-					dest.y = 140;
+					dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
 					dest.x = (int)((dest.y - intercept_left) / gradient_left);
 #ifdef DRIVE_DEBUG
 					printf("dest (%d, %d)\n", dest.x, dest.y);
@@ -111,13 +151,21 @@ void drive(void)
 				
 					dest_angle = get_angle(mid_bot,dest);
 #ifdef DRIVE_DEBUG
-					printf("dest angle : %d", dest_angle);
+					printf("dest angle : %d\n", dest_angle);
 #endif
+					if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95)
+					{
+						idata->mid_flag = MID_STRAIGHT;
+					}
+					else
+					{
+						idata->mid_flag = MID_CURVE;
+					}
 					set_angle(dest_angle);
 				}
 #ifdef DRIVE
-				distance_set(500);	
-				forward_dis();
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
 #endif
 				break;
 
@@ -127,10 +175,11 @@ void drive(void)
 #endif
 				if(idata->angle[RIGHT] > 90)
 				{
+					//speed_set(1000);
 					turn_set(DM_ANGLE_MIN);
 #ifdef DRIVE
-					distance_set(500);	
-					forward_dis();
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
 #endif
 					break;
 				}
@@ -145,30 +194,68 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("height in main : %d\n", height);
 #endif
-
-				if((height > CUTLINE) ||
-					(height > CUTLINE_CURVE && height <= CUTLINE && g_angle == DM_STRAIGHT))
+				// set temp flag
+				if(idata->mid_flag == MID_STRAIGHT )
 				{
+					if(height > CUTLINE + 20)
+						temp_flag = MID_STRAIGHT;
+					else
+					{
+						if(idata->prev->mid_flag == MID_STRAIGHT)
+							temp_flag = MID_STRAIGHT;
+						else
+							temp_flag = MID_CURVE_STRAIGHT;
+					}
+				}
+				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
+				{
+					if(idata->prev->mid_flag == MID_STRAIGHT)
+						temp_flag = MID_STRAIGHT;
+					else
+						temp_flag = MID_CURVE_STRAIGHT;
+				}
+				else if(idata->mid_flag == MID_CURVE)
+				{
+						temp_flag = MID_CURVE;
+				}
+
+				printf("temp flag : %d \n",temp_flag);
+				// set angle
+				if(temp_flag == MID_STRAIGHT)
+				{
+					//speed_set(2000);
+					idata->mid_flag = MID_STRAIGHT;
 					turn_straight();
 				}
-				else{
+				else
+				{
+					//speed_set(1000);
 					mid_bot.y = 0;
 					mid_bot.x = MIDWIDTH;
-					dest.y = 140;
+					dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
 					dest.x = (int)((dest.y - intercept_right) / gradient_right);
 #ifdef DRIVE_DEBUG
 					printf("dest (%d, %d)\n", dest.x, dest.y);
 #endif
+				
 					dest_angle = get_angle(mid_bot,dest);
 #ifdef DRIVE_DEBUG
-					printf("dest angle : %d", dest_angle);
+					printf("dest angle : %d\n", dest_angle);
 #endif
+					if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95)
+					{
+						idata->mid_flag = MID_STRAIGHT;
+					}
+					else
+					{
+						idata->mid_flag = MID_CURVE;
+					}
 					set_angle(dest_angle);
 				}
 
 #ifdef DRIVE
-				distance_set(500);		
-				forward_dis();
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
 #endif
 				break;
 
@@ -176,11 +263,19 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle left : %d right : %d\n", idata->angle[LEFT], idata->angle[RIGHT]);
 #endif
-				
+				// 100 까지 찾아서 양쪽선이 나오면 사실상 직진
+				turn_straight();				
+				//speed_set(2000);
+/*
 				gradient_left = tan( (double)idata->angle[LEFT] *PI /180);
 				intercept_left = idata->bot[LEFT].y - idata->bot[LEFT].x * gradient_left;
 				gradient_right = tan( (double)idata->angle[RIGHT] *PI /180);
 				intercept_right = idata->bot[RIGHT].y - idata->bot[RIGHT].x * gradient_right ;
+
+#ifdef DRIVE_DEBUG
+				printf("left = %.2lfa + %d", gradient_left, intercept_left);
+				printf("right = %.2lfa + %d", gradient_right, intercept_right);
+#endif
 
 				dest.x = (intercept_left - intercept_right) / (gradient_right - gradient_left);
 				dest.y = gradient_left * dest.x + intercept_left;
@@ -195,30 +290,33 @@ void drive(void)
 				printf("dest angle : %d", dest_angle);
 #endif
 				set_angle(dest_angle);
-
+*/
 #ifdef DRIVE
-				distance_set(500);		
-				forward_dis();
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
 #endif
+
 				break;
 
 			case IF_STRAIGHT:
+				//speed_set(2000);
 				turn_straight();
 #ifdef DRIVE
-				distance_set(500);		
-				forward_dis();
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
 #endif
 				break;
 
 			case IF_OUTLINE:
+				//speed_set(1000);
 				if(g_angle < DM_STRAIGHT)
 					turn_set(DM_ANGLE_MIN);
 				else
 					turn_set(DM_ANGLE_MAX);
 
 #ifdef DRIVE
-				distance_set(500);		
-				forward_dis();
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
 #endif
 				break;
 
@@ -306,6 +404,13 @@ void init_drive()
 	img_tail->prev = img_head;
 	img_tail->next = img_tail;
 	img_it = img_head;
+	img_head->mid_flag = MID_STRAIGHT;
+}
+
+void go_ahead()
+{
+	distance_set(500);	
+	forward_dis();
 }
 
 void direct_test()

@@ -351,26 +351,27 @@ int find_outline(int rl_info, int y, int w)
 int red_count(){
 	int i = 0, j = 0;
 	int red_cnt = 0;
-
-	for(i = 150 ; i > 70; i --){
+	for(i = 70 ; i < 150; i ++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3)
 		{
 			if(IS_RED(j,i))
 			{
-				printf("IS_RED(%d,%d)\n",j,i);
-				red_cnt ++;	
+				if(i < 120){
+					printf("MID_STOP in %d\n", i);
+					return MID_STOP;
+				} else if(i > 140){
+					printf("SLow Down in %d\n", i);
+					return MID_SPEED_DOWN;
+				}
+
+				/*printf("IS_RED(%d,%d)\n",j,i);
+				red_cnt ++;	*/
 			}
 		}
 
-		if( red_cnt > 10)
+		if( red_cnt > 3)
 		{
-			if( i < 120){
-				printf("MID_STOP in %d\n", i);
-				return MID_STOP;
-			} else if(i > 140){
-				printf("SLow Down in %d\n", i);
-				return MID_SPEED_DOWN;
-			}
+			 
 		}
 	}
 
@@ -398,31 +399,6 @@ int check_mid_line()
 	for(i=1; i<CUTLINE; i++)
 	{
 		// check cross stop 
-/*		if( i > 60 )	// IS_BLACK 조건 삭제 
-		{
-			for( j = 0 ; j < MAXWIDTH ; j+=3)
-			{
-				if(IS_RED(j,i))
-				{
-					printf("IS_RED(%d,%d)\n",j,i);
-					red_cnt ++;	
-				}
-			}
-
-			if( red_cnt > 10)
-			{
-				if(i > 140){
-					printf("SLow Down in %d\n", i);
-					return MID_SPEED_DOWN;
-				}
-
-				else if(i < 120){
-					printf("MID_STOP in %d\n", i);
-					return MID_STOP;
-				}
-			}
-
-		}*/
 		if(IS_YELLOW(MIDWIDTH, i))
 		{
 			height = i;

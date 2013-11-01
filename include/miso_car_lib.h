@@ -15,9 +15,9 @@
 // ANGLE RNAGES. 
 #define RANGE_STRAIGHT(X)	((X) == 1000)
 #define RANGE_NO_CHANGE(X) 	((X) == 0 || (X) == 90 || (X) == 180)
-#define RANGE_LEFT(X)		(0<(X) && (X)<40)
-#define RANGE_RIGHT(X)		(140<(X) && (X)<180)
-#define RANGE_ELSE(X)		(40 <= (X) && (X) <= 140 && (X) != 90)
+#define RANGE_LEFT(X)		(0<(X) && (X)<20)
+#define RANGE_RIGHT(X)		(160<(X) && (X)<180)
+#define RANGE_ELSE(X)		(20 <= (X) && (X) <= 160 && (X) != 90)
 
 static int g_sp = 0;
 static int g_angle = DM_STRAIGHT;
@@ -59,11 +59,14 @@ void speed_down(int v)
 void turn_straight()
 {
 	g_angle = DM_STRAIGHT;
+	printf(" ## turn set : %d ## \n", g_angle);
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
 void turn_set(int v)
 {
+	//int before = g_angle;
+
 	if( v > DM_ANGLE_MAX )
 		g_angle = DM_ANGLE_MAX;
 	else if( v < DM_ANGLE_MIN)
@@ -71,6 +74,9 @@ void turn_set(int v)
 	else
 		g_angle = v;
 
+	//g_angle = (g_angle + before) /2;
+
+	printf(" ## turn set : %d ## \n", g_angle);
 	dm_angle(HIGH(g_angle),LOW(g_angle));
 }
 
@@ -114,6 +120,7 @@ void set_angle(int angle)
 		//g_drive_flag = DF_STR;
 		turn_straight();
 	} 
+	/*
 	else if( RANGE_RIGHT(angle)){
 		turn_set(800);
 	} 
@@ -126,7 +133,12 @@ void set_angle(int angle)
 	else if(RANGE_ELSE(angle))
 	{
 		//turn_set( (int)(2100 - angle * 20 / 3) );
-		turn_set( (int)(2580 - angle * 12) );
+		turn_set( (int)(2200 - angle * 70 / 9) );
+	}
+	*/
+	else if(RANGE_NO_CHANGE(angle)){}
+	else{
+		turn_set( (int)(2287.5 - angle * 35 / 4) );
 	}
 }
 

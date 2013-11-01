@@ -13,8 +13,10 @@
 
 #define CUTLINE 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 50
+#define CUTLINE_CURVE 60
 #define GAP 10
+
+#define DEST_HEIGHT 140
 
 // threshold
 #define THRESHOLD 130
@@ -39,7 +41,7 @@
 #define BOT 0
 #define MID 1
 #define END 2
-#define PT_SIZE 10
+#define PT_SIZE 14
 
 // find  line flag 
 #define FL_NONE 0
@@ -49,12 +51,13 @@
 // mid line flag
 #define MID_STRAIGHT 0
 #define MID_CURVE 1
-#define MID_STOP 2
-#define MID_CL_LEFT 3
-#define MID_CL_RIGHT 4
-#define MID_SPEED_BUMP 5
-#define MID_SPEED_DOWN 6
-#define MID_OUTLINE 7
+#define MID_CURVE_STRAIGHT 2
+#define MID_STOP 3
+#define MID_CL_LEFT 4
+#define MID_CL_RIGHT 5
+#define MID_SPEED_BUMP 6
+#define MID_SPEED_DOWN 7
+#define MID_OUTLINE 8
 
 // screen size 
 #define MAXHEIGHT 240
@@ -81,8 +84,10 @@
 #define IS_UNKNOWN(M,N) ((Y(M,N) >= THRESHOLD) && (Y(M,N) < THRESHOLD+70) && (CB(M,N) >= THRESHOLD_YELLOW_CB))
 #define IS_YELLOW(I,J) (( Y(I,J) >= THRESHOLD) && ( CB(I,J) < THRESHOLD_YELLOW_CB))
 #define IS_WHITE(K,L) ((Y(K,L) >= THRESHOLD+70) && ( CB(K,L) >= THRESHOLD_CB))
-#define IS_BLACK(X,Z) !(IS_YELLOW(X,Z) || IS_WHITE(X,Z))
+
 #define IS_RED(X,Z) (Y(X,Z) >= THRESHOLD_RED_STOP  && CB(X,Z) < THRESHOLD_RED_STOP_CB && CR(X,Z) >= THRESHOLD_RED_STOP_CR)
+
+#define IS_BLACK(X,Z) !(IS_YELLOW(X,Z) || IS_WHITE(X,Z) || IS_RED(X,Z))
 
 #define IS_YELLOW_SPEED_BUMP(O,P) (IS_YELLOW(O,P) && IS_YELLOW(O-1,P) && IS_YELLOW(O+1, P))
 #define IS_WHITE_SPEED_BUMP(O,P) (IS_WHITE(O,P) && IS_WHITE(O-1,P) && IS_WHITE(O+1, P))

@@ -24,46 +24,48 @@ void* distance_check(void* data)
 
 	int exit = 0; //현재 주차 끝났으면 1, 주차중이면 0
 
-	/*
-	   car_connect(); //차랑 연결
+	/*	
+	car_connect(); //차랑 연결
 
-	   sleep(1);
-	   speed_set(1000); //스피드 결정
-	   distance(1,0x1); //한번에 갈 거리 결정
-	   accel(0xff); //엑셀 (별 의미 없음)
+	sleep(1);
+	//stop();
+	speed_set(2000);//스피드 결정
+	distance(1,0x1); //한번에 갈 거리 결정
+	accel(0xff); //엑셀 (별 의미 없음)
 	 */
 	distance_reset(); //total_distance 초기화
 	int i =0;
 	park_flag[0] = ON_; //1단계 주차 단계 맞음 (default)
 	park_flag[1] = OFF_; //2단계 주차 단계 아님
 	park_flag[2] = OFF_; //3단계 주차 단계 아님
-	/*
-	   sleep(1);
+	
+   sleep(1);
 
-	   dm_angle(0x05,0xf5); //딱 중간 각도
+   //dm_angle(0x05,0xf5); //딱 중간 각도
 
-	   for( i=0; i<10; i++)
-	   check_distance(3);
+	
+	for( i=0; i<10; i++)
+		check_distance(3);
 
-	   wait(2);
-	 */
+	//wait(2);
+
 	while(1)
 	{
 
-		while(check_distance(3) >= 20) //1st sensoring - 장애물을 처음으로 인식했을때부터  주차장 인식할때까지
+		while(check_distance(3) >= 200) //1st sensoring - 장애물을 처음으로 인식했을때부터  주차장 인식할때까지
 		{
 			if(park_flag[1] != ON_) //2단계 주차단계 플래그가 아님이라고 되어있다면
 				park_flag[1] = ON_; //바꿔주기
 
-			//accel(0xff); 
-			//forward_dis(); 
+			accel(0xff); 
+			forward_dis(); 
 			printf("1st sensoring \n");
 		}
 		/////////////////////////////////////////////////////////////////
 
 		if(park_flag[1] == ON_) //2단계 주차중이라면
 		{
-			while(check_distance(3) <= 20) //2nd sensoring -> 주차장 인식하고, 주차장의 폭의 길이를 측정한다. 주차장 끝날때까지 측정한다.
+			while(check_distance(3) < 200) //2nd sensoring -> 주차장 인식하고, 주차장의 폭의 길이를 측정한다. 주차장 끝날때까지 측정한다.
 			{
 				if(park_flag[2] != ON_) //3단계 주차단계 플래그가 아님이라고 되어있다면
 				{
@@ -72,7 +74,7 @@ void* distance_check(void* data)
 				}
 
 				// accel(0xff);
-				// forward_dis(); // 센서값 안쓸때는 일단 직진하기
+				//forward_dis(); // 센서값 안쓸때는 일단 직진하기
 
 				if( (park_flag[0] == ON_) && (park_flag[1] == ON_) && (park_flag[2] == ON_) ) //주차 3단계라면 계속 있기
 				{
@@ -86,12 +88,13 @@ void* distance_check(void* data)
 
 			if( (park_flag[0] == ON_) && (park_flag[1] == ON_) && (park_flag[2] == ON_) ) //주차 3단계까지 플래그 다 OK이면
 			{
+				g_drive_flag = DF_VPARK; 
 				printf("%d cm long....",a); //주차장은 몇센치입니다.
 				stop(); //멈춰
 				sleep(1); //3초쉬고
 				printf("stop!!!\n");
 				distance_reset(); //거리 초기화하고
-				lm_speed(0x05,0xe0); //스피드 올리고
+				//lm_speed(0x05,0xe0); //스피드 올리고
 
 
 				////////////////이제부터 수평.수직주차 모드가 나뉩니다.////////////////////////////////
@@ -101,6 +104,7 @@ void* distance_check(void* data)
 
 				if( (a > 0) && (a < 40) ) //Vertical Parking Mode (value modified)
 				{
+					g_drive_flag = DF_VPARK; 
 					a = 0; //저장 거리 넣을 변수 초기화
 					W_PARK = PARK_V; //수직주차
 					printf("Vertical Parking Mode Start!!!!\n");
@@ -122,14 +126,14 @@ void* distance_check(void* data)
 
 						backward_dis();
 						//////////////////////////////////////////
-						uwait(1360000);
+						uwait(1120000);
 
 						distance(0xff,0xff);
 						dm_angle(0x05,0xe5);
 						usleep(2);
 						backward_dis();
 						//////////////////////////////////////////
-						uwait(1100000);
+						uwait(920000);
 						a=0;
 
 						stop();
@@ -142,7 +146,7 @@ void* distance_check(void* data)
 
 						uwait(1);
 						forward_dis();
-						uwait(850000);
+						uwait(900000);
 
 						uwait(1);
 						dm_angle(0x00,0x00);
@@ -150,18 +154,20 @@ void* distance_check(void* data)
 						uwait(1);
 						distance(0xd4,0x1);
 						forward_dis();
-						uwait(1650000);
+						uwait(1100000);
 
 						dm_angle(0x05,0xe5);
 						stop();
 
 					}
+					g_drive_flag = DF_DRIVE;
 				}
 				/////////////////////////////////////////////////////////////////////////여기까지가 수직주차끝
 
 				////////////////////////////주차장이 40cm 이상이면 수평주차////////////////////////////////////////////////////////////
 				else if(a >= 40) //Horizontal Parking Mode
 				{
+					g_drive_flag = DF_PPARK;
 					W_PARK = PARK_H;
 					printf("Horizontal Parking Mode Start!!!\n");
 
@@ -185,7 +191,7 @@ void* distance_check(void* data)
 						dm_angle(0x00,0x00); //좀만 후진하고
 						distance(0xff,0xff);                                    
 						backward_dis();
-						uwait(1000000); //(첫번째 후진)
+						uwait(800000); //(첫번째 후진)
 						//**********************Step 1 end
 
 
@@ -193,9 +199,9 @@ void* distance_check(void* data)
 						usleep(1);
 						dm_angle(0x05,0xf0); //각 중간으로 맞추고
 						backward_dis(); //그대로 좀만 후진
-						uwait(920000); //(2번째 후진)
+						uwait(720000); //(2번째 후진)
 
-						lm_speed(0x05,0xff); 
+
 						stop();
 						uwait(10);                    
 
@@ -207,7 +213,7 @@ void* distance_check(void* data)
 
 						////////////////////// 
 						backward_dis();
-						uwait(1000000); //(3번째 후진)
+						uwait(800000); //(3번째 후진)
 
 						///////////
 						stop();
@@ -217,46 +223,47 @@ void* distance_check(void* data)
 
 						usleep(1);
 						forward_dis();
-						uwait(150000);
+						uwait(200000);
 
 						stop();
 						uwait(1);
 						front_light(OFF);
 						break_light(OFF);
-						wait(2);
+						wait(3);
 
 						backward_dis();
-						uwait(300000);
+						uwait(200000);
 						stop();
 
-						usleep(1);
+						//usleep(1);
 
 						//distance_reset();
-						lm_speed(0x5e,0xff);
-						distance(0x00,0xff);
+						//lm_speed(0x5e,0xff);
+						//distance(0x00,0xff);
 
 
-						uwait(1); 
+
+
+						usleep(2); 
 						dm_angle(0xff,0xff);
+						stop();                     
 
+						forward_dis();                      
+						uwait(1050000); //(거꾸로 전진)
+						stop();                       
+						//a = 0;
 
-						uwait(1);
-						forward_dis();
-						uwait(1500000); //(거꾸로 전진)
-
-						a = 0;
-
-						stop();
+						//stop();
 						// wait(1);
 
-						uwait(1);
+						usleep(1);
 						dm_angle(0x00,0x00);
-
+						stop();
 						// distance_reset();
 
 
 						forward_dis();
-						uwait(2000000);
+						uwait(1300000);
 						//(거꾸로 전진)
 						stop();
 						uwait(1);
@@ -267,10 +274,11 @@ void* distance_check(void* data)
 						a=0;
 						remember_distance = 0;
 						distance_reset();
-						front_light(OFF);
-						break_light(OFF);
+						//front_light(OFF);
+						//break_light(OFF);
 						wait(1); //끝났습니다.
 					}
+					g_drive_flag = DF_DRIVE;
 				}
 
 				/////////////////////////////////////수평주차 끝/////////////////////////////////////////////////////////
@@ -290,16 +298,15 @@ void* distance_check(void* data)
 				printf("program is ended !! \n");
 				front_light("OFF"); 
 				break_light("OFF"); 
-				sleep(2);
-				exit = 1;	
-
+				//sleep(2);
+				//exit = 1;	
 			}
 
 
 		}
 
 
-
+/*
 		//여기 아래 두줄은 평상시 아무 장애물 없을때..... 그냥 직진하는 코드입니다.
 		//common state 
 
@@ -308,8 +315,8 @@ void* distance_check(void* data)
 
 
 		//아니면 계속 직진한다.
-		// accel(0xff);
-		// forward_dis();
-
+		accel(0xff);
+		forward_dis();
+*/
 	}
 }

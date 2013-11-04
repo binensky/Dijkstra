@@ -57,8 +57,8 @@ void* distance_check(void* data)
 			if(park_flag[1] != ON_) //2단계 주차단계 플래그가 아님이라고 되어있다면
 				park_flag[1] = ON_; //바꿔주기
 
-			accel(0xff); 
-			forward_dis(); 
+			//accel(0xff); 
+			//forward_dis(); 
 			printf("1st sensoring \n");
 		}
 		/////////////////////////////////////////////////////////////////
@@ -94,6 +94,7 @@ void* distance_check(void* data)
 				sleep(1); //3초쉬고
 				printf("stop!!!\n");
 				distance_reset(); //거리 초기화하고
+				speed_set(2000);
 				//lm_speed(0x05,0xe0); //스피드 올리고
 
 
@@ -122,7 +123,7 @@ void* distance_check(void* data)
 						usleep(2);
 
 						distance(0xd4,0x1);
-						accel(0xff);
+						//accel(0xff);
 
 						backward_dis();
 						//////////////////////////////////////////
@@ -142,7 +143,7 @@ void* distance_check(void* data)
 						/////////////////////////////////
 
 						distance(0xd4,0x1);
-						accel(0xff);
+						//accel(0xff);
 
 						uwait(1);
 						forward_dis();

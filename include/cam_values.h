@@ -55,9 +55,10 @@
 #define MID_STOP 3
 #define MID_CL_LEFT 4
 #define MID_CL_RIGHT 5
-#define MID_SPEED_BUMP 6
-#define MID_SPEED_DOWN 7
-#define MID_OUTLINE 8
+#define MID_SPEED_BUMP_CUR 6
+#define MID_SPEED_BUMP_ST 7
+#define MID_SPEED_DOWN 8
+#define MID_OUTLINE 9
 
 // screen size 
 #define MAXHEIGHT 240

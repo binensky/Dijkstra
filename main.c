@@ -56,8 +56,9 @@ void drive(void)
 	{
 		if(g_drive_flag == DF_VPARK || g_drive_flag == DF_PPARK)
 		{
-			stop();
+			//stop();
 			while(g_drive_flag != DF_DRIVE);
+			speed_set(1000);
 		}
 			
 
@@ -68,11 +69,6 @@ void drive(void)
 		img_it->next->prev =idata;
 		img_it->next =idata;
 		img_it=idata;
-
-		if(idata->prev->flag == IF_STOP){
-			speed_set(2000);
-			idata->mid_flag = MID_STRAIGHT;
-		}
 
 		printf("idata flag %d \n",idata->flag );  
 		switch(idata->flag)
@@ -86,6 +82,12 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[LEFT]);
 #endif
+				if(idata->prev->flag == IF_RIGHT )
+				{
+					printf("===========left to right \n");
+					idata->prev->mid_flag = MID_STRAIGHT;
+				}
+
 				if(idata->angle[LEFT] < 90)
 				{
 					turn_set(DM_ANGLE_MAX);
@@ -117,7 +119,7 @@ void drive(void)
 						temp_flag = MID_STRAIGHT;
 					else
 					{
-						if(idata->prev->mid_flag == MID_STRAIGHT)
+						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 							temp_flag = MID_STRAIGHT;
 						else
 							temp_flag = MID_CURVE_STRAIGHT;
@@ -125,7 +127,7 @@ void drive(void)
 				}
 				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 				{
-					if(idata->prev->mid_flag == MID_STRAIGHT)
+					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 						temp_flag = MID_STRAIGHT;
 					else
 						temp_flag = MID_CURVE_STRAIGHT;
@@ -178,6 +180,11 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[RIGHT]);
 #endif
+				if(idata->prev->flag == IF_LEFT ){
+					printf("==========right to left\n");
+					idata->prev->mid_flag = MID_STRAIGHT;
+				}
+
 				if(idata->angle[RIGHT] > 90)
 				{
 					//speed_set(1000);
@@ -206,7 +213,7 @@ void drive(void)
 						temp_flag = MID_STRAIGHT;
 					else
 					{
-						if(idata->prev->mid_flag == MID_STRAIGHT)
+						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 							temp_flag = MID_STRAIGHT;
 						else
 							temp_flag = MID_CURVE_STRAIGHT;
@@ -214,7 +221,7 @@ void drive(void)
 				}
 				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 				{
-					if(idata->prev->mid_flag == MID_STRAIGHT)
+					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 						temp_flag = MID_STRAIGHT;
 					else
 						temp_flag = MID_CURVE_STRAIGHT;
@@ -321,8 +328,10 @@ void drive(void)
 				//speed_set(1000);
 				if(g_angle < DM_STRAIGHT)
 					turn_set(DM_ANGLE_MIN);
-				else
+				else if(g_angle > DM_STRAIGHT)
 					turn_set(DM_ANGLE_MAX);
+				else
+					turn_straight();
 
 #ifdef DRIVE
 				if(g_drive_flag == DF_DRIVE)
@@ -331,9 +340,28 @@ void drive(void)
 				break;
 				
 			case IF_SPEED_DOWN:
-				speed_set(1000);
-				distance_set(500);
-				forward_dis();
+				//speed_set(1000);
+#ifdef DRIVE
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
+#endif
+				break;
+
+			case IF_SPEED_BUMP_CUR:
+#ifdef DRIVE
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
+#endif
+				break;
+
+			case IF_SPEED_BUMP_ST:
+				//set_angle(90);
+				turn_straight();
+				//speed_set(1000);
+#ifdef DRIVE
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
+#endif
 				break;
 			case IF_CL_LEFT:
 				break;
@@ -399,7 +427,7 @@ void init_drive()
 	usleep(2000);
 	camera_straight();
 	usleep(2000);
-	speed_set(2000);
+	speed_set(1000);
 	usleep(2000);
 	accel(0x02f);
 	usleep(2000);

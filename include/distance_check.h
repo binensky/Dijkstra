@@ -112,7 +112,7 @@ void* distance_check(void* data)
 					if(W_PARK == PARK_V) //수직주차 플래그라면
 					{
 						wait(1);
-						backward_dis();
+						backward_das();
 						usleep(180000);
 						stop();
 

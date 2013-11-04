@@ -33,6 +33,11 @@
 #define THRESHOLD_STOP_CB 120
 #define THRESHOLD_STOP_CR 170
 
+#define THRESHOLD_RED_STOP 60
+#define THRESHOLD_RED_STOP_CB 120
+#define THRESHOLD_RED_STOP_CR 180 
+
+
 #define BOT 0
 #define MID 1
 #define END 2
@@ -50,9 +55,10 @@
 #define MID_STOP 3
 #define MID_CL_LEFT 4
 #define MID_CL_RIGHT 5
-#define MID_SPEED_BUMP 6
-#define MID_SPEED_DOWN 7
-#define MID_OUTLINE 8
+#define MID_SPEED_BUMP_CUR 6
+#define MID_SPEED_BUMP_ST 7
+#define MID_SPEED_DOWN 8
+#define MID_OUTLINE 9
 
 // screen size 
 #define MAXHEIGHT 240
@@ -79,7 +85,9 @@
 #define IS_UNKNOWN(M,N) ((Y(M,N) >= THRESHOLD) && (Y(M,N) < THRESHOLD+70) && (CB(M,N) >= THRESHOLD_YELLOW_CB))
 #define IS_YELLOW(I,J) (( Y(I,J) >= THRESHOLD) && ( CB(I,J) < THRESHOLD_YELLOW_CB))
 #define IS_WHITE(K,L) ((Y(K,L) >= THRESHOLD+70) && ( CB(K,L) >= THRESHOLD_CB))
-#define IS_RED(O,P) (Y(O,P) >= THRESHOLD  && CB(O,P) < THRESHOLD_CB && CR(O,P) >= THRESHOLD_RED_CR)
+
+#define IS_RED(X,Z) (Y(X,Z) >= THRESHOLD_RED_STOP  && CB(X,Z) < THRESHOLD_RED_STOP_CB && CR(X,Z) >= THRESHOLD_RED_STOP_CR)
+
 #define IS_BLACK(X,Z) !(IS_YELLOW(X,Z) || IS_WHITE(X,Z) || IS_RED(X,Z))
 
 #define IS_YELLOW_SPEED_BUMP(O,P) (IS_YELLOW(O,P) && IS_YELLOW(O-1,P) && IS_YELLOW(O+1, P))

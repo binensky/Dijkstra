@@ -35,7 +35,7 @@ int main(void)
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
 	drive();
-	//direct_test();
+//	direct_test();
 
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -56,8 +56,9 @@ void drive(void)
 	{
 		if(g_drive_flag == DF_VPARK || g_drive_flag == DF_PPARK)
 		{
-			stop();
+			//stop();
 			while(g_drive_flag != DF_DRIVE);
+			speed_set(1000);
 		}
 			
 
@@ -74,7 +75,7 @@ void drive(void)
 		{			
 			case IF_STOP:
 				stop();
-				g_drive_flag = DF_STOP;
+				//g_drive_flag = DF_STOP;
 				break;
 
 			case IF_LEFT:
@@ -82,7 +83,10 @@ void drive(void)
 				printf("img angle %d\n", idata->angle[LEFT]);
 #endif
 				if(idata->prev->flag == IF_RIGHT )
+				{
+					printf("===========left to right \n");
 					idata->prev->mid_flag = MID_STRAIGHT;
+				}
 
 				if(idata->angle[LEFT] < 90)
 				{
@@ -115,7 +119,7 @@ void drive(void)
 						temp_flag = MID_STRAIGHT;
 					else
 					{
-						if(idata->prev->mid_flag == MID_STRAIGHT)
+						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 							temp_flag = MID_STRAIGHT;
 						else
 							temp_flag = MID_CURVE_STRAIGHT;
@@ -123,7 +127,7 @@ void drive(void)
 				}
 				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 				{
-					if(idata->prev->mid_flag == MID_STRAIGHT)
+					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 						temp_flag = MID_STRAIGHT;
 					else
 						temp_flag = MID_CURVE_STRAIGHT;
@@ -176,8 +180,10 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[RIGHT]);
 #endif
-				if(idata->prev->flag == IF_LEFT )
+				if(idata->prev->flag == IF_LEFT ){
+					printf("==========right to left\n");
 					idata->prev->mid_flag = MID_STRAIGHT;
+				}
 
 				if(idata->angle[RIGHT] > 90)
 				{
@@ -207,7 +213,7 @@ void drive(void)
 						temp_flag = MID_STRAIGHT;
 					else
 					{
-						if(idata->prev->mid_flag == MID_STRAIGHT)
+						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 							temp_flag = MID_STRAIGHT;
 						else
 							temp_flag = MID_CURVE_STRAIGHT;
@@ -215,7 +221,7 @@ void drive(void)
 				}
 				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 				{
-					if(idata->prev->mid_flag == MID_STRAIGHT)
+					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
 						temp_flag = MID_STRAIGHT;
 					else
 						temp_flag = MID_CURVE_STRAIGHT;
@@ -307,6 +313,11 @@ void drive(void)
 			case IF_STRAIGHT:
 				//speed_set(2000);
 				turn_straight();
+				/*if(idata->prev->flag == IF_STOP){
+					printf("prev : IF_STOP\n");
+					speed_set(2000);
+
+				}*/
 #ifdef DRIVE
 				if(g_drive_flag == DF_DRIVE)
 					go_ahead();
@@ -317,15 +328,41 @@ void drive(void)
 				//speed_set(1000);
 				if(g_angle < DM_STRAIGHT)
 					turn_set(DM_ANGLE_MIN);
-				else
+				else if(g_angle > DM_STRAIGHT)
 					turn_set(DM_ANGLE_MAX);
+				else
+					turn_straight();
 
 #ifdef DRIVE
 				if(g_drive_flag == DF_DRIVE)
 					go_ahead();
 #endif
 				break;
+				
+			case IF_SPEED_DOWN:
+				//speed_set(1000);
+#ifdef DRIVE
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
+#endif
+				break;
 
+			case IF_SPEED_BUMP_CUR:
+#ifdef DRIVE
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
+#endif
+				break;
+
+			case IF_SPEED_BUMP_ST:
+				//set_angle(90);
+				turn_straight();
+				//speed_set(1000);
+#ifdef DRIVE
+				if(g_drive_flag == DF_DRIVE)
+					go_ahead();
+#endif
+				break;
 			case IF_CL_LEFT:
 				break;
 			case IF_CL_RIGHT:
@@ -356,8 +393,7 @@ void traffic_drive(int flag){
 			distance_set(1200);
 			speed_set(1000);	
 			forward_dis();
-			while(mDistance() - n < 1720){//printf("%d\n", mDistance() - n);
-			}
+			while(mDistance() - n < 1720){}
 			turn_set(DM_ANGLE_MAX);
 			while(mDistance() - n < 3800){}
 			turn_straight();
@@ -461,7 +497,7 @@ void direct_test()
 				distance_set(1200);
 				speed_set(1000);	
 				forward_dis();
-				while(mDistance() - n < 1720){printf("%d\n", mDistance() - n);}
+				while(mDistance() - n < 1720){}
 				turn_set(DM_ANGLE_MAX);
 				while(mDistance() - n < 3800){}
 				turn_straight();
@@ -472,7 +508,7 @@ void direct_test()
 				distance_set(1200);
 				speed_set(1000);	
 				forward_dis();
-				while(mDistance() - n < 1720){printf("%d\n", mDistance() - n);}
+				while(mDistance() - n < 1720){}
 				turn_set(DM_ANGLE_MIN);
 				while(mDistance() - n < 3800){}
 				turn_straight();

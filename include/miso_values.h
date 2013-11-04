@@ -33,6 +33,9 @@
 #define IF_BOTH 3
 #define IF_STRAIGHT 5
 #define IF_OUTLINE 6
+#define IF_SPEED_DOWN 7
+#define IF_SPEED_BUMP_ST 8
+#define IF_SPEED_BUMP_CUR 9
 
 #define IF_SG_STOP 10
 #define IF_SG_LEFT 12

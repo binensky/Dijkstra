@@ -34,6 +34,7 @@ void print_screen_cb();
 void print_screen_cr();
 void print_screen_color();
 
+int red_count();
 int get_road_angle();
 int get_angle(struct p_point a, struct p_point b);
 int left_line_check(int h);
@@ -72,7 +73,7 @@ struct image_data* line_check(int handle)
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	//print_screen_y();
+	//	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
@@ -91,6 +92,7 @@ struct image_data* line_check(int handle)
 
 		printf("DF_DRIVE\n");
 		// 도로 중간 값을 검사한다. 
+		
 		tmp = check_mid_line();
 		img_data->mid_flag = tmp;
 
@@ -176,11 +178,26 @@ struct image_data* line_check(int handle)
 			img_data->flag = IF_STOP;
 			return img_data;
 		}
+		else if( tmp == MID_SPEED_BUMP_CUR)
+		{
+			img_data->flag = IF_SPEED_BUMP_CUR;
+			return img_data;
+		}
+		else if( tmp == MID_SPEED_BUMP_ST)
+		{
+			img_data->flag = IF_SPEED_BUMP_ST;
+			return img_data;
+		}
 		else if( tmp == MID_OUTLINE )
 		{
 			img_data->flag = IF_OUTLINE;
 			return img_data;
 		}	
+		else if( tmp == MID_SPEED_DOWN)
+		{
+			img_data->flag = IF_SPEED_DOWN;
+			return img_data;
+		}
 
 		break;
 
@@ -343,34 +360,71 @@ int find_outline(int rl_info, int y, int w)
 	}
 
 }
-
+int red_count(){
+	int i = 0, j = 0;
+	int red_cnt = 0;
+	for(i = 70 ; i < 150; i ++){
+		for( j = 0 ; j < MAXWIDTH ; j+=3)
+		{
+			if(IS_RED(j,i))
+			{
+				if(i < 120)
+				{
+					printf("MID_STOP in %d\n", i);
+					return MID_STOP;
+				}
+				else if(i > 140)
+				{
+					printf("SLow Down in %d\n", i);
+					return MID_SPEED_DOWN;
+				}
+			}
+		}
+	}
+}
 int check_mid_line()
 {
 	int i,j;
 	int height = -1;
 	int red_cnt = 0, change_line_cnt = 0;
+	int red_flag;
 
 #ifdef TRACE
 	printf("check_mid_line\n");
 #endif
 
+	red_flag = red_count();
+
+	if(red_flag == MID_SPEED_DOWN)
+		return MID_SPEED_DOWN;
+	else if(red_flag == MID_STOP)
+		return MID_STOP;
+
 	// 미드라인 수직 검사 
 	for(i=1; i<CUTLINE; i++)
 	{
-		if(IS_YELLOW(MIDWIDTH, i))
+		// check cross stop 
+		if(!IS_BLACK(MIDWIDTH, i))
 		{
 			height = i;
 			printf("yellow height %d \n",height);
 
-			//if(check_speed_bump(MIDWIDTH,i))
-			//	return MID_SPEED_BUMP;	// speed bump check.
+			if(check_speed_bump(MIDWIDTH,i))
+			{
+				if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR)
+					return MID_SPEED_BUMP_ST;	// speed bump check.
+				else
+					return MID_SPEED_BUMP_CUR;
+			}
+
 			if(height <= 10)
 			{
 				return MID_OUTLINE;
 			}
 
 			break;
-		}else if( IS_WHITE(MIDWIDTH,i)) 
+		}
+		else if( IS_WHITE(MIDWIDTH,i)) 
 		{
 			int white_cnt = 0;
 			height = i;
@@ -378,7 +432,7 @@ int check_mid_line()
 
 			for( j = i ; j < CUTLINE;j++)
 			{
-				if( IS_BLACK(MIDWIDTH,j) || IS_YELLOW(MIDWIDTH,j))
+				if( IS_BLACK(MIDWIDTH,j) || !IS_BLACK(MIDWIDTH,j))
 					break;
 				else
 					white_cnt+=1;
@@ -386,7 +440,8 @@ int check_mid_line()
 			if( white_cnt > 10)
 				return MID_SPEED_DOWN;
 			break;
-		}else if(IS_RED(MIDWIDTH,i))
+		}
+		else if(IS_RED(MIDWIDTH,i))
 		{
 			printf(" RED \n"); 
 			return MID_STOP;
@@ -419,7 +474,7 @@ int check_mid_line()
 int check_speed_bump(int w, int y)
 {
 	int count = 0;
-	int current_color = ( IS_YELLOW(w,y)? COL_YELLOW : COL_WHITE );
+	int current_color = ( !IS_BLACK(w,y)? COL_YELLOW : COL_WHITE );
 	int is_break = FALSE;
 	int i, j;
 
@@ -451,7 +506,12 @@ int check_speed_bump(int w, int y)
 				count++;
 			}
 		}
-		if(count >= 4)
+		if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && count >= 11)
+		{
+			printf("----------speed bump count : %d\n",count);
+			return TRUE;
+		}
+		else if(img_it->prev->mid_flag !=MID_SPEED_BUMP_CUR && count >= 4)
 			return TRUE;
 
 	}
@@ -1013,17 +1073,19 @@ void print_screen_y()
 
 		for(i = MAXWIDTH-1; i>=0; i--)
 		{	
-			if(Y(i,j) >= THRESHOLD)
+			if(Y(i,j) >= THRESHOLD_RED_STOP)
 			{
-				if(IS_YELLOW(i,j))
+				if(IS_RED(i,j))
+					printf("R");
+				else if(IS_YELLOW(i,j))
 					printf("1");
 				else if(IS_WHITE(i,j))
 					printf("2");
 				else
-					printf("0");
+					printf(" ");
 			}
 			else 
-				printf("0");
+				printf(" ");
 		}
 		printf("\n");
 	}

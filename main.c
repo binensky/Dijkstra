@@ -81,6 +81,9 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[LEFT]);
 #endif
+				if(idata->prev->flag == IF_RIGHT )
+					idata->prev->mid_flag = MID_STRAIGHT;
+
 				if(idata->angle[LEFT] < 90)
 				{
 					turn_set(DM_ANGLE_MAX);
@@ -173,6 +176,9 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle %d\n", idata->angle[RIGHT]);
 #endif
+				if(idata->prev->flag == IF_LEFT )
+					idata->prev->mid_flag = MID_STRAIGHT;
+
 				if(idata->angle[RIGHT] > 90)
 				{
 					//speed_set(1000);

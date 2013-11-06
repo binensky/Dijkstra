@@ -1,5 +1,5 @@
 //#define DEBUG
-//#define DRIVE_DEBUG
+#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
@@ -119,18 +119,24 @@ void drive(void)
 						temp_flag = MID_STRAIGHT;
 					else
 					{
-						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
+						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP || idata->prev->mid_flag == MID_SPEED_BUMP_ST)
 							temp_flag = MID_STRAIGHT;
 						else
+						{
+							printf("prev mid flag : %d\n",idata->prev->mid_flag);
 							temp_flag = MID_CURVE_STRAIGHT;
+						}
 					}
 				}
 				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 				{
-					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
+					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP || idata->prev->mid_flag == MID_SPEED_BUMP_ST)
 						temp_flag = MID_STRAIGHT;
 					else
+					{
+						printf("prev mid flag : %d\n",idata->prev->mid_flag);
 						temp_flag = MID_CURVE_STRAIGHT;
+					}
 				}
 				else if(idata->mid_flag == MID_CURVE)
 				{
@@ -213,18 +219,24 @@ void drive(void)
 						temp_flag = MID_STRAIGHT;
 					else
 					{
-						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
+						if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP || idata->prev->mid_flag == MID_SPEED_BUMP_ST)
 							temp_flag = MID_STRAIGHT;
 						else
+						{
+							printf("prev mid flag : %d\n",idata->prev->mid_flag);
 							temp_flag = MID_CURVE_STRAIGHT;
+						}
 					}
 				}
 				else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 				{
-					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP)
+					if(idata->prev->mid_flag == MID_STRAIGHT || idata->prev->mid_flag == MID_STOP || idata->prev->mid_flag == MID_SPEED_BUMP_ST)
 						temp_flag = MID_STRAIGHT;
 					else
+					{
+						printf("prev mid flag : %d\n",idata->prev->mid_flag);
 						temp_flag = MID_CURVE_STRAIGHT;
+					}
 				}
 				else if(idata->mid_flag == MID_CURVE)
 				{

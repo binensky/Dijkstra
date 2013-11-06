@@ -56,6 +56,7 @@ int dir_count = 0;
 int is_speed_bump;
 int distan = -1; // default
 int pt_cnt;	// left pt, right pt,
+int speed_bump_count = 0;
 int angles[PT_SIZE-1];
 
 extern struct image_data* img_head;
@@ -411,8 +412,15 @@ int check_mid_line()
 
 			if(check_speed_bump(MIDWIDTH,i))
 			{
-				if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR)
+				if(img_it->prev->mid_flag == MID_SPEED_BUMP_ST)
 					return MID_SPEED_BUMP_ST;	// speed bump check.
+				else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR)
+				{
+					if(speed_bump_count >= 6)
+						return MID_SPEED_BUMP_ST;
+					else
+						return MID_SPEED_BUMP_CUR;
+				}
 				else
 					return MID_SPEED_BUMP_CUR;
 			}
@@ -473,7 +481,6 @@ int check_mid_line()
 
 int check_speed_bump(int w, int y)
 {
-	int count = 0;
 	int current_color = ( !IS_BLACK(w,y)? COL_YELLOW : COL_WHITE );
 	int is_break = FALSE;
 	int i, j;
@@ -486,7 +493,7 @@ int check_speed_bump(int w, int y)
 
 	for(j = y; j < CUTLINE; j++)
 	{
-		count = 0;
+		speed_bump_count = 0;
 		for(i = MAXWIDTH-2; i>0; i--)
 		{
 			if(IS_BLACK_SPEED_BUMP(i,j))
@@ -498,21 +505,27 @@ int check_speed_bump(int w, int y)
 			if(IS_YELLOW_SPEED_BUMP(i,j) && (current_color == COL_WHITE))
 			{
 				current_color = COL_YELLOW;
-				count++;
+				speed_bump_count++;
 			}
 			else if(IS_WHITE_SPEED_BUMP(i,j) && (current_color == COL_YELLOW))
 			{
 				current_color = COL_WHITE;
-				count++;
+				speed_bump_count++;
 			}
 		}
-		if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && count >= 11)
-		{
-			printf("----------speed bump count : %d\n",count);
-			return TRUE;
-		}
-		else if(img_it->prev->mid_flag !=MID_SPEED_BUMP_CUR && count >= 4)
-			return TRUE;
+#ifdef DRIVE_DEBUG
+		if(speed_bump_count != 0)
+			printf("----------speed bump count in line %d : %d\n",j, speed_bump_count);
+#endif
+
+		if(img_it->prev->mid_flag != MID_SPEED_BUMP_CUR && img_it->prev->mid_flag != MID_SPEED_BUMP_ST && speed_bump_count >= 4)
+			return TRUE;	// MID_SPEED_BUMP_CUR
+		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && speed_bump_count >= 6)
+			return TRUE;	// MID_SPEED_BUMP_ST
+		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && speed_bump_count >= 4)
+			return TRUE;	// MID_SPEED_BUMP_CUR
+		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_ST && speed_bump_count >= 4)
+			return TRUE;	// MID_SPEED_BUMP_ST
 
 	}
 	return FALSE;

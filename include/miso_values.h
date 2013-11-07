@@ -44,7 +44,7 @@
 #define IF_CL_RIGHT 22
 
 #define DM_STRAIGHT 1533
-#define CM_STRAIGHT 1533
+#define CM_STRAIGHT 1515
 
 struct p_point
 {

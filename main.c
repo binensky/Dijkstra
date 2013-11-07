@@ -84,7 +84,6 @@ void drive(void)
 #endif
 				if(idata->prev->flag == IF_RIGHT )
 				{
-					printf("===========left to right \n");
 					idata->prev->mid_flag = MID_STRAIGHT;
 				}
 
@@ -95,7 +94,6 @@ void drive(void)
 					if(g_drive_flag == DF_DRIVE)
 						go_ahead();
 #endif
-					//speed_set(1000);
 					break;
 				}
 
@@ -147,13 +145,20 @@ void drive(void)
 				// set angle
 				if(temp_flag == MID_STRAIGHT)
 				{
-					//speed_set(2000);
 					idata->mid_flag = MID_STRAIGHT;
-					turn_straight();
+					if(idata->bot[LEFT].y < 50)
+					{
+						int tmp = 150 - 2*idata->bot[RIGHT].y;
+						printf("@@@@@@@angle : %d\n",tmp);
+						turn_set(DM_STRAIGHT-tmp);
+					}
+					else
+					{
+						turn_straight();
+					}
 				}
 				else
 				{
-					//speed_set(1000);
 					mid_bot.y = 0;
 					mid_bot.x = MIDWIDTH;
 					dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
@@ -247,9 +252,17 @@ void drive(void)
 				// set angle
 				if(temp_flag == MID_STRAIGHT)
 				{
-					//speed_set(2000);
 					idata->mid_flag = MID_STRAIGHT;
-					turn_straight();
+					if(idata->bot[RIGHT].y < 50)
+					{
+						int tmp = 150 - 2*idata->bot[RIGHT].y;
+						printf("@@@@@@@angle : %d\n",tmp);
+						turn_set(DM_STRAIGHT+tmp);
+					}
+					else
+					{
+						turn_straight();
+					}
 				}
 				else
 				{
@@ -436,7 +449,11 @@ void init_drive()
 	sleep(3);
 #endif
 	turn_straight();
-	usleep(2000);
+	usleep(2000);	
+	camera_turn_left();
+	usleep(1000000);
+	camera_turn_right();
+	usleep(1000000);
 	camera_straight();
 	usleep(2000);
 	speed_set(1000);

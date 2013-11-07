@@ -44,7 +44,7 @@
 #define IF_CL_RIGHT 22
 
 #define DM_STRAIGHT 1533
-#define CM_STRAIGHT 1533
+#define CM_STRAIGHT 1515
 
 struct p_point
 {
@@ -66,4 +66,5 @@ struct image_data
 // flags
 static int g_drive_flag = DF_DRIVE;
 static int g_image_flag = IF_NO_PROCESS;
+int g_broken_line = FALSE;
 #endif

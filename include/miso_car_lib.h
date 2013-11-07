@@ -89,12 +89,12 @@ void camera_straight()
 
 void camera_turn_right()
 {
-	cm_angle(HIGH(CM_STRAIGHT+100),LOW(CM_STRAIGHT+100));
+	cm_angle(HIGH(2200),LOW(2200));
 }
 
 void camera_turn_left()
 {
-	cm_angle(HIGH(CM_STRAIGHT-100),LOW(CM_STRAIGHT-100));
+	cm_angle(HIGH(800),LOW(800));
 }
 
 void distance_set(int dis)

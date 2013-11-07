@@ -47,6 +47,8 @@ int find_in_point(int rl_info, int i, int offset);
 int find_out_end_point( int i, int offset);
 int set_end_point(int rl_info, struct p_point* pt_tmp, int flag);
 int find_speed_bump_point(int w, int y);
+int check_change_line(int rl_info, int x, int y);
+int find_broken_line(int rl_info, int x, int y);
 
 int check_traffic_light();
 int is_left_turn(int x, int y);
@@ -54,8 +56,8 @@ int is_left_turn(int x, int y);
 int direct = NONE;
 int dir_count = 0;
 int is_speed_bump;
-int distan = -1; // default
 int pt_cnt;	// left pt, right pt,
+int speed_bump_count = 0;
 int angles[PT_SIZE-1];
 
 extern struct image_data* img_head;
@@ -131,6 +133,11 @@ for(j = CUTLINE; j>=0 ; j--)
 			{
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
+					if(g_broken_line)
+					{
+						img_data->flag = IF_CL_LEFT;
+						return img_data;
+					}
 					img_data->flag += IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle();
 					img_data->bot[LEFT].x = pt[BOT].x;
@@ -144,6 +151,11 @@ for(j = CUTLINE; j>=0 ; j--)
 				}
 				if((find_right == FL_NONE) && right_line_check(i))
 				{
+					if(g_broken_line)
+					{
+						img_data->flag = IF_CL_RIGHT;
+						return img_data;
+					}
 					img_data->flag += IF_RIGHT;
 					img_data->angle[RIGHT] = get_road_angle();
 					img_data->bot[RIGHT].x = pt[BOT].x;
@@ -455,8 +467,15 @@ int check_mid_line()
 
 			if(check_speed_bump(MIDWIDTH,i))
 			{
-				if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR)
+				if(img_it->prev->mid_flag == MID_SPEED_BUMP_ST)
 					return MID_SPEED_BUMP_ST;	// speed bump check.
+				else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR)
+				{
+					if(speed_bump_count >= 6)
+						return MID_SPEED_BUMP_ST;
+					else
+						return MID_SPEED_BUMP_CUR;
+				}
 				else
 					return MID_SPEED_BUMP_CUR;
 			}
@@ -506,7 +525,6 @@ int check_mid_line()
 
 int check_speed_bump(int w, int y)
 {
-	int count = 0;
 	int current_color = ( !IS_BLACK(w,y)? COL_YELLOW : COL_WHITE );
 	int is_break = FALSE;
 	int i, j;
@@ -519,7 +537,7 @@ int check_speed_bump(int w, int y)
 
 	for(j = y; j < CUTLINE; j++)
 	{
-		count = 0;
+		speed_bump_count = 0;
 		for(i = MAXWIDTH-2; i>0; i--)
 		{
 			if(IS_BLACK_SPEED_BUMP(i,j))
@@ -531,21 +549,27 @@ int check_speed_bump(int w, int y)
 			if(IS_YELLOW_SPEED_BUMP(i,j) && (current_color == COL_WHITE))
 			{
 				current_color = COL_YELLOW;
-				count++;
+				speed_bump_count++;
 			}
 			else if(IS_WHITE_SPEED_BUMP(i,j) && (current_color == COL_YELLOW))
 			{
 				current_color = COL_WHITE;
-				count++;
+				speed_bump_count++;
 			}
 		}
-		if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && count >= 11)
-		{
-			printf("----------speed bump count : %d\n",count);
-			return TRUE;
-		}
-		else if(img_it->prev->mid_flag !=MID_SPEED_BUMP_CUR && count >= 4)
-			return TRUE;
+#ifdef DRIVE_DEBUG
+		if(speed_bump_count != 0)
+			printf("----------speed bump count in line %d : %d\n",j, speed_bump_count);
+#endif
+
+		if(img_it->prev->mid_flag != MID_SPEED_BUMP_CUR && img_it->prev->mid_flag != MID_SPEED_BUMP_ST && speed_bump_count >= 4)
+			return TRUE;	// MID_SPEED_BUMP_CUR
+		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && speed_bump_count >= 6)
+			return TRUE;	// MID_SPEED_BUMP_ST
+		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && speed_bump_count >= 4)
+			return TRUE;	// MID_SPEED_BUMP_CUR
+		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_ST && speed_bump_count >= 4)
+			return TRUE;	// MID_SPEED_BUMP_ST
 
 	}
 	return FALSE;
@@ -572,9 +596,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 				for( x = offset; x>0; x--)
 				{
-					if(x == MIDWIDTH)
-						distan = y;
-
 					// (1,0)을 찾은 경우 점을 저장하고 offset을 갱신한다.  
 					if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) )
 					{
@@ -607,7 +628,13 @@ int find_in_point(int rl_info, int i, int offset)
 				// 오른쪽에서 1,0 을 못 찾은 경우
 				if(x == 0)
 				{
-					if(pt[BOT+1].x == -1)
+					if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y))
+					{
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
+						return TRUE;
+					}
+					else if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
@@ -627,9 +654,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 				for( x = offset; x<MAXWIDTH-1; x++)
 				{
-					if(x == MIDWIDTH)
-						distan = y;
-
 					if( IS_BLACK(x,y)  && !IS_BLACK(x+1,y))
 					{
 
@@ -662,7 +686,13 @@ int find_in_point(int rl_info, int i, int offset)
 				}
 				// 왼쪽에서 (10)을 못 찾은 경우
 				if(x == MAXWIDTH-1){
-					if(pt[BOT+1].x == -1)
+					if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y))
+					{
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
+						return TRUE;
+					}
+					else if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
@@ -687,9 +717,6 @@ int find_in_point(int rl_info, int i, int offset)
 
 				for( x = offset ; x >0 ; x--)
 				{
-					if(x == MIDWIDTH)
-						distan = y;
-
 					if(!IS_BLACK(x,y) && IS_BLACK(x-1,y))
 					{
 
@@ -722,7 +749,13 @@ int find_in_point(int rl_info, int i, int offset)
 
 				// 오른쪽에서 (0,1) 을 못 찾은 경우
 				if(x == 0){
-					if(pt[BOT+1].x == -1)
+					if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y))
+					{
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
+						return TRUE;
+					}
+					else if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
@@ -741,9 +774,6 @@ int find_in_point(int rl_info, int i, int offset)
 				flag = 1;
 				for( x = offset; x<MAXWIDTH-1; x++)
 				{
-					if(x == MIDWIDTH)
-						distan = y;
-
 					if( !IS_BLACK(x,y) && IS_BLACK(x+1,y))
 					{
 
@@ -777,7 +807,13 @@ int find_in_point(int rl_info, int i, int offset)
 				// 왼쪽에서 (0,1)을 못 찾은 경우
 				if(x == MAXWIDTH-1)
 				{
-					if(pt[BOT+1].x == -1)
+					if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y))
+					{
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
+						return TRUE;
+					}
+					else if(pt[BOT+1].x == -1)
 					{
 						init_point();
 						return FALSE;
@@ -804,7 +840,6 @@ int find_out_end_point(int i, int offset)
 	printf("find out point\n");
 #endif
 
-	distan = 0;
 	for( y = i+1; y <= CUTLINE ; y++)
 	{
 		// 위 점이 1인 경우 왼쪽으로 순회하면서 0,1 찾기
@@ -893,6 +928,134 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 		}
 	}
 	return FALSE;
+}
+
+int check_change_line(int rl_info, int x, int y)
+{
+	int i, j, k;
+#ifdef TRACE
+	printf("in check change line\n");
+#endif
+
+	for(j=y; j<y+50; j++)
+	{
+		if(j >= CUTLINE)
+			break;
+
+		if(rl_info == LEFT)
+		{
+			for(i=x; i>x-20; i--)
+			{
+				if(IS_BLACK(i,j) && !IS_BLACK(i-1,j))
+				{
+					for(k=i-1; k>0; k--)
+					{
+						if(!IS_BLACK(k,j) && IS_BLACK(k-1,j))
+						{
+							if(find_broken_line(LEFT, k,j))
+								return TRUE;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			for(i=x; i<x+20; i++)
+			{
+				if(IS_BLACK(i,j) && !IS_BLACK(i+1,j))
+				{
+					for(k=i+1; k<MAXWIDTH; k++)
+					{
+						if(!IS_BLACK(k,j) && IS_BLACK(k+1,j))
+						{
+							if(find_broken_line(RIGHT, k,j))
+								return TRUE;
+						}
+					}
+				}
+			}
+		}
+	}
+	return FALSE;
+}
+
+int find_broken_line(int rl_info, int x, int y)
+{
+	int i,j,offset = x;
+
+#ifdef TRACE
+	printf("in find broken line\n");
+#endif
+	if(rl_info == LEFT)
+	{
+		for(j=y+1; j<y+4; j++)
+		{
+			if(IS_BLACK(offset, j))
+			{
+				for(i=offset; i<MAXWIDTH-1; i++)
+				{
+					if(IS_BLACK(i,j) && !IS_BLACK(i+1,j))
+					{
+						offset = x+1;
+						j++;
+						break;
+					}
+				}
+				if(i > MIDWIDTH)
+					return FALSE;
+			}
+			else
+			{
+				for(i=offset; i>0; i--)
+				{
+					if(!IS_BLACK(i,j) && IS_BLACK(i-1,j))
+					{
+						offset = x;
+						j++;
+						break;
+					}
+				}
+				if(i < MIDWIDTH)
+					return FALSE;
+			}
+		}
+	}
+	else
+	{
+		for(j=y+1; j<y+4; j++)
+		{
+			if(IS_BLACK(offset, j))
+			{
+				for(i=offset; i>=0; i--)
+				{
+					if(IS_BLACK(i,j) && !IS_BLACK(i-1,j))
+					{
+						offset = x-1;
+						j++;
+						break;
+					}
+				}
+				if(i < MIDWIDTH)
+					return FALSE;
+			}
+			else
+			{
+				for(i=offset; i<MAXWIDTH; i++)
+				{
+					if(!IS_BLACK(i,j) && IS_BLACK(i+1,j))
+					{
+						offset = x;
+						j++;
+						break;
+					}
+				}
+				if(i > MIDWIDTH)
+					return FALSE;
+			}
+		}
+	}
+	return TRUE;
 }
 
 int get_road_angle()
@@ -1027,7 +1190,6 @@ void init_point()
 		pt[i].x = -1;
 	}
 	direct = NONE;
-	distan = -1;
 	pt_cnt = 0;
 }
 

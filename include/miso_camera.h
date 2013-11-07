@@ -59,7 +59,6 @@ int is_speed_bump;
 int pt_cnt;	// left pt, right pt,
 int speed_bump_count = 0;
 int angles[PT_SIZE-1];
-int broken_line = FALSE;
 
 extern struct image_data* img_head;
 extern struct image_data* img_it;
@@ -107,7 +106,7 @@ struct image_data* line_check(int handle)
 			{
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
-					if(broken_line)
+					if(g_broken_line)
 					{
 						img_data->flag = IF_CL_LEFT;
 						return img_data;
@@ -125,7 +124,7 @@ struct image_data* line_check(int handle)
 				}
 				if((find_right == FL_NONE) && right_line_check(i))
 				{
-					if(broken_line)
+					if(g_broken_line)
 					{
 						img_data->flag = IF_CL_RIGHT;
 						return img_data;
@@ -598,7 +597,8 @@ int find_in_point(int rl_info, int i, int offset)
 				{
 					if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y))
 					{
-						broken_line = TRUE;
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
 						return TRUE;
 					}
 					else if(pt[BOT+1].x == -1)
@@ -655,7 +655,8 @@ int find_in_point(int rl_info, int i, int offset)
 				if(x == MAXWIDTH-1){
 					if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y))
 					{
-						broken_line = TRUE;
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
 						return TRUE;
 					}
 					else if(pt[BOT+1].x == -1)
@@ -717,7 +718,8 @@ int find_in_point(int rl_info, int i, int offset)
 				if(x == 0){
 					if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y))
 					{
-						broken_line = TRUE;
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
 						return TRUE;
 					}
 					else if(pt[BOT+1].x == -1)
@@ -774,7 +776,8 @@ int find_in_point(int rl_info, int i, int offset)
 				{
 					if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y))
 					{
-						broken_line = TRUE;
+						printf("find broken_line\n");
+						g_broken_line = TRUE;
 						return TRUE;
 					}
 					else if(pt[BOT+1].x == -1)
@@ -897,17 +900,24 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)
 int check_change_line(int rl_info, int x, int y)
 {
 	int i, j, k;
+#ifdef TRACE
+	printf("in check change line\n");
+#endif
+
 	for(j=y; j<y+50; j++)
 	{
+		if(j >= CUTLINE)
+			break;
+
 		if(rl_info == LEFT)
 		{
 			for(i=x; i>x-20; i--)
 			{
 				if(IS_BLACK(i,j) && !IS_BLACK(i-1,j))
 				{
-					for(k=i-1; k>=0; k--)
+					for(k=i-1; k>0; k--)
 					{
-						if(!IS_BLACK(k,j) && IS_BLACK(k+1,j))
+						if(!IS_BLACK(k,j) && IS_BLACK(k-1,j))
 						{
 							if(find_broken_line(LEFT, k,j))
 								return TRUE;
@@ -924,7 +934,7 @@ int check_change_line(int rl_info, int x, int y)
 				{
 					for(k=i+1; k<MAXWIDTH; k++)
 					{
-						if(IS_BLACK(k,j) && !IS_BLACK(k+1,j))
+						if(!IS_BLACK(k,j) && IS_BLACK(k+1,j))
 						{
 							if(find_broken_line(RIGHT, k,j))
 								return TRUE;
@@ -941,6 +951,9 @@ int find_broken_line(int rl_info, int x, int y)
 {
 	int i,j,offset = x;
 
+#ifdef TRACE
+	printf("in find broken line\n");
+#endif
 	if(rl_info == LEFT)
 	{
 		for(j=y+1; j<y+4; j++)
@@ -1144,7 +1157,6 @@ void init_point()
 		pt[i].x = -1;
 	}
 	direct = NONE;
-	broken_line = FALSE;
 	pt_cnt = 0;
 }
 

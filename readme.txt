@@ -19,3 +19,6 @@
 
 5. 만약 Auto Merge 안되고 CONFLICT 나면 CONFLICT 된 파일에 가서 수동으로 고친다.
 6. 끄읕
+
+
+-------------- 항상 push 할땐 add . -A 후 commit

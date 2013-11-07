@@ -84,6 +84,33 @@ struct image_data* line_check(int handle)
 
 	printf("   drive flag : %d\n",g_drive_flag);
 
+#ifdef MID_LINE_DEBUG
+for(j = CUTLINE; j>=0 ; j--)
+	{
+		printf("%3d:",j);
+
+		for(i = MAXWIDTH-1; i>=0; i--)
+		{	
+			if(IS_RED(i,j))
+				printf("R");
+			else if(IS_YELLOW(i,j))
+				printf("1");
+			else if(IS_WHITE(i,j))
+				printf("2");
+			else
+				printf("0");
+		}
+		printf("\n");
+	}
+	for( j = 0 ; j < MAXWIDTH; j++)
+	{
+		if( j == width_scan_point)
+			printf("^");
+		else 
+			printf(" " );
+	}
+#endif
+
 	switch(g_drive_flag)
 	{
 		int tmp;
@@ -362,8 +389,7 @@ int find_outline(int rl_info, int y, int w)
 }
 int red_count(){
 	int i = 0, j = 0;
-	int red_cnt = 0;
-	for(i = 70 ; i < 150; i ++){
+	or(i = 70 ; i < 150; i ++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3)
 		{
 			if(IS_RED(j,i))
@@ -382,6 +408,24 @@ int red_count(){
 		}
 	}
 }
+
+int change_course(){
+	int n = 0;
+	n = mDistance();
+	distance_set(1000);
+	speed_set(2000);
+	forward_dis();
+	while(mDistance() - n < 10){}
+	turn_set(DM_ANGLE_MIN);
+	while(mDistance() - n < 500){printf("%d\n", mDistance() - n );}
+	turn_set(DM_STRAIGHT);
+	while(mDistance() - n < 3000){printf("%d\n", mDistance() - n);}
+	turn_set(DM_ANGLE_MAX);
+	while(mDistance() - n < 3800){}
+	turn_set(DM_STRAIGHT);
+}
+
+
 int check_mid_line()
 {
 	int i,j;
@@ -448,17 +492,6 @@ int check_mid_line()
 		}
 		else
 		{
-
-			if( i > 60 )
-			{
-				for( j = 0 ; j < 320 ; j+=3)
-					if(IS_RED(j,i))
-						red_cnt ++;	
-				if( red_cnt > 10)
-					return MID_STOP;
-				else if( red_cnt >3)
-					return MID_SPEED_DOWN;
-			}
 		}// end else
 	} // end for 
 

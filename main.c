@@ -1,6 +1,6 @@
 //#define DEBUG
 //#define DRIVE_DEBUG
-//#define MID_LINE_DEBUG
+#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
 
@@ -34,8 +34,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	drive();
-//	direct_test();
+//	drive();
+	direct_test();
 
 	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
@@ -485,11 +485,11 @@ void direct_test()
 				turn_straight();
 				break;
 			case '4':
-				distance_set(150);
+				distance_set(50);
 				forward_dis();
 				break;
 			case '5':
-				distance_set(150);
+				distance_set(50);
 				backward_dis();
 				break;
 			case '6':
@@ -513,6 +513,20 @@ void direct_test()
 				while(mDistance() - n < 3800){}
 				turn_straight();
 				while(mDistance() - n < 4600){}
+				break;
+			case '8':
+				n = mDistance();
+				distance_set(1000);
+				speed_set(2000);
+				forward_dis();
+				while(mDistance() - n < 10){}
+				turn_set(DM_ANGLE_MIN);
+				while(mDistance() - n < 500){printf("%d\n", mDistance() - n );}
+				turn_set(DM_STRAIGHT);
+				while(mDistance() - n < 3000){printf("%d\n", mDistance() - n);}
+				turn_set(DM_ANGLE_MAX);
+				while(mDistance() - n < 3800){}
+				turn_set(DM_STRAIGHT);
 				break;
 			default:
 				break;

@@ -46,6 +46,16 @@
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1515
 
+#define KEY1 1
+#define KEY2 2
+#define KEY3 3
+
+// key handler 
+static char keyDev[] ="/dev/KEYPAD";
+static int keyFD = -1;
+static char keyState[3]={0,0,0};
+
+// 
 struct p_point
 {
 	int x;		// x좌표 (0~319)
@@ -56,11 +66,11 @@ struct image_data
 {
 	struct image_data* prev;
 	struct image_data* next;
-
+	struct p_point bot[3];
 	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
 	int mid_flag;
 	int angle[3];
-	struct p_point bot[3];
+	int dist ;
 };
 
 // flags

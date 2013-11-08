@@ -401,7 +401,7 @@ int find_outline(int rl_info, int y, int w)
 }
 int red_count(){
 	int i = 0, j = 0;
-	or(i = 70 ; i < 150; i ++){
+	for(i = 70 ; i < 150; i ++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3)
 		{
 			if(IS_RED(j,i))

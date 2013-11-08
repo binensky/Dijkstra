@@ -10,7 +10,6 @@
 #include "include/miso_values.h"
 #include "include/miso_car_lib.h"
 #include "include/miso_camera.h"
-#include "include/key_handler.h"
 #include "include/sensor_handler.h"
 #include "include/distance_check.h"
 
@@ -22,6 +21,7 @@ struct image_data* img_tail;
 
 void init_drive(void);
 void drive(void);
+void key_handling();
 void drive_turn(struct image_data* idata, double gradient, int intercept, int height);
 void direct_test(void);
 
@@ -30,14 +30,12 @@ int main(void)
 	cm_handle = init_camera();
 
 	car_connect();
-	pthread_create(&thread[0],NULL,key_handler,NULL);
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-//	drive();
+	//drive();
 	direct_test();
 
-	pthread_join(thread[0],NULL);
 	//pthread_join(thread[1],NULL);
 	//pthread_join(thread[2],NULL);
 	return 0;
@@ -53,6 +51,9 @@ void drive(void)
 
 	while(TRUE)
 	{
+		
+		// check key down 
+
 		idata = line_check(cm_handle); // get image data 
 	
 		idata->prev = img_it;
@@ -130,7 +131,6 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle left : %d right : %d\n", idata->angle[LEFT], idata->angle[RIGHT]);
 #endif
-				// 100 까지 찾아서 양쪽선이 나오면 사실상 직진
 				turn_straight();				
 				break;
 
@@ -227,6 +227,13 @@ void init_drive()
 #ifdef DRIVE
 	sleep(3);
 #endif
+
+	// init key handler 
+	if((keyFD = open(keyDev,O_RDONLY))<0)
+	{
+		perror("Cannot open /dev/key!");
+	}
+
 	turn_straight();
 	usleep(2000);	
 	camera_turn_left();
@@ -430,4 +437,38 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		set_angle(dest_angle);
 	}
 
+}
+
+void key_handling()
+{
+	unsigned char read_key = read(keyFD, &buf,sizeof(buf));
+	unsigned char buf;
+	int key = read_key;
+
+	switch(key)
+	{
+		case KEY1:
+			keyState[0]=~keyState[0];
+			break;
+		case KEY2:
+			keyState[1]=~keyState[1];
+			speed_down(1000);
+			buzzer_on();
+			usleep(500000);
+			buzzer_on();
+			break;
+		case KEY3:
+			buzzer_on();
+			usleep(500000);
+			buzzer_on();
+			usleep(500000);
+			buzzer_on();
+			usleep(500000);
+			stop();
+			exit_camera(cm_handle);
+			exit(0);
+			break;
+		default:
+			break;
+	}
 }

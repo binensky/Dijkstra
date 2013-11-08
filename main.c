@@ -2,7 +2,7 @@
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-#define TRACE
+//#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -24,6 +24,8 @@ void drive(void);
 void key_handling();
 void drive_turn(struct image_data* idata, double gradient, int intercept, int height);
 void direct_test(void);
+void change_course();
+
 
 int main(void)
 {
@@ -33,8 +35,8 @@ int main(void)
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
-	//drive();
-	direct_test();
+	drive();
+//	direct_test();
 
 	//pthread_join(thread[1],NULL);
 	//pthread_join(thread[2],NULL);
@@ -53,7 +55,6 @@ void drive(void)
 	{
 		
 		// check key down 
-
 		idata = line_check(cm_handle); // get image data 
 	
 		idata->prev = img_it;
@@ -154,12 +155,10 @@ void drive(void)
 				turn_straight();
 				break;
 			case IF_CL_LEFT:
-				printf("change line left !!\n");
-				stop();
+				change_course();
 				break;
 			case IF_CL_RIGHT:
-				printf("change line right !!\n");
-				stop();
+				change_course();
 				break;
 			case IF_SG_STOP:
 				traffic_drive(IF_SG_STOP);
@@ -181,6 +180,25 @@ void drive(void)
 		}
 #endif
 	}
+}
+void  change_course(){
+
+	int n = 0;
+	n = mDistance();
+	distance_set(1300);
+	speed_set(2000);
+	forward_dis();
+	while(mDistance() - n < 20){}
+	turn_set(DM_STRAIGHT);
+	while(mDistance() - n < 320){}
+	turn_set(DM_ANGLE_MIN);
+	while(mDistance() - n < 820){}
+	turn_set(DM_STRAIGHT);
+	while(mDistance() - n < 3220){}
+	turn_set(DM_ANGLE_MAX);
+	while(mDistance() - n < 4020){}
+	turn_set(DM_STRAIGHT);
+	speed_set(1000);
 }
 
 void traffic_drive(int flag){
@@ -324,18 +342,7 @@ void direct_test()
 				while(mDistance() - n < 4600){}
 				break;
 			case '8':
-				n = mDistance();
-				distance_set(1000);
-				speed_set(2000);
-				forward_dis();
-				while(mDistance() - n < 10){}
-				turn_set(DM_ANGLE_MIN);
-				while(mDistance() - n < 500){printf("%d\n", mDistance() - n );}
-				turn_set(DM_STRAIGHT);
-				while(mDistance() - n < 3000){printf("%d\n", mDistance() - n);}
-				turn_set(DM_ANGLE_MAX);
-				while(mDistance() - n < 3800){}
-				turn_set(DM_STRAIGHT);
+				change_course();
 				break;
 			default:
 				break;

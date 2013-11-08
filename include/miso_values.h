@@ -66,5 +66,6 @@ struct image_data
 // flags
 static int g_drive_flag = DF_DRIVE;
 static int g_image_flag = IF_NO_PROCESS;
-int g_broken_line = FALSE;
+static int g_broken_line = FALSE;
+static int g_change_line = FALSE;
 #endif

@@ -133,9 +133,10 @@ for(j = CUTLINE; j>=0 ; j--)
 			{
 				if((find_left == FL_NONE) && left_line_check(i))
 				{
-					if(g_broken_line)
+					if(!g_change_line && g_broken_line)
 					{
 						img_data->flag = IF_CL_LEFT;
+						g_change_line = TRUE;
 						return img_data;
 					}
 					img_data->flag += IF_LEFT;
@@ -151,9 +152,10 @@ for(j = CUTLINE; j>=0 ; j--)
 				}
 				if((find_right == FL_NONE) && right_line_check(i))
 				{
-					if(g_broken_line)
+					if(!g_change_line && g_broken_line)
 					{
 						img_data->flag = IF_CL_RIGHT;
+						g_change_line = TRUE;
 						return img_data;
 					}
 					img_data->flag += IF_RIGHT;
@@ -282,7 +284,6 @@ int left_line_check(int i)
 #ifdef TRACE
 	printf("left line check\n");
 #endif
-
 	for( w = width_scan_point+1 ; w < MAXWIDTH -1; w++)		// 중간값이 1이 아닌 경우 인라인을 찾아야 한다. 
 	{
 		if(!IS_BLACK(w,i)){
@@ -329,7 +330,6 @@ int find_inline(int rl_info, int y, int w)
 			find_left = FL_FIND;
 			return TRUE;
 		}else{
-
 			return FALSE;
 		}
 	}
@@ -401,7 +401,7 @@ int find_outline(int rl_info, int y, int w)
 }
 int red_count(){
 	int i = 0, j = 0;
-	or(i = 70 ; i < 150; i ++){
+	for(i = 70 ; i < 150; i ++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3)
 		{
 			if(IS_RED(j,i))
@@ -421,21 +421,7 @@ int red_count(){
 	}
 }
 
-int change_course(){
-	int n = 0;
-	n = mDistance();
-	distance_set(1000);
-	speed_set(2000);
-	forward_dis();
-	while(mDistance() - n < 10){}
-	turn_set(DM_ANGLE_MIN);
-	while(mDistance() - n < 500){printf("%d\n", mDistance() - n );}
-	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 3000){printf("%d\n", mDistance() - n);}
-	turn_set(DM_ANGLE_MAX);
-	while(mDistance() - n < 3800){}
-	turn_set(DM_STRAIGHT);
-}
+
 
 
 int check_mid_line()
@@ -630,7 +616,6 @@ int find_in_point(int rl_info, int i, int offset)
 				{
 					if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y))
 					{
-						printf("find broken_line\n");
 						g_broken_line = TRUE;
 						return TRUE;
 					}
@@ -688,7 +673,6 @@ int find_in_point(int rl_info, int i, int offset)
 				if(x == MAXWIDTH-1){
 					if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y))
 					{
-						printf("find broken_line\n");
 						g_broken_line = TRUE;
 						return TRUE;
 					}
@@ -751,7 +735,6 @@ int find_in_point(int rl_info, int i, int offset)
 				if(x == 0){
 					if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y))
 					{
-						printf("find broken_line\n");
 						g_broken_line = TRUE;
 						return TRUE;
 					}
@@ -809,7 +792,6 @@ int find_in_point(int rl_info, int i, int offset)
 				{
 					if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y))
 					{
-						printf("find broken_line\n");
 						g_broken_line = TRUE;
 						return TRUE;
 					}
@@ -936,6 +918,8 @@ int check_change_line(int rl_info, int x, int y)
 #ifdef TRACE
 	printf("in check change line\n");
 #endif
+	if(g_broken_line)
+		return FALSE;
 
 	for(j=y; j<y+50; j++)
 	{

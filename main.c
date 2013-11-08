@@ -68,6 +68,7 @@ void drive(void)
 		{			
 			case IF_STOP:
 				stop();
+				idata->mid_flag = MID_STRAIGHT;
 				//g_drive_flag = DF_STOP;
 				break;
 

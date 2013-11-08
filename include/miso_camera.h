@@ -918,9 +918,6 @@ int check_change_line(int rl_info, int x, int y)
 #ifdef TRACE
 	printf("in check change line\n");
 #endif
-	if(g_broken_line)
-		return FALSE;
-
 	for(j=y; j<y+50; j++)
 	{
 		if(j >= CUTLINE)

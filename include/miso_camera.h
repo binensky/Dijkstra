@@ -423,9 +423,28 @@ int red_count(){
 	}
 }
 
+int white_count(int y){
+
+	int i = 0, j = 0;
+	int cnt = 0;
+
+	for(i = y ; i < CUTLINE ; i ++){
+		if(!IS_WHITE(MIDWIDTH, i)){
+			return FALSE;	
+		}
+		else if(IS_WHITE(MIDWIDTH, i)){
+			printf("----------------------------------------------------------------cnt : %d\n", cnt);
+			cnt += 1;		
+		}
+		if(cnt >= 10){
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 
 
-
+}
 int check_mid_line()
 {
 	int i,j;
@@ -469,45 +488,24 @@ int check_mid_line()
 			}
 
 			if(height <= 10)
-			{
 				return MID_OUTLINE;
-			}
+			else if( height <= CUTLINE_CURVE)
+				return  MID_CURVE;
+			else if( CUTLINE_CURVE < height && height <= CUTLINE)
+				return MID_CURVE_STRAIGHT;
 
-			break;
-		}
-		else if( IS_WHITE(MIDWIDTH,i)) 
-		{
-			int white_cnt = 0;
-			height = i;
-			printf("white height %d \n",height);
-
-			for( j = i ; j < CUTLINE;j++)
+			if( IS_WHITE(MIDWIDTH,i)) 
 			{
-				if( IS_BLACK(MIDWIDTH,j) || !IS_BLACK(MIDWIDTH,j))
-					break;
-				else
-					white_cnt+=1;
+				if(i == CUTLINE -1 || IS_BLACK(MIDWIDTH, i+1))
+					return MID_SPEED_DOWN;
 			}
-			if( white_cnt > 10)
-				return MID_SPEED_DOWN;
 			break;
 		}
-		else if(IS_RED(MIDWIDTH,i))
-		{
-			printf(" RED \n"); 
-			return MID_STOP;
-		}
-		else
-		{
+		
+		else{
 		}// end else
 	} // end for 
-
-	// if red cross stop check 
-	if( 0 < height && height <= CUTLINE_CURVE)
-		return  MID_CURVE;
-	else if( CUTLINE_CURVE < height && height <= CUTLINE)
-		return MID_CURVE_STRAIGHT;
-	else 
+	if(height == -1) 
 		return MID_STRAIGHT;
 }
 

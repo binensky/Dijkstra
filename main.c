@@ -32,13 +32,13 @@ int main(void)
 	cm_handle = init_camera();
 
 	car_connect();
-	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
 	drive();
 //	direct_test();
 
-	//pthread_join(thread[1],NULL);
+	pthread_join(thread[1],NULL);
 	//pthread_join(thread[2],NULL);
 	return 0;
 }
@@ -50,12 +50,11 @@ void drive(void)
 	int angle,input,intercept, height;
 	
 	init_drive();
-
+	
 	while(TRUE)
 	{
-		
 		// check key down 
-	//	key_handling();
+//		key_handling();
 		idata = line_check(cm_handle); // get image data 
 	
 		idata->prev = img_it;
@@ -65,6 +64,9 @@ void drive(void)
 		img_it=idata;
 
 		printf("idata flag %d \n",idata->flag );  
+		
+		
+
 		switch(idata->flag)
 		{			
 			case IF_STOP:
@@ -151,7 +153,8 @@ void drive(void)
 				break;
 				
 			case IF_SPEED_DOWN:
-				//speed_set(1000);
+				printf("------------------------SPEED DOWN------------------\n");
+				//speed_set(500);
 				break;
 			case IF_SPEED_BUMP_ST:
 				turn_straight();
@@ -175,7 +178,7 @@ void drive(void)
 #ifdef DRIVE
 		if(idata->flag != IF_STOP && idata->flag != IF_SG_STOP 
 		&& idata->flag  != IF_SG_LEFT && idata->flag !=IF_SG_RIGHT 
-		&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT)
+		&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT && g_drive_flag != DF_STOP)
 		{		
 			distance_set(500);	
 			forward_dis();
@@ -187,17 +190,18 @@ void  change_course(){
 
 	int n = 0;
 	n = mDistance();
-	distance_set(1300);
+	distance_set(1400);
 	speed_set(2000);
 	winker_light(EMERGENCY);
 	forward_dis();
+	winker_light(EMERGENCY);
 	while(mDistance() - n < 20){}
 	turn_set(DM_STRAIGHT);
 	while(mDistance() - n < 320){}
 	turn_set(DM_ANGLE_MIN);
 	while(mDistance() - n < 820){}
 	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 3220){}
+	while(mDistance() - n < 3420){}
 	turn_set(DM_ANGLE_MAX);
 	while(mDistance() - n < 4020){}
 	turn_set(DM_STRAIGHT);
@@ -211,7 +215,6 @@ void traffic_drive(int flag){
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
-			buzzer_on();
 			g_drive_flag = DF_STOP;
 			break;
 

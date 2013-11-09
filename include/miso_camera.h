@@ -75,11 +75,11 @@ struct image_data* line_check(int handle)
 	init_values(cm_handle);
 
 #ifdef DEBUG
-	//	print_screen_y();
+	//print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
-	//print_screen_color();
+	print_screen_color();
 	//check_traffic_light();
 	//exit(0);
 #endif
@@ -87,7 +87,8 @@ struct image_data* line_check(int handle)
 	printf("   drive flag : %d\n",g_drive_flag);
 
 #ifdef MID_LINE_DEBUG
-for(j = CUTLINE; j>=0 ; j--)
+
+	for(j = CUTLINE; j>=0 ; j--)
 	{
 		printf("%3d:",j);
 
@@ -410,12 +411,16 @@ int red_count(){
 			{
 				if(i < 120)
 				{
+#ifdef DEBUG
 					printf("MID_STOP in %d\n", i);
+#endif
 					return MID_STOP;
 				}
 				else if(i > 140)
 				{
+#ifdef DEBUG
 					printf("SLow Down in %d\n", i);
+#endif
 					return MID_SPEED_DOWN;
 				}
 			}
@@ -433,10 +438,12 @@ int white_count(int y){
 			return FALSE;	
 		}
 		else if(IS_WHITE(MIDWIDTH, i)){
+#ifdef DEBUG
 			printf("----------------------------------------------------------------cnt : %d\n", cnt);
+#endif
 			cnt += 1;		
 		}
-		if(cnt >= 10){
+		if(cnt >= 4){
 			return TRUE;
 		}
 	}
@@ -1313,24 +1320,19 @@ void print_screen_y()
 {
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE; j>=0 ; j--)
+	for(j = CUTLINE ; j>=0 ; j--)
 	{
 		printf("%3d:",j);
 
 		for(i = MAXWIDTH-1; i>=0; i--)
 		{	
-			if(Y(i,j) >= THRESHOLD_RED_STOP)
-			{
-				if(IS_RED(i,j))
-					printf("R");
-				else if(IS_YELLOW(i,j))
-					printf("1");
-				else if(IS_WHITE(i,j))
-					printf("2");
-				else
-					printf(" ");
-			}
-			else 
+			if(IS_RED(i,j))
+				printf("R");
+			else if(IS_YELLOW(i,j))
+				printf("1");
+			else if(IS_WHITE(i,j))
+				printf("2");
+			else
 				printf(" ");
 		}
 		printf("\n");

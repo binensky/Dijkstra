@@ -1,5 +1,5 @@
 //#define DEBUG
-#define DRIVE_DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
@@ -154,7 +154,7 @@ void drive(void)
 				
 			case IF_SPEED_DOWN:
 				printf("------------------------SPEED DOWN------------------\n");
-				//speed_set(500);
+				speed_set(500);
 				break;
 			case IF_SPEED_BUMP_ST:
 				turn_straight();

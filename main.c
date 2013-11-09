@@ -55,7 +55,7 @@ void drive(void)
 	{
 		
 		// check key down 
-		key_handling();
+	//	key_handling();
 		idata = line_check(cm_handle); // get image data 
 	
 		idata->prev = img_it;
@@ -399,7 +399,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		{
 			if(idata->bot[RIGHT].y < 50)
 			{
-				turn_set(DM_STRAIGHT+(150 + 2*idata->bot[RIGHT].y));
+				turn_set(DM_STRAIGHT + (150 - 2*idata->bot[RIGHT].y));
 			}
 			else
 			{
@@ -410,7 +410,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		{
 			if(idata->bot[LEFT].y < 50)
 			{
-				turn_set(DM_STRAIGHT+(150 - 2*idata->bot[LEFT].y));
+				turn_set(DM_STRAIGHT - (150 - 2*idata->bot[LEFT].y));
 			}
 			else
 			{

@@ -6,27 +6,11 @@
 #include "miso_camera.h"
 #include "miso_car_lib.h"
 
-#define KEY1 1
-#define KEY2 2
-#define KEY3 3
-
-static char keyDev[] ="/dev/KEYPAD";
-static int keyFD = -1;
-static char keyState[3]={OFF,OFF,OFF};
-int point;
-
 void* key_handler(void* data)
 {
 	// connect car 
 	unsigned char buf,read_key;
 	int key;
-
-	// open key interface. 
-	if((keyFD = open(keyDev,O_RDONLY))<0)
-	{
-		perror("Cannot open /dev/key!");
-		buzzer_on();
-	}
 
 	// buzy wait to pushing key. 
 	while(1){
@@ -37,9 +21,6 @@ void* key_handler(void* data)
 		{
 			case KEY1:
 				keyState[0]=~keyState[0];
-				printf("keyState0 : %d\n",keyState[0]);
-				speed_up(1000);
-				buzzer_on();
 				break;
 			case KEY2:
 				keyState[1]=~keyState[1];

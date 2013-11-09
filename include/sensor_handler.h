@@ -10,6 +10,7 @@ void* sensor_handler(void* data)
 {
 	char ret;
 	//sudden_stop(250);
+	int status = 0;
 
 	while(TRUE)
 	{
@@ -18,11 +19,16 @@ void* sensor_handler(void* data)
 		write(uart_fd,&buf[0],1);
 		read(uart_fd,&read_buf[0],2);
 		ret = read_buf[0];
-		printf("ret : %d\n",ret);
-		if( ret > 0)
+		//printf("ret : %d\n",ret);
+		if( ret == 127 )
 		{
 			stop();
 			//sudden_stop(250);
+			if(status == 0){
+				buzzer_on();
+				status = 1;
+			}
+
 			g_drive_flag = DF_STOP;
 		}
 		line_stop();

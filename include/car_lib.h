@@ -97,14 +97,14 @@ void line_start(void)
 {
 	buf[0] = 0x82;
 	write(uart_fd, &buf[0], 1);
-	printf("Line Start\n");
+//	printf("Line Start\n");
 }
 
 void line_stop(void)
 {
 	buf[0] = 0x83;
 	write(uart_fd, &buf[0], 1);
-	printf("Line Stop\n");
+//	printf("Line Stop\n");
 }
 
 void control_led(int mode, char* value)

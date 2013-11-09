@@ -10,7 +10,6 @@
 #include "include/miso_values.h"
 #include "include/miso_car_lib.h"
 #include "include/miso_camera.h"
-#include "include/key_handler.h"
 #include "include/sensor_handler.h"
 #include "include/distance_check.h"
 
@@ -22,6 +21,7 @@ struct image_data* img_tail;
 
 void init_drive(void);
 void drive(void);
+void key_handling();
 void drive_turn(struct image_data* idata, double gradient, int intercept, int height);
 void direct_test(void);
 void change_course();
@@ -32,15 +32,13 @@ int main(void)
 	cm_handle = init_camera();
 
 	car_connect();
-	pthread_create(&thread[0],NULL,key_handler,NULL);
-	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
 	drive();
 //	direct_test();
 
-	pthread_join(thread[0],NULL);
-	//pthread_join(thread[1],NULL);
+	pthread_join(thread[1],NULL);
 	//pthread_join(thread[2],NULL);
 	return 0;
 }
@@ -52,9 +50,11 @@ void drive(void)
 	int angle,input,intercept, height;
 	
 	init_drive();
-
+	
 	while(TRUE)
 	{
+		// check key down 
+//		key_handling();
 		idata = line_check(cm_handle); // get image data 
 	
 		idata->prev = img_it;
@@ -64,10 +64,14 @@ void drive(void)
 		img_it=idata;
 
 		printf("idata flag %d \n",idata->flag );  
+		
+		
+
 		switch(idata->flag)
 		{			
 			case IF_STOP:
 				stop();
+				idata->mid_flag = MID_STRAIGHT;
 				//g_drive_flag = DF_STOP;
 				break;
 
@@ -132,7 +136,6 @@ void drive(void)
 #ifdef DRIVE_DEBUG
 				printf("img angle left : %d right : %d\n", idata->angle[LEFT], idata->angle[RIGHT]);
 #endif
-				// 100 까지 찾아서 양쪽선이 나오면 사실상 직진
 				turn_straight();				
 				break;
 
@@ -150,7 +153,8 @@ void drive(void)
 				break;
 				
 			case IF_SPEED_DOWN:
-				//speed_set(1000);
+				printf("------------------------SPEED DOWN------------------\n");
+				//speed_set(500);
 				break;
 			case IF_SPEED_BUMP_ST:
 				turn_straight();
@@ -174,7 +178,7 @@ void drive(void)
 #ifdef DRIVE
 		if(idata->flag != IF_STOP && idata->flag != IF_SG_STOP 
 		&& idata->flag  != IF_SG_LEFT && idata->flag !=IF_SG_RIGHT 
-		&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT)
+		&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT && g_drive_flag != DF_STOP)
 		{		
 			distance_set(500);	
 			forward_dis();
@@ -186,8 +190,9 @@ void  change_course(){
 
 	int n = 0;
 	n = mDistance();
-	distance_set(1300);
+	distance_set(1400);
 	speed_set(2000);
+	winker_light(EMERGENCY);
 	forward_dis();
 	winker_light(EMERGENCY);
 	while(mDistance() - n < 20){}
@@ -196,12 +201,12 @@ void  change_course(){
 	turn_set(DM_ANGLE_MIN);
 	while(mDistance() - n < 820){}
 	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 3220){}
+	while(mDistance() - n < 3420){}
 	turn_set(DM_ANGLE_MAX);
 	while(mDistance() - n < 4020){}
-	turn_set("OFF");
+	turn_set(DM_STRAIGHT);
 	speed_set(1000);
-	front_light(OFF);
+	winker_light(OFF);
 }
 
 void traffic_drive(int flag){
@@ -210,7 +215,6 @@ void traffic_drive(int flag){
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
-			buzzer_on();
 			g_drive_flag = DF_STOP;
 			break;
 
@@ -249,6 +253,12 @@ void init_drive()
 #ifdef DRIVE
 	sleep(3);
 #endif
+
+	if((keyFD = open(keyDev,O_RDONLY))<0)
+	{
+		perror("Cannot open /dev/key!");
+	}
+	
 	turn_straight();
 	usleep(2000);	
 	camera_turn_left();
@@ -441,4 +451,39 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		set_angle(dest_angle);
 	}
 
+}
+
+void key_handling()
+{
+
+	unsigned char buf;
+	unsigned char read_key = read(keyFD, &buf,sizeof(buf));
+	int key = read_key;
+
+	switch(key)
+	{
+		case KEY1:
+			keyState[0]=~keyState[0];
+			break;
+		case KEY2:
+			keyState[1]=~keyState[1];
+			speed_down(1000);
+			buzzer_on();
+			usleep(500000);
+			buzzer_on();
+			break;
+		case KEY3:
+			buzzer_on();
+			usleep(500000);
+			buzzer_on();
+			usleep(500000);
+			buzzer_on();
+			usleep(500000);
+			stop();
+			exit_camera(cm_handle);
+			exit(0);
+			break;
+		default:
+			break;
+	}
 }

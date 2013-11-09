@@ -29,7 +29,7 @@ int main(void)
 {
 	cm_handle = init_camera();
 	car_connect();
-	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
 	init_drive();
@@ -57,7 +57,7 @@ int main(void)
 	}
 
 	//direct_test();
-	//pthread_join(thread[1],NULL);
+	pthread_join(thread[1],NULL);
 	//pthread_join(thread[2],NULL);
 	return 0;
 }
@@ -71,7 +71,7 @@ void drive_ai()
 	while(TRUE)
 	{
 		key_handling();
-
+		
 		// busy waiting for next image data. 
 		while( g_index>0 && stored_data[g_index-1].dist < mDistance()){}
 
@@ -131,6 +131,7 @@ void drive_md()
 		// drive flag check and drive. - inline function
 		drive(&stored_data[g_index++]);
 	}
+
 }
 
 inline void drive(struct image_data* idata)
@@ -143,6 +144,7 @@ inline void drive(struct image_data* idata)
 		case IF_STOP:
 			stop();
 			idata->mid_flag = MID_STRAIGHT;
+			g_drive_flag = DF_STOP;
 			break;
 
 		case IF_LEFT:
@@ -307,7 +309,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		{
 			if(idata->bot[RIGHT].y < 50)
 			{
-				turn_set(DM_STRAIGHT+(150 + 2*idata->bot[RIGHT].y));
+				turn_set(DM_STRAIGHT + (150 - 2*idata->bot[RIGHT].y));
 			}
 			else
 			{
@@ -318,7 +320,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		{
 			if(idata->bot[LEFT].y < 50)
 			{
-				turn_set(DM_STRAIGHT+(150 - 2*idata->bot[LEFT].y));
+				turn_set(DM_STRAIGHT - (150 - 2*idata->bot[LEFT].y));
 			}
 			else
 			{

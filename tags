@@ -824,7 +824,7 @@ cb	include/pxa_lib.h	/^			unsigned char *y,*cb,*cr;$/;"	m	struct:pxa_video_buf::
 cbstep	include/pxa_lib.h	/^			unsigned int ystep,cbstep,crstep;$/;"	m	struct:pxa_video_buf::__anon3::__anon5
 change_course	include/drive_modules.h	/^void  change_course(){$/;"	f
 change_line	include/miso_car_lib.h	/^void change_line(int v)$/;"	f
-check_change_line	include/miso_camera.h	/^int check_change_line(int rl_info, int x, int y)$/;"	f
+check_change_line	include/miso_camera.h	/^int check_change_line(int rl_info, int x, int y, struct p_point* pt)$/;"	f
 check_distance	include/car_lib.h	/^int check_distance(int ch)$/;"	f
 check_distance_inner	include/car_lib.h	/^int check_distance_inner(int ch, int total)$/;"	f
 check_mid_line	include/miso_camera.h	/^int check_mid_line()$/;"	f
@@ -894,7 +894,7 @@ field	include/videodev2.h	/^	__u32   field;          \/* 0: first field, 1: seco
 field	include/videodev2.h	/^	enum v4l2_field		field;$/;"	m	struct:v4l2_buffer	typeref:enum:v4l2_buffer::v4l2_field
 field	include/videodev2.h	/^	enum v4l2_field  	field;$/;"	m	struct:v4l2_pix_format	typeref:enum:v4l2_pix_format::v4l2_field
 field	include/videodev2.h	/^	enum v4l2_field  	field;$/;"	m	struct:v4l2_window	typeref:enum:v4l2_window::v4l2_field
-find_broken_line	include/miso_camera.h	/^int find_broken_line(int rl_info, int x, int y)$/;"	f
+find_broken_line	include/miso_camera.h	/^int find_broken_line(int rl_info, int x, int y, struct p_point* pt)$/;"	f
 find_in_point	include/miso_camera.h	/^int find_in_point(int rl_info, int i, int offset)$/;"	f
 find_inline	include/miso_camera.h	/^int find_inline(int rl_info, int y, int w)$/;"	f
 find_left	include/cam_values.h	/^int find_left = FL_NONE, find_right = FL_NONE;$/;"	v

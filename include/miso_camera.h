@@ -25,7 +25,7 @@ struct pxa_camera
 	enum    pxavid_format format;
 };
 
-void init_values(int handle);
+void init_values(int handle,struct image_data* idata);
 void init_point();
 
 void print_screen_org();
@@ -60,19 +60,14 @@ int pt_cnt;	// left pt, right pt,
 int speed_bump_count = 0;
 int angles[PT_SIZE-1];
 
-extern struct image_data* img_head;
-extern struct image_data* img_it;
-extern struct image_data* img_tail;
-
-struct image_data* line_check(int handle)
+struct image_data* line_check(int handle, struct image_data* img_data)
 {
 	int i,j,rl_info,k;
 	int ret, temp, weight, midangle, topangle;
 	int angle_bot, angle_end;
-	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
 
 	// init values
-	init_values(cm_handle);
+	init_values(cm_handle,img_data);
 
 #ifdef DEBUG
 	//	print_screen_y();
@@ -87,7 +82,7 @@ struct image_data* line_check(int handle)
 	printf("   drive flag : %d\n",g_drive_flag);
 
 #ifdef MID_LINE_DEBUG
-for(j = CUTLINE; j>=0 ; j--)
+	for(j = CUTLINE; j>=0 ; j--)
 	{
 		printf("%3d:",j);
 
@@ -139,6 +134,7 @@ for(j = CUTLINE; j>=0 ; j--)
 						g_change_line = TRUE;
 						return img_data;
 					}
+
 					img_data->flag += IF_LEFT;
 					img_data->angle[LEFT] = get_road_angle();
 					img_data->bot[LEFT].x = pt[BOT].x;
@@ -453,9 +449,9 @@ int check_mid_line()
 
 			if(check_speed_bump(MIDWIDTH,i))
 			{
-				if(img_it->prev->mid_flag == MID_SPEED_BUMP_ST)
+				if(g_index>0 && stored_data[g_index-1].mid_flag == MID_SPEED_BUMP_ST)
 					return MID_SPEED_BUMP_ST;	// speed bump check.
-				else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR)
+				else if(g_index>0 && stored_data[g_index-1].mid_flag == MID_SPEED_BUMP_CUR)
 				{
 					if(speed_bump_count >= 6)
 						return MID_SPEED_BUMP_ST;
@@ -548,13 +544,18 @@ int check_speed_bump(int w, int y)
 			printf("----------speed bump count in line %d : %d\n",j, speed_bump_count);
 #endif
 
-		if(img_it->prev->mid_flag != MID_SPEED_BUMP_CUR && img_it->prev->mid_flag != MID_SPEED_BUMP_ST && speed_bump_count >= 4)
+		if( g_index>0 && stored_data[g_index-1].mid_flag != MID_SPEED_BUMP_CUR 
+			&& stored_data[g_index-1].mid_flag != MID_SPEED_BUMP_ST 
+			&& speed_bump_count >= 4)
 			return TRUE;	// MID_SPEED_BUMP_CUR
-		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && speed_bump_count >= 6)
+		else if(g_index>0 && stored_data[g_index-1].mid_flag == MID_SPEED_BUMP_CUR 
+				&& speed_bump_count >= 6)
 			return TRUE;	// MID_SPEED_BUMP_ST
-		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_CUR && speed_bump_count >= 4)
+		else if(g_index>0 && stored_data[g_index-1].mid_flag == MID_SPEED_BUMP_CUR 
+				&& speed_bump_count >= 4)
 			return TRUE;	// MID_SPEED_BUMP_CUR
-		else if(img_it->prev->mid_flag == MID_SPEED_BUMP_ST && speed_bump_count >= 4)
+		else if(g_index>0 && stored_data[g_index-1].mid_flag == MID_SPEED_BUMP_ST 
+				&& speed_bump_count >= 4)
 			return TRUE;	// MID_SPEED_BUMP_ST
 
 	}
@@ -814,6 +815,7 @@ int find_in_point(int rl_info, int i, int offset)
 		pt_cnt += 1;
 	return TRUE;
 }
+
 
 int find_out_end_point(int i, int offset)
 {
@@ -1186,12 +1188,14 @@ int get_width_scan_point()
 		return  MIDWIDTH-1;
 }
 
-void init_values(int handle)
+void init_values(int handle,struct image_data* idata)
 {
 	int i=0;
 #ifdef TRACE
 	printf("init values\n");
 #endif
+	if(idata == NULL)
+		idata = (struct image_data*)malloc(sizeof(struct image_data));
 
 	init_point();
 	//width_scan_point = get_width_scan_point();

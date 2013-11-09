@@ -50,6 +50,12 @@
 #define KEY2 2
 #define KEY3 3
 
+#define CM_MODE 0
+#define AI_MODE 1
+#define MD_MODE 2
+
+#define DATA_SIZE 500
+
 // key handler 
 static char keyDev[] ="/dev/KEYPAD";
 static int keyFD = -1;
@@ -64,13 +70,13 @@ struct p_point
 
 struct image_data
 {
+	int dist;	// 주행 거리 
 	struct image_data* prev;
 	struct image_data* next;
-	struct p_point bot[3];
 	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
 	int mid_flag;
+	struct p_point bot[3];
 	int angle[3];
-	int dist ;
 };
 
 // flags
@@ -78,4 +84,9 @@ static int g_drive_flag = DF_DRIVE;
 static int g_image_flag = IF_NO_PROCESS;
 static int g_broken_line = FALSE;
 static int g_change_line = FALSE;
+static int g_drive_mode = 0;
+static int g_index = 0;
+
+struct image_data stored_data[DATA_SIZE];
+
 #endif

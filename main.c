@@ -1,5 +1,5 @@
 //#define DEBUG
-#define DRIVE_DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
@@ -178,11 +178,6 @@ inline void drive(struct image_data* idata)
 				idata->prev->mid_flag = MID_STRAIGHT;
 			}
 
-			if(idata->angle[RIGHT] > 90)
-			{
-				turn_set(DM_ANGLE_MIN);
-				break;
-			}
 
 			gradient = tan( (double)idata->angle[RIGHT] *PI /180);
 			intercept = idata->bot[RIGHT].y - idata->bot[RIGHT].x * gradient;
@@ -190,10 +185,12 @@ inline void drive(struct image_data* idata)
 			drive_turn( idata, gradient, intercept, height);
 			break;
 
-		case IF_BOTH:
-			turn_straight();				
+		case IF_SPEED_DOWN:
+			printf("------------------------SPEED DOWN------------------\n");
+			speed_set(500);
 			break;
-
+		case IF_SPEED_BUMP_ST:
+		case IF_BOTH:
 		case IF_STRAIGHT:
 			turn_straight();
 			break;
@@ -207,12 +204,6 @@ inline void drive(struct image_data* idata)
 				turn_straight();
 			break;
 
-		case IF_SPEED_DOWN:
-			//speed_set(1000);
-			break;
-		case IF_SPEED_BUMP_ST:
-			turn_straight();
-			break;
 		case IF_CL_LEFT:
 		case IF_CL_RIGHT:
 			change_course();

@@ -70,11 +70,11 @@ struct image_data* line_check(int handle)
 	// init values
 	init_values(cm_handle,img_data);
 #ifdef DEBUG
-	//print_screen_y();
+	print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
-	print_screen_color();
+	//print_screen_color();
 	//check_traffic_light();
 	//exit(0);
 #endif
@@ -524,6 +524,9 @@ int check_speed_bump(int w, int y)
 
 	for(j = y; j < CUTLINE; j++)
 	{
+		if(j > CUTLINE - 20)
+			break;
+
 		speed_bump_count = 0;
 		for(i = MAXWIDTH-2; i>0; i--)
 		{

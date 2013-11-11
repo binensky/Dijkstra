@@ -104,7 +104,7 @@ void line_stop(void)
 {
 	buf[0] = 0x83;
 	write(uart_fd, &buf[0], 1);
-//	printf("Line Stop\n");
+	printf("Line Stop\n");
 }
 
 void control_led(int mode, char* value)
@@ -639,22 +639,6 @@ int check_distance(int ch)
 	sensor_total+=sensor1;
         
     }
-        /*
-	total = 0;
-
-        for(k=0; k<10; k++)
-                total = check_distance_inner(ch,total);
-
-        sensor2 = total / 10;
-	
-	if(sensor2-sensor1 < 0)
-	    sensor_value_default = sensor1-sensor2;
-	else
-	    sensor_value_default = sensor2-sensor1;
-
-        
-
-        */
 	printf("sensor before = %d\n",sensor_total);
 	
 	return sensor_total;

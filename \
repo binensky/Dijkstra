@@ -32,7 +32,7 @@ int main(void)
 
 	init_drive();
 //	pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
+	pthread_create(&thread[2],NULL,parking_distance_check,NULL);
 
 #ifdef DRIVE
 	g_drive_mode = set_drive_mode();

@@ -27,10 +27,43 @@ inline void drive_idata(struct image_data* idata);
 
 int main(void)
 {
+	int serverSock;
+	int clntSock;
+	struct sockaddr_in echoServAddr;
+	struct sockaddr_in echoClntAddr;
+	unsigned short echoServPort;
+	unsigned int clntLen;
+	int recvMsgSize;
+	char buf[1024];
+	char echoBuffer[RCVBUFSIZE];        /* Buffer for echo string */
+	int recvFileSize=0;
+	echoServPort = 10000;
+	
+	if ((servSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+		printf("socket error");
+	//Construct local address structure
+	memset(&echoServAddr, 0, sizeof(echoServAddr)); 
+	echoServAddr.sin_family = AF_INET;  
+	echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	echoServAddr.sin_port = htons(echoServPort); 
+
+	if (bind(servSock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
+		printf("bind error\n");
+	if (listen(servSock, MAXPENDING) < 0)
+		printf("listen error\n");
+	clntLen = sizeof(echoClntAddr);
+	printf("Wait for connection!!\n");
+	//Wait for a client to connect
+
+	if ((clntSocket = accept(servSock, (struct sockaddr *) &echoClntAddr, &clntLen)) < 0)
+		printf("accept error\n");
+	else
+		printf("connect success!!\n");
+
 	cm_handle = init_camera();
 	car_connect();
 
-//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//pthread_create(&thread[2],NULL,distance_check,NULL);
 
 	init_drive();

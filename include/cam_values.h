@@ -59,7 +59,8 @@
 #define MID_SPEED_BUMP_CUR 6
 #define MID_SPEED_BUMP_ST 7
 #define MID_SPEED_DOWN 8
-#define MID_OUTLINE 9
+#define MID_WHITE_SPEED_DOWN 9
+#define MID_OUTLINE 10
 
 // screen size 
 #define MAXHEIGHT 240

@@ -34,10 +34,11 @@
 #define IF_STRAIGHT 5
 #define IF_OUTLINE 6
 #define IF_SPEED_DOWN 7
-#define IF_SPEED_BUMP_ST 8
+#define IF_WHITE_SPEED_DOWN 8
 #define IF_SPEED_BUMP_CUR 9
+#define IF_SPEED_BUMP_ST 10
 
-#define IF_SG_STOP 10
+#define IF_SG_STOP 11
 #define IF_SG_LEFT 12
 #define IF_SG_RIGHT 13
 #define IF_CL_LEFT 21
@@ -57,7 +58,7 @@
 #define AI_MODE 1
 #define MD_MODE 2
 
-#define DATA_SIZE 500
+#define DATA_SIZE 1000
 
 // key handler 
 char keyDev[] ="/dev/KEYPAD";
@@ -86,10 +87,6 @@ struct drive_data
 	int mid_flag;
 	int angle;
 	int dist;
-	double gradient;
-	int intercept;
-	int height;
-	int line_y;
 };
 
 // flags
@@ -99,6 +96,7 @@ static int g_broken_line = FALSE;
 static int g_change_line = FALSE;
 static int g_drive_mode = 0;
 static int g_index = 0;
+static int g_first = TRUE;
 
 struct drive_data d_data[DATA_SIZE];
 

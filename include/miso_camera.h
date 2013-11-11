@@ -81,33 +81,6 @@ struct image_data* line_check(int handle)
 
 	printf("   drive flag : %d\n",g_drive_flag);
 
-#ifdef MID_LINE_DEBUG
-	for(j = CUTLINE; j>=0 ; j--)
-	{
-		printf("%3d:",j);
-
-		for(i = MAXWIDTH-1; i>=0; i--)
-		{	
-			if(IS_RED(i,j))
-				printf("R");
-			else if(IS_YELLOW(i,j))
-				printf("1");
-			else if(IS_WHITE(i,j))
-				printf("2");
-			else
-				printf("0");
-		}
-		printf("\n");
-	}
-	for( j = 0 ; j < MAXWIDTH; j++)
-	{
-		if( j == width_scan_point)
-			printf("^");
-		else 
-			printf(" " );
-	}
-#endif
-
 	//g_change_line = TRUE;	// 차선변경 제외
 
 	switch(g_drive_flag)
@@ -118,7 +91,7 @@ struct image_data* line_check(int handle)
 
 		printf("DF_DRIVE\n");
 		// 도로 중간 값을 검사한다. 
-		
+
 		tmp = check_mid_line();
 		img_data->mid_flag = tmp;
 
@@ -237,12 +210,17 @@ struct image_data* line_check(int handle)
 			img_data->flag = IF_SPEED_DOWN;
 			return img_data;
 		}
-
+		else if( tmp == MID_WHITE_SPEED_DOWN)
+		{
+			img_data->flag = IF_WHITE_SPEED_DOWN;
+			return img_data;
+		}
 		break;
 
 		/////////////////////////////////////////////////////// traffic 
 		case DF_STOP:
-		tmp = check_traffic_light();
+		//tmp = check_traffic_light();
+		printf("why here ?\n");
 
 		if(tmp == NONE){
 			img_data->flag = IF_SG_STOP;
@@ -406,14 +384,14 @@ int red_count(){
 			{
 				if(i < 120)
 				{
-#ifdef DEBUG
+#ifdef DRIVE_DEBUG
 					printf("MID_STOP in %d\n", i);
 #endif
 					return MID_STOP;
 				}
 				else if(i > 140)
 				{
-#ifdef DEBUG
+#ifdef DRIVE_DEBUG
 					printf("SLow Down in %d\n", i);
 #endif
 					return MID_SPEED_DOWN;
@@ -460,8 +438,10 @@ int check_mid_line()
 
 	red_flag = red_count();
 
-	if(red_flag == MID_SPEED_DOWN)
+	if(red_flag == MID_SPEED_DOWN){
+		printf("RED SPEED DOWN\n");
 		return MID_SPEED_DOWN;
+	}
 	else if(red_flag == MID_STOP)
 		return MID_STOP;
 
@@ -498,12 +478,14 @@ int check_mid_line()
 
 			if( IS_WHITE(MIDWIDTH,i)) 
 			{
-				if(i == CUTLINE -1 || IS_BLACK(MIDWIDTH, i+1))
-					return MID_SPEED_DOWN;
+				if(i == CUTLINE -1 || IS_BLACK(MIDWIDTH, i+1)){
+					printf("WHITE SPEED DOWN\n");
+					return MID_WHITE_SPEED_DOWN;
+				}
 			}
 			break;
 		}
-		
+
 		else{
 		}// end else
 	} // end for 
@@ -524,7 +506,7 @@ int check_speed_bump(int w, int y)
 
 	for(j = y; j < CUTLINE; j++)
 	{
-		if(j > CUTLINE - 20)
+		if(j > CUTLINE - 40)
 			break;
 
 		speed_bump_count = 0;
@@ -551,12 +533,9 @@ int check_speed_bump(int w, int y)
 #endif
 
 		if( g_index>0 && d_data[g_index-1].mid_flag != MID_SPEED_BUMP_CUR 
-			&& d_data[g_index-1].mid_flag != MID_SPEED_BUMP_ST 
-			&& speed_bump_count >= 4)
+				&& d_data[g_index-1].mid_flag != MID_SPEED_BUMP_ST 
+				&& speed_bump_count >= 4)
 			return TRUE;	// MID_SPEED_BUMP_CUR
-		else if(g_index>0 && d_data[g_index-1].mid_flag == MID_SPEED_BUMP_CUR 
-				&& speed_bump_count == 6)
-			return TRUE;	// MID_SPEED_BUMP_ST
 		else if(g_index>0 && d_data[g_index-1].mid_flag == MID_SPEED_BUMP_CUR 
 				&& speed_bump_count >= 4)
 			return TRUE;	// MID_SPEED_BUMP_CUR
@@ -945,6 +924,7 @@ int check_change_line(int rl_info, int x, int y)
 						{
 							if(find_broken_line(LEFT, k, j))
 							{
+								printf("find broken line !! (%d,%d), (%d,%d)\n",x,y,k,j);
 								return TRUE;
 							}
 						}
@@ -1004,7 +984,7 @@ int find_broken_line(int rl_info, int x, int y)
 						return FALSE;
 					else
 						return TRUE;
-						
+
 				}
 			}
 			else
@@ -1239,10 +1219,16 @@ void init_values(int handle,struct image_data* idata)
 
 	// 버퍼 초기화 
 	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
+	if(g_first)
+	{
+		g_first = FALSE;
+		vidbuf = camera_get_frame(cm_handle);
+		camera_release_frame(cm_handle,vidbuf);
+	}
+
 	if(camera->ref_count > 0){
 		camera_release_frame(cm_handle,vidbuf);
 	}
-	
 	vidbuf = camera_get_frame(cm_handle);
 }
 

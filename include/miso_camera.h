@@ -59,11 +59,12 @@ int is_speed_bump;
 int pt_cnt;	// left pt, right pt,
 int speed_bump_count = 0;
 int angles[PT_SIZE-1];
-
+int mid_drive(int mid_flag);
+int g_first = TRUE;
 struct image_data* line_check(int handle)
 {
 	int i,j,rl_info,k;
-	int ret, temp, weight, midangle, topangle;
+	int ret, tmp, weight, midangle, topangle;
 	int angle_bot, angle_end;
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
 
@@ -79,168 +80,166 @@ struct image_data* line_check(int handle)
 	//exit(0);
 #endif
 
-	printf("   drive flag : %d\n",g_drive_flag);
+	printf(">drive flag : %d\n",g_drive_flag);
 
 	//g_change_line = TRUE;	// 차선변경 제외
 
 	switch(g_drive_flag)
 	{
-		int tmp;
 
 		case DF_DRIVE:
+			// 도로 중간 값을 검사한다. 
+			tmp = check_mid_line();
+			img_data->mid_flag = tmp;
 
-		printf("DF_DRIVE\n");
-		// 도로 중간 값을 검사한다. 
+			printf(">>mid flag : %d\n", tmp);
 
-		tmp = check_mid_line();
-		img_data->mid_flag = tmp;
-
-		printf("check mid line : %d\n", tmp);
-
-		if( tmp == MID_STRAIGHT)
-		{
-			for(i = 1; i< CUTLINE_POINT ; i++)
+			if( tmp == MID_STRAIGHT)
 			{
-				if((find_left == FL_NONE) && left_line_check(i))
+				for(i = 1; i< CUTLINE_POINT ; i++)
 				{
-					if(!g_change_line && g_broken_line)
+					if((find_left == FL_NONE) && left_line_check(i))
 					{
-						img_data->flag = IF_CL_LEFT;
-						g_change_line = TRUE;
+						if(!g_change_line && g_broken_line)
+						{
+							img_data->flag = IF_CL_LEFT;
+							g_change_line = TRUE;
+							return img_data;
+						}
+
+						img_data->flag += IF_LEFT;
+						img_data->angle[LEFT] = get_road_angle();
+						img_data->bot[LEFT].x = pt[BOT].x;
+						img_data->bot[LEFT].y = pt[BOT].y;
+#ifdef DRIVE_DEBUG
+						for(k=0; k<pt_cnt; k++)
+							printf("pt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
+						printf("\n");
+#endif
+						init_point();
+					}
+					
+					if((find_right == FL_NONE) && right_line_check(i))
+					{
+						if(!g_change_line && g_broken_line)
+						{
+							img_data->flag = IF_CL_RIGHT;
+							g_change_line = TRUE;
+							return img_data;
+						}
+						img_data->flag += IF_RIGHT;
+						img_data->angle[RIGHT] = get_road_angle();
+						img_data->bot[RIGHT].x = pt[BOT].x;
+						img_data->bot[RIGHT].y = pt[BOT].y;
+#ifdef DRIVE_DEBUG
+						for(k=0; k<pt_cnt; k++)
+						{
+							printf("pt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
+						}
+						printf("\n");
+#endif
+						init_point();
+					}
+				}
+
+				if(find_left == FL_NONE && find_right == FL_NONE)
+					img_data->flag = IF_STRAIGHT;
+
+				return img_data;
+			}
+			else if( tmp == MID_CURVE || tmp == MID_CURVE_STRAIGHT)
+			{
+				for(i = 1; i< CUTLINE_POINT ; i++)
+				{
+					if((find_left == FL_NONE) && left_line_check(i))
+					{
+						// 왼쪽 각도 설정하여 idata에 넣는다. 
+						img_data->flag = IF_LEFT;
+						img_data->angle[LEFT] = get_road_angle();
+						img_data->bot[LEFT].x = pt[BOT].x;
+						img_data->bot[LEFT].y = pt[BOT].y;
+#ifdef DRIVE_DEBUG
+						for(k=0; k<pt_cnt; k++)
+						{
+							printf("lpt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
+						}
+						printf("\n");
+#endif
 						return img_data;
 					}
-
-					img_data->flag += IF_LEFT;
-					img_data->angle[LEFT] = get_road_angle();
-					img_data->bot[LEFT].x = pt[BOT].x;
-					img_data->bot[LEFT].y = pt[BOT].y;
-#ifdef DRIVE_DEBUG
-					for(k=0; k<pt_cnt; k++)
-						printf("pt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
-					printf("\n");
-#endif
-					init_point();
-				}
-				if((find_right == FL_NONE) && right_line_check(i))
-				{
-					if(!g_change_line && g_broken_line)
+					else if((find_right == FL_NONE) && right_line_check(i))
 					{
-						img_data->flag = IF_CL_RIGHT;
-						g_change_line = TRUE;
+						// 오른쪽 각도 설정하여 idata에 넣는다. 
+						img_data->flag = IF_RIGHT;
+						img_data->angle[RIGHT] = get_road_angle();
+						img_data->bot[RIGHT].x = pt[BOT].x;
+						img_data->bot[RIGHT].y = pt[BOT].y;
+#ifdef DRIVE_DEBUG
+						for(k=0; k<pt_cnt; k++)
+						{
+							printf("rpt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
+						}
+						printf("\n");
+#endif
 						return img_data;
 					}
-					img_data->flag += IF_RIGHT;
-					img_data->angle[RIGHT] = get_road_angle();
-					img_data->bot[RIGHT].x = pt[BOT].x;
-					img_data->bot[RIGHT].y = pt[BOT].y;
-#ifdef DRIVE_DEBUG
-					for(k=0; k<pt_cnt; k++)
-					{
-						printf("pt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
-					}
-					printf("\n");
-#endif
-					init_point();
 				}
 			}
-			if(find_left == FL_NONE && find_right == FL_NONE)
-				img_data->flag = IF_STRAIGHT;
-
-			return img_data;
-		}
-		else if( tmp == MID_CURVE || tmp == MID_CURVE_STRAIGHT)
-		{
-			for(i = 1; i< CUTLINE_POINT ; i++)
+			else if( tmp == MID_STOP){
+				img_data->flag = IF_STOP;
+				return img_data;
+			}
+			else if( tmp == MID_SPEED_BUMP_CUR)
 			{
-				if((find_left == FL_NONE) && left_line_check(i))
-				{
-					// 왼쪽 각도 설정하여 idata에 넣는다. 
-					img_data->flag = IF_LEFT;
-					img_data->angle[LEFT] = get_road_angle();
-					img_data->bot[LEFT].x = pt[BOT].x;
-					img_data->bot[LEFT].y = pt[BOT].y;
-#ifdef DRIVE_DEBUG
-					for(k=0; k<pt_cnt; k++)
-					{
-						printf("pt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
-					}
-					printf("\n");
-#endif
-					return img_data;
-				}
-				else if((find_right == FL_NONE) && right_line_check(i))
-				{
-					// 오른쪽 각도 설정하여 idata에 넣는다. 
-					img_data->flag = IF_RIGHT;
-					img_data->angle[RIGHT] = get_road_angle();
-					img_data->bot[RIGHT].x = pt[BOT].x;
-					img_data->bot[RIGHT].y = pt[BOT].y;
-#ifdef DRIVE_DEBUG
-					for(k=0; k<pt_cnt; k++)
-					{
-						printf("pt[%d] : (%d,%d)  ", k, pt[k].x, pt[k].y);
-					}
-					printf("\n");
-#endif
-					return img_data;
-				}
+				img_data->flag = IF_SPEED_BUMP_CUR;
+				return img_data;
 			}
-		}
-		else if( tmp == MID_STOP){
-			img_data->flag = IF_STOP;
-			return img_data;
-		}
-		else if( tmp == MID_SPEED_BUMP_CUR)
-		{
-			img_data->flag = IF_SPEED_BUMP_CUR;
-			return img_data;
-		}
-		else if( tmp == MID_SPEED_BUMP_ST)
-		{
-			img_data->flag = IF_SPEED_BUMP_ST;
-			return img_data;
-		}
-		else if( tmp == MID_OUTLINE )
-		{
-			img_data->flag = IF_OUTLINE;
-			return img_data;
-		}	
-		else if( tmp == MID_SPEED_DOWN)
-		{
-			img_data->flag = IF_SPEED_DOWN;
-			return img_data;
-		}
-		else if( tmp == MID_WHITE_SPEED_DOWN)
-		{
-			img_data->flag = IF_WHITE_SPEED_DOWN;
-			return img_data;
-		}
-		break;
+			else if( tmp == MID_SPEED_BUMP_ST)
+			{
+				img_data->flag = IF_SPEED_BUMP_ST;
+				return img_data;
+			}
+			else if( tmp == MID_OUTLINE )
+			{
+				img_data->flag = IF_OUTLINE;
+				return img_data;
+			}	
+			else if( tmp == MID_SPEED_DOWN)
+			{
+				img_data->flag = IF_SPEED_DOWN;
+				return img_data;
+			}
+			else if( tmp == MID_WHITE_SPEED_DOWN)
+			{
+				img_data->flag = IF_WHITE_SPEED_DOWN;
+				return img_data;
+			}
+			break;
 
-		/////////////////////////////////////////////////////// traffic 
+			/////////////////////////////////////////////////////// traffic 
 		case DF_STOP:
-		//tmp = check_traffic_light();
-		printf("why here ?\n");
+			//tmp = check_traffic_light();
+			printf("why here ?\n");
 
-		if(tmp == NONE){
-			img_data->flag = IF_SG_STOP;
-			return img_data;
-		}
-		else if(tmp == LEFT)
-		{
-			img_data->flag = IF_SG_LEFT;
-			return img_data;
-		}
-		else if(tmp == RIGHT)
-		{
-			img_data->flag = IF_SG_RIGHT;
-			return img_data;
-		}
-		break;
+			if(tmp == NONE){
+				img_data->flag = IF_SG_STOP;
+				return img_data;
+			}
+			else if(tmp == LEFT)
+			{
+				img_data->flag = IF_SG_LEFT;
+				return img_data;
+			}
+			else if(tmp == RIGHT)
+			{
+				img_data->flag = IF_SG_RIGHT;
+				return img_data;
+			}
+			break;
 
 		default:
-		img_data->flag= IF_NO_PROCESS;
-		return img_data;
+			img_data->flag= IF_NO_PROCESS;
+			return img_data;
 	}
 
 	if(find_left == FL_NONE && find_right == FL_NONE)
@@ -250,7 +249,8 @@ struct image_data* line_check(int handle)
 		return img_data;
 	}
 
-	return img_data;
+/////////////////////////////////////////?????????????????????
+	return NULL;
 }
 
 // 라인을 찾은 것인지를 TRUE FALSE로 리턴 
@@ -1219,11 +1219,15 @@ void init_values(int handle,struct image_data* idata)
 
 	// 버퍼 초기화 
 	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
+	
 	if(g_first)
 	{
 		g_first = FALSE;
-		vidbuf = camera_get_frame(cm_handle);
-		camera_release_frame(cm_handle,vidbuf);
+		for( i = 0; i < 5; i++)
+		{
+			vidbuf = camera_get_frame(cm_handle);
+			camera_release_frame(cm_handle,vidbuf);
+		}
 	}
 
 	if(camera->ref_count > 0){

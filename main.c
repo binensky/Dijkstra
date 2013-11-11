@@ -1,7 +1,7 @@
 //#define DEBUG
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
-//#define DRIVE
+#define DRIVE
 //#define TRACE
 
 #include <stdio.h>
@@ -31,11 +31,10 @@ int main(void)
 	car_connect();
 
 	init_drive();
-//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
+	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
-#ifdef DRIVE
-	g_drive_mode = set_drive_mode();
+	//	g_drive_mode = set_drive_mode();
 	g_drive_mode = CM_MODE;
 
 	if(g_drive_mode == AI_MODE)
@@ -56,18 +55,10 @@ int main(void)
 		// write image data into file. 
 		fwrite_data(d_data);
 	}
-#endif 
-
-#ifndef DRIVE
-	while(1){
-		//	distance_set(100);
-		//	forward_dis();
-		}
-#endif
 
 	//direct_test();
-	//pthread_join(thread[1],NULL);
-	pthread_join(thread[2],NULL);
+	//	pthread_join(thread[1],NULL);
+	//	pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -110,6 +101,7 @@ void drive_cm()
 		// drive flag check and drive. - inline function
 		drive(idata);
 		free(idata);
+
 		if(g_index == 0)
 		{
 			d_data[g_index].flag = IF_STRAIGHT;

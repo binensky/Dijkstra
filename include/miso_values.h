@@ -96,7 +96,6 @@ static int g_broken_line = FALSE;
 static int g_change_line = FALSE;
 static int g_drive_mode = 0;
 static int g_index = 0;
-static int g_first = TRUE;
 
 struct drive_data d_data[DATA_SIZE];
 

@@ -138,7 +138,7 @@ void set_angle(int angle)
 	*/
 	else if(RANGE_NO_CHANGE(angle)){}
 	else{
-		turn_set( (int)(2287.5 - angle * 35 / 4) );
+		turn_set( (int)(2200 - angle * 70 / 9) );
 	}
 }
 

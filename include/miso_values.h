@@ -42,6 +42,9 @@
 #define IF_SG_RIGHT 13
 #define IF_CL_LEFT 21
 #define IF_CL_RIGHT 22
+#define IF_PARK_V 31
+#define IF_PARK_H 32
+
 
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1515
@@ -57,11 +60,10 @@
 #define DATA_SIZE 500
 
 // key handler 
-static char keyDev[] ="/dev/KEYPAD";
-static int keyFD = -1;
-static char keyState[3]={0,0,0};
+char keyDev[] ="/dev/KEYPAD";
+int keyFD = -1;
+char keyState[3]={0,0,0};
 
-// 
 struct p_point
 {
 	int x;		// x좌표 (0~319)
@@ -70,13 +72,24 @@ struct p_point
 
 struct image_data
 {
-	int dist;	// 주행 거리 
 	struct image_data* prev;
 	struct image_data* next;
 	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
 	int mid_flag;
 	struct p_point bot[3];
 	int angle[3];
+};
+
+struct drive_data
+{
+	int flag;
+	int mid_flag;
+	int angle;
+	int dist;
+	double gradient;
+	int intercept;
+	int height;
+	int line_y;
 };
 
 // flags
@@ -87,6 +100,6 @@ static int g_change_line = FALSE;
 static int g_drive_mode = 0;
 static int g_index = 0;
 
-struct image_data stored_data[DATA_SIZE];
+struct drive_data d_data[DATA_SIZE];
 
 #endif

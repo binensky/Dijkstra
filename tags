@@ -69,7 +69,8 @@ CR	include/cam_values.h	83;"	d
 CUTLINE	include/cam_values.h	14;"	d
 CUTLINE_CURVE	include/cam_values.h	16;"	d
 CUTLINE_POINT	include/cam_values.h	15;"	d
-DATA_SIZE	include/miso_values.h	55;"	d
+DATAFILE	include/file_lib.h	4;"	d
+DATA_SIZE	include/miso_values.h	57;"	d
 DBGMSG	include/pxa_dbg.h	25;"	d
 DBGMSG	include/pxa_dbg.h	30;"	d
 DEST_HEIGHT	include/cam_values.h	19;"	d
@@ -87,7 +88,6 @@ DM_STRAIGHT	include/miso_values.h	46;"	d
 DPRINTF	include/pxa_dbg.h	23;"	d
 DPRINTF	include/pxa_dbg.h	29;"	d
 DRIVE	main.c	4;"	d	file:
-DRIVE_DEBUG	main.c	2;"	d	file:
 EMERGENCY	include/car_lib.h	27;"	d
 END	include/cam_values.h	43;"	d
 ENTER	include/pxa_dbg.h	26;"	d
@@ -120,7 +120,6 @@ IF_SPEED_BUMP_ST	include/miso_values.h	37;"	d
 IF_SPEED_DOWN	include/miso_values.h	36;"	d
 IF_STOP	include/miso_values.h	30;"	d
 IF_STRAIGHT	include/miso_values.h	34;"	d
-INFILE	include/file_lib.h	4;"	d
 IS_BLACK	include/cam_values.h	91;"	d
 IS_BLACK_SPEED_BUMP	include/cam_values.h	95;"	d
 IS_RED	include/cam_values.h	89;"	d
@@ -144,6 +143,7 @@ LSPEED_MIN	include/miso_values.h	13;"	d
 MAX	include/gaussian_filter.h	4;"	d
 MAXHEIGHT	include/cam_values.h	64;"	d
 MAXWIDTH	include/cam_values.h	65;"	d
+MD_MODE	include/miso_values.h	55;"	d
 MID	include/cam_values.h	42;"	d
 MIDWIDTH	include/cam_values.h	66;"	d
 MID_CL_LEFT	include/cam_values.h	56;"	d
@@ -162,7 +162,6 @@ NONE	include/miso_values.h	5;"	d
 OFF	include/car_lib.h	23;"	d
 ON	include/car_lib.h	24;"	d
 ON_STOP_LINE	include/sensor_handler.h	7;"	d
-OUTFILE	include/file_lib.h	5;"	d
 OV2620_SENSOR	include/pxa_camera_zl.h	120;"	d
 OV2630_SENSOR	include/pxa_camera_zl.h	121;"	d
 OV7660_SENSOR	include/pxa_camera_zl.h	119;"	d
@@ -850,7 +849,7 @@ count	include/videodev2.h	/^	__u32 count;$/;"	m	struct:v4l2_ext_controls
 cr	include/pxa_lib.h	/^			unsigned char *y,*cb,*cr;$/;"	m	struct:pxa_video_buf::__anon3::__anon5
 crstep	include/pxa_lib.h	/^			unsigned int ystep,cbstep,crstep;$/;"	m	struct:pxa_video_buf::__anon3::__anon5
 ctrl_class	include/videodev2.h	/^	__u32 ctrl_class;$/;"	m	struct:v4l2_ext_controls
-curr_data	include/miso_values.h	/^struct image_data curr_data[DATA_SIZE];$/;"	v	typeref:struct:image_data
+d_data	include/miso_values.h	/^struct drive_data d_data[DATA_SIZE];$/;"	v	typeref:struct:drive_data
 data	include/videodev2.h	/^			__u32 data[8];$/;"	m	struct:v4l2_encoder_cmd::__anon10::__anon11
 data	include/videodev2.h	/^	__u8    data[48];$/;"	m	struct:v4l2_sliced_vbi_data
 default_value	include/videodev2.h	/^	__s32		     default_value;$/;"	m	struct:v4l2_queryctrl
@@ -866,7 +865,7 @@ discrete	include/videodev2.h	/^		struct v4l2_fract		discrete;$/;"	m	union:v4l2_f
 discrete	include/videodev2.h	/^		struct v4l2_frmsize_discrete	discrete;$/;"	m	union:v4l2_frmsizeenum::__anon6	typeref:struct:v4l2_frmsizeenum::__anon6::v4l2_frmsize_discrete
 disp_inv_down	include/car_lib.h	/^void disp_inv_down(void)$/;"	f
 disp_inv_up	include/car_lib.h	/^void disp_inv_up(void)$/;"	f
-dist	include/miso_values.h	/^	int dist;	\/\/ 주행 거리 $/;"	m	struct:image_data
+dist	include/miso_values.h	/^	int dist;$/;"	m	struct:drive_data
 distance	include/car_lib.h	/^char distance(char* dis1, char* dis2)$/;"	f
 distance_check	include/distance_check.h	/^void* distance_check(void* data)$/;"	f
 distance_reset	include/car_lib.h	/^void distance_reset(void)$/;"	f
@@ -874,10 +873,12 @@ distance_set	include/miso_car_lib.h	/^void distance_set(int dis)$/;"	f
 dm_angle	include/car_lib.h	/^char dm_angle(char* angle1, char* angle2)$/;"	f
 dm_speed	include/car_lib.h	/^char dm_speed(char* speed)$/;"	f
 dm_speed_set	include/miso_car_lib.h	/^void dm_speed_set(int sp)$/;"	f
+drive	main.c	/^inline void drive(struct image_data* idata)$/;"	f
 drive_ai	main.c	/^void drive_ai()$/;"	f
 drive_cm	main.c	/^void drive_cm()$/;"	f
-drive_flag_check	main.c	/^inline void drive_flag_check(struct image_data* idata)$/;"	f
-drive_turn	main.c	/^void drive_turn(struct image_data* idata, double gradient, int intercept, int height )$/;"	f
+drive_data	include/miso_values.h	/^struct drive_data$/;"	s
+drive_md	main.c	/^void drive_md()$/;"	f
+drive_turn	main.c	/^void drive_turn(struct drive_data* d_data)$/;"	f
 driver	include/videodev2.h	/^	__u8	driver[16];	\/* i.e. "bttv" *\/$/;"	m	struct:v4l2_capability
 entries	include/videodev2.h	/^	__u32 entries;$/;"	m	struct:v4l2_enc_idx
 entries_cap	include/videodev2.h	/^	__u32 entries_cap;$/;"	m	struct:v4l2_enc_idx
@@ -902,6 +903,7 @@ find_out_end_point	include/miso_camera.h	/^int find_out_end_point(int i, int off
 find_outline	include/miso_camera.h	/^int find_outline(int rl_info, int y, int w)$/;"	f
 find_right	include/cam_values.h	/^int find_left = FL_NONE, find_right = FL_NONE;$/;"	v
 flag	include/miso_values.h	/^	int flag; 	\/\/ NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT$/;"	m	struct:image_data
+flag	include/miso_values.h	/^	int flag;$/;"	m	struct:drive_data
 flags	include/videodev2.h	/^	__u32			flags;$/;"	m	struct:v4l2_buffer
 flags	include/videodev2.h	/^	__u32			flags;$/;"	m	struct:v4l2_framebuffer
 flags	include/videodev2.h	/^	__u32	flags;			\/* V4L2_VBI_* *\/$/;"	m	struct:v4l2_vbi_format
@@ -924,10 +926,10 @@ forward_step	include/car_lib.h	/^void forward_step(void)$/;"	f
 framelines	include/videodev2.h	/^	__u32		     framelines;$/;"	m	struct:v4l2_standard
 frameperiod	include/videodev2.h	/^	struct v4l2_fract    frameperiod; \/* Frames, not fields *\/$/;"	m	struct:v4l2_standard	typeref:struct:v4l2_standard::v4l2_fract
 frames	include/videodev2.h	/^	__u8	frames;$/;"	m	struct:v4l2_timecode
-fread_data	include/file_lib.h	/^int fread_data(struct image_data** idt)$/;"	f
+fread_data	include/file_lib.h	/^int fread_data(struct drive_data* dat)$/;"	f
 frequency	include/videodev2.h	/^	__u32		      frequency;$/;"	m	struct:v4l2_frequency
 front_light	include/car_lib.h	/^void front_light(char* status)$/;"	f
-fwrite_data	include/file_lib.h	/^int fwrite_data(struct image_data** idt, int cnt)$/;"	f
+fwrite_data	include/file_lib.h	/^int fwrite_data(struct drive_data* dat)$/;"	f
 g_angle	include/miso_car_lib.h	/^static int g_angle = DM_STRAIGHT;$/;"	v
 g_broken_line	include/miso_values.h	/^static int g_broken_line = FALSE;$/;"	v
 g_change_line	include/miso_values.h	/^static int g_change_line = FALSE;$/;"	v
@@ -942,6 +944,7 @@ gaussian_filter	include/gaussian_filter.h	/^void gaussian_filter()$/;"	f
 get_angle	include/miso_camera.h	/^int get_angle( struct p_point a, struct p_point b)$/;"	f
 get_road_angle	include/miso_camera.h	/^int get_road_angle()$/;"	f
 get_width_scan_point	include/miso_camera.h	/^int get_width_scan_point()$/;"	f
+gradient	include/miso_values.h	/^	double gradient;$/;"	m	struct:drive_data
 handle	driver/camera.c	/^	int	handle;$/;"	m	struct:pxa_camera	file:
 handle	driver/camera_ori.c	/^	int	handle;$/;"	m	struct:pxa_camera	file:
 handle	include/miso_camera.h	/^	int handle;$/;"	m	struct:pxa_camera
@@ -949,6 +952,7 @@ head	include/state_manage.h	/^	struct state_node* head;$/;"	m	struct:state_list	
 height	driver/camera.c	/^	int	height;$/;"	m	struct:pxa_camera	file:
 height	driver/camera_ori.c	/^	int	height;$/;"	m	struct:pxa_camera	file:
 height	include/miso_camera.h	/^	int height;$/;"	m	struct:pxa_camera
+height	include/miso_values.h	/^	int height;$/;"	m	struct:drive_data
 height	include/pxa_lib.h	/^	int	height;$/;"	m	struct:pxacam_setting
 height	include/pxa_lib.h	/^	int width,height;$/;"	m	struct:pxa_rect
 height	include/pxa_lib.h	/^	int width,height;$/;"	m	struct:pxa_video_buf
@@ -985,17 +989,17 @@ info_write	include/car_lib.h	/^void info_write(char* id)$/;"	f
 init_camera	include/miso_camera.h	/^int init_camera(){$/;"	f
 init_drive	main.c	/^void init_drive()$/;"	f
 init_point	include/miso_camera.h	/^void init_point()$/;"	f
-init_values	include/miso_camera.h	/^void init_values(int handle)$/;"	f
+init_values	include/miso_camera.h	/^void init_values(int handle,struct image_data* idata)$/;"	f
 input	include/videodev2.h	/^	__u32			input;$/;"	m	struct:v4l2_buffer
+intercept	include/miso_values.h	/^	int intercept;$/;"	m	struct:drive_data
 io_size	include/videodev2.h	/^	__u32   io_size;$/;"	m	struct:v4l2_sliced_vbi_format
 is_left_turn	include/miso_camera.h	/^int is_left_turn(int x, int y)$/;"	f
 is_speed_bump	include/miso_camera.h	/^int is_speed_bump;$/;"	v
 jpeg_markers	include/videodev2.h	/^	__u32 jpeg_markers;     \/* Which markers should go into the JPEG$/;"	m	struct:v4l2_jpegcompression
-keyDev	include/miso_values.h	/^static char keyDev[] ="\/dev\/KEYPAD";$/;"	v
-keyFD	include/miso_values.h	/^static int keyFD = -1;$/;"	v
-keyState	include/miso_values.h	/^static char keyState[3]={0,0,0};$/;"	v
+keyDev	include/miso_values.h	/^char keyDev[] ="\/dev\/KEYPAD";$/;"	v
+keyFD	include/miso_values.h	/^int keyFD = -1;$/;"	v
+keyState	include/miso_values.h	/^char keyState[3]={0,0,0};$/;"	v
 key_handler	include/key_handler.h	/^void* key_handler(void* data)$/;"	f
-key_handling	main.c	/^void key_handling()$/;"	f
 lcd_disp_num	include/car_lib.h	/^void lcd_disp_num(int num)$/;"	f
 lcd_disp_pic	include/car_lib.h	/^void lcd_disp_pic(char* pic)$/;"	f
 left	include/videodev2.h	/^	__s32   left;$/;"	m	struct:v4l2_rect
@@ -1011,6 +1015,7 @@ line	include/videodev2.h	/^	__u32   line;           \/* 1-23 *\/$/;"	m	struct:v4
 line_check	include/miso_camera.h	/^struct image_data* line_check(int handle)$/;"	f
 line_start	include/car_lib.h	/^void line_start(void)$/;"	f
 line_stop	include/car_lib.h	/^void line_stop(void)$/;"	f
+line_y	include/miso_values.h	/^	int line_y;$/;"	m	struct:drive_data
 lm_break	include/car_lib.h	/^char lm_break(char* brea)$/;"	f
 lm_speed	include/car_lib.h	/^char lm_speed(char* speed1, char* speed2)$/;"	f
 lm_step	include/car_lib.h	/^char lm_step(char* step1, char* step2)$/;"	f
@@ -1028,6 +1033,7 @@ max_width	include/videodev2.h	/^	__u32			max_width;	\/* Maximum frame width [pix
 maximum	include/videodev2.h	/^	__s32		     maximum;$/;"	m	struct:v4l2_queryctrl
 memory	include/videodev2.h	/^	enum v4l2_memory        memory;$/;"	m	struct:v4l2_buffer	typeref:enum:v4l2_buffer::v4l2_memory
 memory	include/videodev2.h	/^	enum v4l2_memory        memory;$/;"	m	struct:v4l2_requestbuffers	typeref:enum:v4l2_requestbuffers::v4l2_memory
+mid_flag	include/miso_values.h	/^	int mid_flag;$/;"	m	struct:drive_data
 mid_flag	include/miso_values.h	/^	int mid_flag;$/;"	m	struct:image_data
 min	include/videodev2.h	/^	__u32			min;$/;"	m	struct:v4l2_bitrate
 min	include/videodev2.h	/^	struct v4l2_fract	min;		\/* Minimum frame interval [s] *\/$/;"	m	struct:v4l2_frmival_stepwise	typeref:struct:v4l2_frmival_stepwise::v4l2_fract
@@ -1077,7 +1083,6 @@ pixelaspect	include/videodev2.h	/^	struct v4l2_fract       pixelaspect;$/;"	m	st
 pixelformat	include/videodev2.h	/^	__u32			pixelformat;$/;"	m	struct:v4l2_pix_format
 pixelformat	include/videodev2.h	/^	__u32		    pixelformat;       \/* Format fourcc      *\/$/;"	m	struct:v4l2_fmtdesc
 prev	include/miso_values.h	/^	struct image_data* prev;$/;"	m	struct:image_data	typeref:struct:image_data::image_data
-prev_data	include/miso_values.h	/^struct image_data prev_data[DATA_SIZE];$/;"	v	typeref:struct:image_data
 print_screen_cb	include/miso_camera.h	/^void print_screen_cb()$/;"	f
 print_screen_color	include/miso_camera.h	/^void print_screen_color()$/;"	f
 print_screen_cr	include/miso_camera.h	/^void print_screen_cr()$/;"	f
@@ -1178,6 +1183,7 @@ service_lines	include/videodev2.h	/^	__u16   service_lines[2][24];$/;"	m	struct:
 service_set	include/videodev2.h	/^	__u16   service_set;$/;"	m	struct:v4l2_sliced_vbi_cap
 service_set	include/videodev2.h	/^	__u16   service_set;$/;"	m	struct:v4l2_sliced_vbi_format
 set_angle	include/miso_car_lib.h	/^void set_angle(int angle)$/;"	f
+set_drive_mode	main.c	/^int set_drive_mode()$/;"	f
 set_end_point	include/miso_camera.h	/^int set_end_point(int rl_info, struct p_point* pt_tmp, int flag)$/;"	f
 sighandler	include/miso_camera.h	/^void sighandler(int signo)$/;"	f
 signal	include/videodev2.h	/^	__s32			signal;$/;"	m	struct:v4l2_tuner
@@ -1359,6 +1365,7 @@ videobuf_dev	driver/camera.c	/^struct videobuf_dev{$/;"	s	file:
 videobuf_dev	driver/camera_ori.c	/^struct videobuf_dev{$/;"	s	file:
 w	include/videodev2.h	/^	struct v4l2_rect        w;$/;"	m	struct:v4l2_window	typeref:struct:v4l2_window::v4l2_rect
 wait	include/car_lib.h	/^void wait(int se)$/;"	f
+white_count	include/miso_camera.h	/^int white_count(int y){$/;"	f
 width	driver/camera.c	/^	int	width;$/;"	m	struct:pxa_camera	file:
 width	driver/camera_ori.c	/^	int	width;$/;"	m	struct:pxa_camera	file:
 width	include/miso_camera.h	/^	int width;$/;"	m	struct:pxa_camera

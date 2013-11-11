@@ -3,7 +3,7 @@
 
 #define DATAFILE "img_data.dat"
 
-int fread_data(struct image_data* idt)
+int fread_data(struct drive_data* dat)
 {
 	FILE* ifp = fopen(DATAFILE,"r");
 	int i,tmp;
@@ -17,14 +17,10 @@ int fread_data(struct image_data* idt)
 
 	while(!feof(ifp))
 	{
-		fscanf(ifp,"[%d] %d %d %d (%d,%d) (%d,%d) (%d,%d) %d %d %d\n",
+		fscanf(ifp,"[%d] %d %d %d %d %lf %d %d %d\n",
 			&tmp,
-			&idt[i].dist, &idt[i].flag, &idt[i].mid_flag, 
-			&idt[i].bot[0].x,&idt[i].bot[0].y,
-			&idt[i].bot[1].x,&idt[i].bot[1].y,
-			&idt[i].bot[2].x,&idt[i].bot[2].y,
-			&idt[i].angle[0],&idt[i].angle[1],&idt[i].angle[2] );
-
+			&dat[i].dist, &dat[i].flag, &dat[i].mid_flag, &dat[i].angle,
+			&dat[i].gradient, &dat[i].intercept, &dat[i].height, &dat[i].line_y);
 		i++;
 	}
 	fclose(ifp);
@@ -32,27 +28,25 @@ int fread_data(struct image_data* idt)
 
 }
 
-int fwrite_data(struct image_data* idt, int cnt)
+int fwrite_data(struct drive_data* dat)
 {
 	FILE* ofp = fopen(DATAFILE,"w");
-	int i;
+	int i,tmp;
 	if(ofp == NULL  )
 	{
 		printf("output file error is NULL\n");
 		return 1;
 	}
 
-	for( i = 0; i < cnt; i++)
+	for( i = 0; i < g_index; i++)
 	{
-		fprintf(ofp,"[%d] %3d %3d %3d (%3d,%3d) (%3d,%3d) (%3d,%3d) %3d %3d %3d\n", 
+		fprintf(ofp,"[%d] %d %d %d %d %lf %d %d %d\n", 
 			i,
-			idt[i].dist, idt[i].flag, idt[i].mid_flag, 
-			idt[i].bot[0].x,idt[i].bot[0].y,
-			idt[i].bot[1].x,idt[i].bot[1].y,
-			idt[i].bot[2].x,idt[i].bot[2].y,
-			idt[i].angle[0], idt[i].angle[1], idt[i].angle[2] );
+			dat[i].dist, dat[i].flag, dat[i].mid_flag, dat[i].angle,
+			dat[i].gradient, dat[i].intercept, dat[i].height, dat[i].line_y);
 	}
 
 	fclose(ofp);
 	return 0;
 }
+

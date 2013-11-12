@@ -82,7 +82,7 @@ struct image_data* line_check(int handle)
 
 	printf(">drive flag : %d\n",g_drive_flag);
 
-	//g_change_line = TRUE;	// 차선변경 제외
+	g_change_line = TRUE;	// 차선변경 제외
 
 	switch(g_drive_flag)
 	{
@@ -209,11 +209,13 @@ struct image_data* line_check(int handle)
 				img_data->flag = IF_SPEED_DOWN;
 				return img_data;
 			}
+			/*
 			else if( tmp == MID_WHITE_SPEED_DOWN)
 			{
 				img_data->flag = IF_WHITE_SPEED_DOWN;
 				return img_data;
 			}
+			*/
 			break;
 
 			/////////////////////////////////////////////////////// traffic 
@@ -416,7 +418,7 @@ int white_count(int y){
 #endif
 			cnt += 1;		
 		}
-		if(cnt >= 4){
+		if(cnt >= 10){
 			return TRUE;
 		}
 	}
@@ -476,6 +478,7 @@ int check_mid_line()
 			else if( CUTLINE_CURVE < height && height <= CUTLINE)
 				return MID_CURVE_STRAIGHT;
 
+			/*
 			if( IS_WHITE(MIDWIDTH,i)) 
 			{
 				if(i == CUTLINE -1 || IS_BLACK(MIDWIDTH, i+1)){
@@ -483,6 +486,7 @@ int check_mid_line()
 					return MID_WHITE_SPEED_DOWN;
 				}
 			}
+			*/
 			break;
 		}
 

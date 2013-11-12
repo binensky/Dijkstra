@@ -29,7 +29,6 @@ void traffic_drive(int flag){
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
-			buzzer_on();
 			g_drive_flag = DF_STOP;
 			break;
 
@@ -61,6 +60,67 @@ void traffic_drive(int flag){
 	}
 }
 
+void parking(int flag)
+{
+	int n;
+	printf("in parking module : %d\n", flag);
+
+	if(flag == IF_PARK_V)
+	{
+		n = mDistance();
+		distance_set(2500);
+		//speed_set(1000);
+		speed_set(1500);
+		backward_dis();
+		while(mDistance() - n > -20){printf("dis : %d\n", mDistance() - n);}
+		turn_set(DM_ANGLE_MIN);
+		while(mDistance() - n > -1900){printf("dis : %d\n", mDistance() - n);}
+		turn_straight();
+		//while(get_dist_sensor(4) < 200){}
+		while(get_dist_sensor(4) < 150){}
+		stop();
+		sleep(1);
+		buzzer_on();
+		sleep(1);
+		forward_dis();
+		//while(get_dist_sensor(4) > 60){}
+		while(get_dist_sensor(4) > 100){}
+		turn_set(DM_ANGLE_MIN);
+		n = mDistance();
+		while(mDistance() - n < 2000){printf("dis : %d\n", mDistance() - n);}
+		turn_straight();
+		speed_set(1000);
+	}
+	else
+	{
+		n = mDistance();
+		distance_set(2500);
+		speed_set(1500);
+		backward_dis();
+		while(mDistance() - n > -20){printf("dis : %d\n", mDistance() - n);}
+		turn_set(DM_ANGLE_MIN);
+		while(mDistance() - n > -1500){printf("dis : %d\n", mDistance() - n);}
+		turn_set(DM_ANGLE_MAX);
+		while(get_dist_sensor(4) < 300 && get_dist_sensor(3) < 300 ){}
+		stop();
+		sleep(1);
+		buzzer_on();
+		sleep(1);
+		forward_dis();
+		while(get_dist_sensor(4) > 300){}
+		turn_set(DM_ANGLE_MAX);
+		n = mDistance();
+		while(mDistance() - n < 800){printf("dis : %d\n", mDistance() - n);}
+		turn_set(DM_ANGLE_MIN);
+		while(mDistance() - n < 2600){printf("dis : %d\n", mDistance() - n);}
+		turn_straight();
+		speed_set(1000);
+		
+		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
+	}
+	g_drive_flag = DF_DRIVE;
+}
+
 void direct_test()
 {
 	struct image_data* idata;
@@ -70,6 +130,7 @@ void direct_test()
 		int n;
 
 		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. mack, 6. traffic left, 7. traffic right \n");
+		printf("8.change course, 9. parking ver a. parking hor\n");
 		scanf("%c",&input);
 
 		switch(input)
@@ -121,6 +182,12 @@ void direct_test()
 				break;
 			case '8':
 				change_course();
+				break;
+			case '9':
+				parking(IF_PARK_V);
+				break;
+			case 'a':
+				parking(IF_PARK_H);
 				break;
 			default:
 				break;

@@ -178,12 +178,14 @@ PAGE_MASK	driver/camera.c	48;"	d	file:
 PAGE_MASK	driver/camera_ori.c	48;"	d	file:
 PAGE_SIZE	driver/camera.c	47;"	d	file:
 PAGE_SIZE	driver/camera_ori.c	47;"	d	file:
-PARK_FIND	include/parking_modules.h	22;"	d
-PARK_INFO_SAVE	include/parking_modules.h	23;"	d
-PARK_NONE	include/parking_modules.h	21;"	d
-PARK_ON	include/parking_modules.h	26;"	d
-PARK_READY	include/parking_modules.h	25;"	d
-PARK_WAITING	include/parking_modules.h	24;"	d
+PARK_FIND	include/parking_modules.h	24;"	d
+PARK_HOR	include/parking_modules.h	31;"	d
+PARK_INFO_SAVE	include/parking_modules.h	25;"	d
+PARK_NONE	include/parking_modules.h	23;"	d
+PARK_ON	include/parking_modules.h	28;"	d
+PARK_READY	include/parking_modules.h	27;"	d
+PARK_VER	include/parking_modules.h	30;"	d
+PARK_WAITING	include/parking_modules.h	26;"	d
 PI	include/cam_values.h	5;"	d
 PT_SIZE	include/cam_values.h	45;"	d
 RGB565_BPP	include/pxa_camera_zl.h	100;"	d
@@ -639,6 +641,7 @@ V4L2_TUNER_SUB_SAP	include/videodev2.h	1148;"	d
 V4L2_TUNER_SUB_STEREO	include/videodev2.h	1146;"	d
 V4L2_VBI_INTERLACED	include/videodev2.h	1265;"	d
 V4L2_VBI_UNSYNC	include/videodev2.h	1264;"	d
+VERTICAL_DIST	include/parking_modules.h	21;"	d
 VIDEOBUF_COUNT	driver/camera.c	114;"	d	file:
 VIDEOBUF_COUNT	driver/camera_ori.c	114;"	d	file:
 VIDEOBUF_COUNT	include/cam_values.h	6;"	d
@@ -879,6 +882,7 @@ disp_inv_up	include/car_lib.h	/^void disp_inv_up(void)$/;"	f
 dist	include/miso_values.h	/^	int dist;$/;"	m	struct:drive_data
 distFD	include/parking_modules.h	/^static int distFD = 0;$/;"	v
 distance	include/car_lib.h	/^char distance(char* dis1, char* dis2)$/;"	f
+distance_check	include/distance_check.h	/^void* distance_check(void* data)$/;"	f
 distance_check	include/old_parking_module.h	/^void* distance_check(void* data)$/;"	f
 distance_reset	include/car_lib.h	/^void distance_reset(void)$/;"	f
 distance_set	include/miso_car_lib.h	/^void distance_set(int dis)$/;"	f
@@ -947,7 +951,7 @@ g_broken_line	include/miso_values.h	/^static int g_broken_line = FALSE;$/;"	v
 g_change_line	include/miso_values.h	/^static int g_change_line = FALSE;$/;"	v
 g_drive_flag	include/miso_values.h	/^static int g_drive_flag = DF_DRIVE;$/;"	v
 g_drive_mode	include/miso_values.h	/^static int g_drive_mode = 0;$/;"	v
-g_first	include/miso_values.h	/^static int g_first = TRUE;$/;"	v
+g_first	include/miso_camera.h	/^int g_first = TRUE;$/;"	v
 g_image_flag	include/miso_values.h	/^static int g_image_flag = IF_NO_PROCESS;$/;"	v
 g_index	include/miso_values.h	/^static int g_index = 0;$/;"	v
 g_sleep	include/miso_car_lib.h	/^static char g_sleep = FALSE;$/;"	v
@@ -1087,6 +1091,7 @@ overlay2_write	driver/overlay2.c	/^int overlay2_write(int handle, struct pxa_vid
 p_point	include/miso_values.h	/^struct p_point$/;"	s
 park_mode	include/parking_modules.h	/^static int park_mode = PARK_NONE;$/;"	v
 park_ready	include/parking_modules.h	/^void park_ready(int index)$/;"	f
+parking	include/drive_modules.h	/^void parking(int flag)$/;"	f
 parking_check	include/parking_modules.h	/^void* parking_check(void* p_data)$/;"	f
 parking_distance_check	include/parking_modules.h	/^void* parking_distance_check(void* p_data)$/;"	f
 parm	include/videodev2.h	/^	} parm;$/;"	m	struct:v4l2_streamparm	typeref:union:v4l2_streamparm::__anon13

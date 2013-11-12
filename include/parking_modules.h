@@ -15,8 +15,11 @@
 
 #define AVR_CNT 5
 
-#define CLOSE_DIST 60
-#define FAR_DIST 50
+#define CLOSE_DIST 80
+#define FAR_DIST 60
+#define CLOSE_DIST_SEN3 80
+
+#define VERTICAL_DIST 2800
 
 #define PARK_NONE 0
 #define PARK_FIND 1
@@ -24,6 +27,9 @@
 #define PARK_WAITING 3
 #define PARK_READY 4
 #define PARK_ON 5
+
+#define PARK_VER 3
+#define PARK_HOR 4
 
 static int park_mode = PARK_NONE;
 static int distFD = 0;
@@ -54,9 +60,10 @@ void* parking_distance_check(void* p_data)
 
 void* parking_check(void* p_data)
 {
-
+	int i;
 	int prev_dist = -1;
 	int front_dist[2];
+	int vh_info = PARK_NONE;
 
 	if((distFD = open("/dev/FOUR_ADC", O_RDONLY )) < 0)
 	{      
@@ -64,23 +71,28 @@ void* parking_check(void* p_data)
 		exit(-1);
 	}
 
+	for(i=0; i<10; i++){
+		get_dist_sensor(2);
+	}
+
 	while(1)
 	{
 		if(park_mode < 4)
 		{	
 			//turn_set(1500);
-			distance_set(1000);
-			forward_dis();
+			//distance_set(1000);
+			//forward_dis();
 		}
+
 		
-		printf(">mode : %d / dist(2) %d / dist(3) %d\n",park_mode, get_dist_sensor(2),get_dist_sensor(3)); 
+		//printf(">mode : %d / dist(2) %d / dist(3) %d\n",park_mode, get_dist_sensor(2),get_dist_sensor(3)); 
 		switch( park_mode )
 		{
 			case PARK_NONE:
 				// 주차 시작점을 잡는다.
-				if( get_dist_sensor(2) >= CLOSE_DIST )
+				if( get_dist_sensor(3) >= CLOSE_DIST )
 				{
-					front_dist[0] = get_dist_sensor(2);
+					front_dist[0] = get_dist_sensor(3);
 					prev_dist = mDistance();
 					park_mode = PARK_FIND;
 				}
@@ -88,24 +100,35 @@ void* parking_check(void* p_data)
 				break;
 			case PARK_FIND:
 				// 다시 멀어지는 지점을 지난다. 
-				if( get_dist_sensor(2) <= FAR_DIST )
+				if( get_dist_sensor(3) <= FAR_DIST )
 				{
 					park_mode = PARK_INFO_SAVE;
 				}
 				break;
 			case PARK_INFO_SAVE:
-				if( get_dist_sensor(2) >= CLOSE_DIST)
+				if( get_dist_sensor(3) >= CLOSE_DIST)
 				{
 					// check dist range 
-					printf(">>> mDistance() : %d\n",mDistance()-prev_dist); 
-					// 어느 주차모드인지 H인지 V인지 확인한다. 
+					int park_dist = mDistance() - prev_dist;
+					if(park_dist < VERTICAL_DIST)
+						g_drive_flag = PARK_VER;
+						//vh_info = PARK_VER;
+					else
+						g_drive_flag = PARK_HOR;
+						//vh_info = PARK_HOR;
+					printf(">>> mDistance() : %d, ver / hor : %d\n",park_dist, g_drive_flag);
+					// 어느 주차모드인지 H인지 V인지 확인한다.
 
-					front_dist[1] = get_dist_sensor(2); // 다시 거리가 가까워 진다면 dist를 잡는다. 
+					front_dist[1] = get_dist_sensor(3); // 다시 거리가 가까워 진다면 dist를 잡는다. 
 					printf(">>>> diff dists %d - %d = %d \n", front_dist[0], front_dist[1], front_dist[0]-front_dist[1]);
 
 					// 차이를 구하고 그 값으로 차를 돌린다. 
 					//check_car_angle(front_dist[0], front_dist[1]);
-					park_mode = PARK_WAITING;
+					//park_mode = PARK_WAITING;
+
+					stop();
+					park_mode = PARK_ON;
+					printf("ready for parking\n");
 				}
 				break;
 
@@ -118,16 +141,21 @@ void* parking_check(void* p_data)
 				break;
 
 			case PARK_READY:
-				if( get_dist_sensor(3) >= CLOSE_DIST)
+				if( get_dist_sensor(3) >= CLOSE_DIST_SEN3)
 				{
 					stop();
+					g_drive_flag = vh_info;
 					park_mode = PARK_ON;
 					printf("ready for parking\n");
 					// run module in the main with flag
 				}
 				break;
 			case PARK_ON:
-
+				if(g_drive_flag == DF_DRIVE)
+				{
+					vh_info = PARK_NONE;
+					park_mode = PARK_NONE;
+				}
 				break;
 			default:
 				break;
@@ -176,6 +204,7 @@ int get_dist_sensor(int index)
 	while(i<AVR_CNT)
 	{
 		read(distFD, rxbuf, sizeof(rxbuf));	// ADC READ
+		//printf(" %d %d ",index,(int)rxbuf[index-1]);
 		total+=(int)rxbuf[index-1];
 		i++;
 	}

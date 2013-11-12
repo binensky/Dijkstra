@@ -32,8 +32,9 @@ int main(void)
 
 	init_drive();
 	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	//	pthread_create(&thread[2],NULL,parking_check,NULL);
+		pthread_create(&thread[2],NULL,parking_check,NULL);
 
+	//direct_test();
 	//	g_drive_mode = set_drive_mode();
 	g_drive_mode = CM_MODE;
 
@@ -56,9 +57,8 @@ int main(void)
 		fwrite_data(d_data);
 	}
 
-	//direct_test();
 	//	pthread_join(thread[1],NULL);
-	//	pthread_join(thread[2],NULL);
+		pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -141,14 +141,20 @@ inline void drive(struct image_data* idata)
 	d_data[g_index].flag = idata->flag;
 	d_data[g_index].mid_flag = idata->mid_flag;
 
-	switch(idata->flag)
+	printf("g_drive_flag : %d\n", g_drive_flag);
+	if(g_drive_flag == DF_VPARK)
+		d_data[g_index].flag = IF_PARK_V;
+	else if ( g_drive_flag == DF_PPARK)
+		d_data[g_index].flag = IF_PARK_H;
+
+	switch(d_data[g_index].flag)
 	{			
-		case IF_STOP:
+/*		case IF_STOP:
 			stop();
 			d_data[g_index].mid_flag = MID_STRAIGHT;
 			//g_drive_flag = DF_STOP;
 			break;
-
+*/
 		case IF_LEFT:
 #ifdef DRIVE_DEBUG
 			printf("img angle %d\n", idata->angle[LEFT]);
@@ -197,7 +203,7 @@ inline void drive(struct image_data* idata)
 
 			drive_turn(idata, gradient, intercept, height);
 			break;
-
+/*
 		case IF_SPEED_DOWN:	
 			printf("---RED SPEED DOWN---\n");
 			speed_set(1000);
@@ -205,7 +211,7 @@ inline void drive(struct image_data* idata)
 			break;
 		case IF_WHITE_SPEED_DOWN:
 			printf("---WHITE SPEED DOWN---\n");
-			speed_set(500);
+			//speed_set(500);
 			d_data[g_index].angle = d_data[g_index-1].angle;
 			break;
 
@@ -244,7 +250,12 @@ inline void drive(struct image_data* idata)
 		case IF_SG_STOP:
 		case IF_SG_LEFT:
 		case IF_SG_RIGHT:
-			traffic_drive(idata->flag);
+			traffic_drive(d_data[g_index].flag);
+			break;
+*/
+		case IF_PARK_V:
+		case IF_PARK_H:
+			parking(d_data[g_index].flag);
 			break;
 	}
 
@@ -252,6 +263,7 @@ inline void drive(struct image_data* idata)
 	if(idata->flag != IF_STOP && idata->flag != IF_SG_STOP 
 			&& idata->flag  != IF_SG_LEFT && idata->flag !=IF_SG_RIGHT 
 			&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT
+			&& g_drive_flag != DF_VPARK && g_drive_flag != DF_PPARK
 			&& g_drive_flag != DF_STOP)
 	{		
 		distance_set(500);	

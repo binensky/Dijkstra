@@ -14,10 +14,11 @@
 #include <string.h>
 
 #include "include/miso_values.h"
+#include "include/key_handler.h"
 #include "include/miso_car_lib.h"
 #include "include/miso_camera.h"
 #include "include/sensor_handler.h"
-#include "include/distance_check.h"
+#include "include/parking_modules.h"
 #include "include/drive_modules.h"
 #include "include/file_lib.h"
 
@@ -26,12 +27,11 @@ struct sockaddr_in echoServAddr;
 struct sockaddr_in echoClntAddr;
 
 void init_drive(void);
-int set_drive_mode();
 void drive_ai();
 void drive_cm();
 void drive_md();
-void drive_turn(struct drive_data* d_data);
-inline void drive_idata(struct image_data* idata);
+void drive_turn(struct image_data* idata, double gradient, int intercept, int height);
+inline void drive(struct image_data* idata);
 
 int servSock;
 int clntSock;
@@ -69,36 +69,20 @@ int main(void)
 	cm_handle = init_camera();
 	car_connect();
 
-	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	//pthread_create(&thread[2],NULL,distance_check,NULL);
-
 	init_drive();
-
-	//	g_drive_mode = set_drive_mode();
-	g_drive_mode = CM_MODE;
+	pthread_create(&thread[0],NULL,key_handler,NULL);
+	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	if(g_drive_mode == AI_MODE)
-	{
-		// get image data from file. 
-		fread_data(d_data);
 		drive_ai();
-	}else if(g_drive_mode == MD_MODE)
-	{ 
-		// get image data from file. 
-		fread_data(d_data);
-		drive_md();
-		// modify stored drive data
-		fwrite_data(d_data);
-	}else
-	{
+	else
 		drive_cm();
-		// write image data into file. 
-		fwrite_data(d_data);
-	}
 
 	//direct_test();
-//	pthread_join(thread[1],NULL);
-	//pthread_join(thread[2],NULL);
+	pthread_join(thread[0],NULL);
+	//	pthread_join(thread[1],NULL);
+	//	pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -125,10 +109,10 @@ void drive_cm()
 	struct image_data* idata;
 	g_index = 0;
 
-	while(g_index<1000)
+	while(TRUE)
 	{
 		// store image data into d_data
-		idata = line_check(cm_handle);
+		idata = line_check();
 #ifdef DRIVE_DEBUG
 		sprintf(buffer, "idata flag %d \n", idata->flag); // buffer에 저장
 		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
@@ -144,49 +128,34 @@ void drive_cm()
 		}
 
 		// drive flag check and drive. - inline function
-		drive_idata(idata);
+		drive(idata);
 		free(idata);
+
+		if(g_index == 0)
+		{
+			d_data[g_index].flag = IF_STRAIGHT;
+			d_data[g_index].mid_flag = MID_STRAIGHT;
+			d_data[g_index].angle = 0;
+			d_data[g_index].dist = 0;
+		}
 		g_index+=1;
 	}
 }
 
-// DRIVE WITH STORED DATA AND CAMERA AND MODIFY STORED DATA. 
-void drive_md()
-{
-	struct image_data* idata;
-	g_index = 0;
-
-	while(TRUE)
-	{
-		// get idata from img processing and store 'd_data'
-		idata = line_check(cm_handle); // get image data 
-//		printf("idata flag %d \n",idata->flag ); 
-
-#ifdef DEBUG
-		sprintf(buffer, "idata flag %d \n", idata->flag); // buffer에 저장
-		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
-			printf("idata flag send failed\n");
-#endif 
-
-		// drive flag check and drive. - inline function
-		drive_idata(idata);
-		free(idata);
-		g_index+=1;
-	}
-
-}
-
-inline void drive_idata(struct image_data* idata)
+inline void drive(struct image_data* idata)
 {
 	double gradient;
 	int angle, intercept, height;
+
+	d_data[g_index].flag = idata->flag;
+	d_data[g_index].mid_flag = idata->mid_flag;
 
 	switch(idata->flag)
 	{			
 		case IF_STOP:
 			stop();
 			d_data[g_index].mid_flag = MID_STRAIGHT;
-			g_drive_flag = DF_STOP;
+			//g_drive_flag = DF_STOP;
 			break;
 
 		case IF_LEFT:
@@ -213,17 +182,7 @@ inline void drive_idata(struct image_data* idata)
 				break;
 			}
 
-			// store idata to d_data
-			d_data[g_index].flag = idata->flag;
-			d_data[g_index].mid_flag = idata->mid_flag;
-			d_data[g_index].gradient = gradient;
-			d_data[g_index].intercept = intercept;
-			d_data[g_index].height = height;
-			d_data[g_index].line_y = (d_data[g_index].flag ==IF_LEFT)?
-				idata->bot[LEFT].y:idata->bot[RIGHT].y;
-	
-			// store idata to d_data
-			drive_turn(&d_data[g_index]);
+			drive_turn(idata, gradient, intercept, height);
 			break;
 
 		case IF_RIGHT:
@@ -236,11 +195,11 @@ inline void drive_idata(struct image_data* idata)
 			{
 				d_data[g_index-1].mid_flag = MID_STRAIGHT;
 			}
-			
+
 			gradient = tan( (double)idata->angle[RIGHT] *PI /180);
 			intercept = idata->bot[RIGHT].y - idata->bot[RIGHT].x * gradient;
 			height = gradient * MIDWIDTH + intercept;
-		
+
 			if(idata->angle[RIGHT] > 90)
 			{
 				turn_set(DM_ANGLE_MIN);
@@ -249,40 +208,46 @@ inline void drive_idata(struct image_data* idata)
 				break;
 			}
 
-			// store idata to d_data
-			d_data[g_index].flag = idata->flag;
-			d_data[g_index].mid_flag = idata->mid_flag;
-			d_data[g_index].gradient = gradient;
-			d_data[g_index].intercept = intercept;
-			d_data[g_index].height = height;
-			d_data[g_index].line_y = (d_data[g_index].flag ==IF_LEFT)?
-				idata->bot[LEFT].y:idata->bot[RIGHT].y;
-
-			drive_turn(&d_data[g_index]);
+			drive_turn(idata, gradient, intercept, height);
 			break;
 
-		case IF_SPEED_DOWN:
-		//	printf("------------------------SPEED DOWN------------------\n");
-#ifdef DRIVE_DEBUG
-			sprintf(buffer, "IF_SPEED_DOWN\n");
-			if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
-				printf("IF_SPEED send failed\n");
-#endif
+		case IF_SPEED_DOWN:	
+			printf("---RED SPEED DOWN---\n");
+			speed_set(1000);
+			d_data[g_index].angle = d_data[g_index-1].angle;
+			break;
+		case IF_WHITE_SPEED_DOWN:
+			printf("---WHITE SPEED DOWN---\n");
 			speed_set(500);
+			d_data[g_index].angle = d_data[g_index-1].angle;
+			break;
+
+		case IF_SPEED_BUMP_CUR:
+			d_data[g_index].angle = d_data[g_index-1].angle;
 			break;
 		case IF_SPEED_BUMP_ST:
 		case IF_BOTH:
 		case IF_STRAIGHT:
 			turn_straight();
+			d_data[g_index].angle = DM_STRAIGHT;
 			break;
 
 		case IF_OUTLINE:
 			if(g_angle < DM_STRAIGHT)
+			{
 				turn_set(DM_ANGLE_MIN);
+				d_data[g_index].angle = DM_ANGLE_MIN;
+			}
 			else if(g_angle > DM_STRAIGHT)
+			{
 				turn_set(DM_ANGLE_MAX);
+				d_data[g_index].angle = DM_ANGLE_MAX;
+			}
 			else
+			{
 				turn_straight();
+				d_data[g_index].angle = DM_STRAIGHT;
+			}
 			break;
 
 		case IF_CL_LEFT:
@@ -299,7 +264,8 @@ inline void drive_idata(struct image_data* idata)
 #ifdef DRIVE
 	if(idata->flag != IF_STOP && idata->flag != IF_SG_STOP 
 			&& idata->flag  != IF_SG_LEFT && idata->flag !=IF_SG_RIGHT 
-			&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT)
+			&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT
+			&& g_drive_flag != DF_STOP)
 	{		
 		distance_set(500);	
 		forward_dis();
@@ -308,56 +274,15 @@ inline void drive_idata(struct image_data* idata)
 
 }
 
-int set_drive_mode()
-{
-
-	unsigned char buf,read_key;
-	int key;
-
-	if((keyFD = open(keyDev,O_RDONLY))<0)
-	{	
-		perror("Cannot open /dev/key!");
-		buzzer_on();
-	}
-
-	read_key= read(keyFD,&buf,sizeof(buf));
-	key = read_key;
-
-	printf("key %d\n",key);
-
-	switch(key)
-	{
-		case KEY1:
-			buzzer_on();
-			usleep(500000);
-			buzzer_on();
-			usleep(500000);
-			buzzer_on();
-			usleep(500000);
-			return AI_MODE;
-
-		case KEY2:
-			buzzer_on();
-			usleep(500000);
-			buzzer_on();
-			usleep(500000);
-			return MD_MODE;
-		case KEY3:
-			buzzer_on();
-			usleep(500000);
-			return CM_MODE;
-	}
-}
-
-void drive_turn(struct drive_data* ddata)
+void drive_turn(struct image_data* idata, double gradient, int intercept, int height)
 {
 	struct p_point mid_bot, dest;
 	int temp_flag,dest_angle;
 
 	// set temp flag
-	if(ddata->mid_flag == MID_STRAIGHT )
+	if(idata->mid_flag == MID_STRAIGHT )
 	{
-		if(ddata->height > CUTLINE + 20)
+		if(height > CUTLINE + 20)
 			temp_flag = MID_STRAIGHT;
 		else
 		{
@@ -375,11 +300,10 @@ void drive_turn(struct drive_data* ddata)
 			}
 		}
 	}
-	else if(ddata->mid_flag == MID_CURVE_STRAIGHT)
+	else if(idata->mid_flag == MID_CURVE_STRAIGHT)
 	{
 		if(g_index == 0 || (g_index>0 && (d_data[g_index-1].mid_flag == MID_STRAIGHT || d_data[g_index-1].mid_flag == MID_STOP || d_data[g_index-1].mid_flag == MID_SPEED_BUMP_ST)))
 		{
-			//printf("g index : %d, prev data mid flag : %d\n",g_index, d_data[g_index-1].mid_flag);
 #ifdef DRIVE_DEBUG
 			sprintf(buffer, "g index : %d, prev data mid flag : %d\n", g_index, d_data[g_index-1].mid_flag);
 			if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
@@ -398,7 +322,7 @@ void drive_turn(struct drive_data* ddata)
 			temp_flag = MID_CURVE_STRAIGHT;
 		}
 	}
-	else if(ddata->mid_flag == MID_CURVE)
+	else if(idata->mid_flag == MID_CURVE)
 	{
 		temp_flag = MID_CURVE;
 	}
@@ -412,37 +336,37 @@ void drive_turn(struct drive_data* ddata)
 #endif
 	if(temp_flag == MID_STRAIGHT)
 	{
-		ddata->mid_flag = MID_STRAIGHT;
+		d_data[g_index].mid_flag = MID_STRAIGHT;
 
-		if(ddata->flag == IF_RIGHT)
+		if(idata->flag == IF_RIGHT)
 		{
-			if(ddata->line_y < 50)
+			if(idata->bot[RIGHT].y < 50)
 			{	
-				int angle = DM_STRAIGHT + (150 - 2*ddata->line_y);
+				int angle = DM_STRAIGHT + (150 - 2*idata->bot[RIGHT].y);
 				turn_set(angle);
-				ddata->angle = angle;
+				d_data[g_index].angle = angle;
 			}
 			else{
 				turn_straight();
-				ddata->angle = DM_STRAIGHT;
+				d_data[g_index].angle = DM_STRAIGHT;
 			}
 		}
-		else if(ddata->flag == IF_LEFT)
+		else if(idata->flag == IF_LEFT)
 		{
-			if(ddata->line_y < 50)
+			if(idata->bot[LEFT].y < 50)
 			{
-				int angle = DM_STRAIGHT - (150 - 2*ddata->line_y);
+				int angle = DM_STRAIGHT - (150 - 2*idata->bot[LEFT].y);
 				turn_set(angle);
-				ddata->angle = angle;
+				d_data[g_index].angle = angle;
 			}
 			else{
 				turn_straight();
-				ddata->angle = DM_STRAIGHT;
+				d_data[g_index].angle = DM_STRAIGHT;
 			}
 		}
 		else{
 			turn_straight();
-			ddata->angle = DM_STRAIGHT;
+			d_data[g_index].angle = DM_STRAIGHT;
 		}
 	}
 	else
@@ -450,7 +374,7 @@ void drive_turn(struct drive_data* ddata)
 		mid_bot.y = 0;
 		mid_bot.x = MIDWIDTH;
 		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
-		dest.x = (int)((dest.y - ddata->intercept)/ddata->gradient);
+		dest.x = (int)((dest.y - intercept)/gradient);
 #ifdef DRIVE_DEBUG
 		sprintf(buffer,"dest (%d, %d)\n", dest.x, dest.y);
 		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
@@ -468,26 +392,27 @@ void drive_turn(struct drive_data* ddata)
 #endif
 		if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95)
 		{
-			ddata->mid_flag = MID_STRAIGHT;
+			d_data[g_index].mid_flag = MID_STRAIGHT;
 		}
 		else
 		{
-			ddata->mid_flag = MID_CURVE;
+			d_data[g_index].mid_flag = MID_CURVE;
 		}
 
 		if(dest_angle == 1000)
 		{
 			turn_straight();
-			ddata->angle = DM_STRAIGHT;
+			d_data[g_index].angle = DM_STRAIGHT;
 		}
 		else if(dest_angle == 0 || dest_angle == 90 || dest_angle == 180)
 		{
-			ddata->angle = d_data[g_index-1].angle;
+			d_data[g_index].angle = d_data[g_index-1].angle;
 		}
 		else
 		{
-			turn_set( (int)(2200 - dest_angle * 70 / 9) );
-			ddata->angle = dest_angle;
+			int angle =  (int)(2200 - dest_angle * 70 / 9) ;
+			turn_set( angle );
+			d_data[g_index].angle = angle;
 		}
 	}
 }

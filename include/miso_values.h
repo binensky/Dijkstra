@@ -20,31 +20,36 @@
 
 // drive flag
 #define DF_STOP 0
-#define DF_DRIVE 1
-#define DF_VPARK 3
-#define DF_PPARK 4
+#define DF_READY 1
+#define DF_DRIVE 2
+#define DF_MODULE 3
 #define DF_END 9
 
 // image flag 
 #define IF_NO_PROCESS -1
 #define IF_STOP 0
-#define IF_LEFT 1
-#define IF_RIGHT 2
-#define IF_BOTH 3
-#define IF_STRAIGHT 5
-#define IF_OUTLINE 6
-#define IF_SPEED_DOWN 7
-#define IF_SPEED_BUMP_ST 8
-#define IF_SPEED_BUMP_CUR 9
+#define IF_STRAIGHT 1
+#define IF_LEFT 4
+#define IF_RIGHT 5
+#define IF_BOTH 6
 
-#define IF_SG_STOP 10
-#define IF_SG_LEFT 12
-#define IF_SG_RIGHT 13
-#define IF_CL_LEFT 21
-#define IF_CL_RIGHT 22
-#define IF_PARK_V 31
-#define IF_PARK_H 32
+#define IF_SPEED_BUMP_ST 11
+#define IF_SPEED_BUMP_CUR 12
 
+#define IF_SPEED_DOWN 23
+#define IF_WHITE_SPEED_DOWN 24
+
+#define IF_OUTLINE 31
+
+#define IF_SG_STOP 40
+#define IF_SG_LEFT 44
+#define IF_SG_RIGHT 45
+
+#define IF_CL_LEFT 54
+#define IF_CL_RIGHT 55
+
+#define IF_PARK_V 61
+#define IF_PARK_H 62
 
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1515
@@ -57,49 +62,36 @@
 #define AI_MODE 1
 #define MD_MODE 2
 
-#define DATA_SIZE 500
+#define DATA_SIZE 10000
 
-// key handler 
-char keyDev[] ="/dev/KEYPAD";
-int keyFD = -1;
-char keyState[3]={0,0,0};
-
-struct p_point
-{
+struct p_point{
 	int x;		// x좌표 (0~319)
 	int y;		// y좌표 (0~239)
 };
 
-struct image_data
-{
-	struct image_data* prev;
-	struct image_data* next;
-	int flag; 	// NONE(-1), STOP(0), LEFT, RIGHT, LEFT+RIGHT
-	int mid_flag;
-	struct p_point bot[3];
-	int angle[3];
+struct image_data{
+	int flag; 		// whole image process flag. 
+	int mid_flag;		// mid line image process flag. 
+	struct p_point bot[3];	// bottom point of lines(none, left, right). 
+	int angle[3];		// angle of lines (none, left, right)
 };
 
-struct drive_data
-{
-	int flag;
-	int mid_flag;
-	int angle;
-	int dist;
-	double gradient;
-	int intercept;
-	int height;
-	int line_y;
+struct drive_data{
+	int flag;	// whole image process flag. 
+	int mid_flag;	// mid line image process flag 
+	int angle;	// image process angle. 
+	int dist;	// distance of drive moter. 
 };
 
-// flags
+// car status flags
 static int g_drive_flag = DF_DRIVE;
-static int g_image_flag = IF_NO_PROCESS;
-static int g_broken_line = FALSE;
-static int g_change_line = FALSE;
-static int g_drive_mode = 0;
+static int g_drive_mode = CM_MODE;
 static int g_index = 0;
 
+// camera fd
+static int cm_handle;	
+
+// car drive datas of previous drive. 
 struct drive_data d_data[DATA_SIZE];
 
 #endif

@@ -3,8 +3,6 @@
 
 #include "car_lib.h"
 #include "miso_values.h"
-#include "angle_table.h"
-
 
 #define DM_INTERVAL 100
 
@@ -89,10 +87,6 @@ void camera_turn_left()
 void distance_set(int dis)
 {
 	distance(HIGH(dis),LOW(dis));
-}
-
-void change_line(int v)
-{
 }
 
 int mDistance(){

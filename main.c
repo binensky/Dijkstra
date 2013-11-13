@@ -1,17 +1,12 @@
 //#define DEBUG
-#define DRIVE_DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
+//#define SOCKET
 
 #include <stdio.h>
 #include <pthread.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <string.h>
 
 #include "include/miso_values.h"
 #include "include/key_handler.h"
@@ -21,50 +16,23 @@
 #include "include/parking_modules.h"
 #include "include/drive_modules.h"
 #include "include/file_lib.h"
+#include "include/socket_lib.h"
 
 pthread_t thread[3];	// 0:key handling , 1:sensor handling, 2:distance_check
-struct sockaddr_in echoServAddr;
-struct sockaddr_in echoClntAddr;
-
 void init_drive(void);
 void drive_ai();
 void drive_cm();
-void drive_md();
 void drive_turn(struct image_data* idata, double gradient, int intercept, int height);
 inline void drive(struct image_data* idata);
 
-int servSock;
-int clntSock;
-unsigned short echoServPort = 10000;
-unsigned int clntLen;
-int recvMsgSize;
-char buffer[256];
-char echoBuffer[256];        /* Buffer for echo string */
-int recvFileSize;
+int sock;
 
 int main(void)
 {
 
-	if ((servSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-		printf("socket error");
-	//Construct local address structure
-	memset(&echoServAddr, 0, sizeof(echoServAddr)); 
-	echoServAddr.sin_family = AF_INET;  
-	echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	echoServAddr.sin_port = htons(echoServPort); 
-
-	if (bind(servSock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
-		printf("bind error\n");
-	if (listen(servSock, 5) < 0)
-		printf("listen error\n");
-	clntLen = sizeof(echoClntAddr);
-	printf("Wait for connection!!\n");
-	//Wait for a client to connect
-
-	if ((clntSock = accept(servSock, (struct sockaddr *) &echoClntAddr, &clntLen)) < 0)
-		printf("accept error\n");
-	else
-		printf("connect success!!\n");
+#ifdef SOCKET
+	sock = create_sock();
+#endif
 
 	cm_handle = init_camera();
 	car_connect();
@@ -74,11 +42,14 @@ int main(void)
 	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
+	g_drive_mode = CM_MODE;
+
 	if(g_drive_mode == AI_MODE)
 		drive_ai();
 	else
 		drive_cm();
 
+	printf("1\n");
 	//direct_test();
 	pthread_join(thread[0],NULL);
 	//	pthread_join(thread[1],NULL);
@@ -113,13 +84,15 @@ void drive_cm()
 	{
 		// store image data into d_data
 		idata = line_check();
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 		sprintf(buffer, "idata flag %d \n", idata->flag); // buffer에 저장
-		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+		if(send(sock, buffer, sizeof(buffer), 0) < 0)
 			printf("idata flag send failed\n");
-#endif 
-		//printf("idata flag %d \n",idata->flag );  
+#endif
 
+#ifdef DRIVE_DEBUG
+		printf("idata flag %d \n",idata->flag );  
+#endif
 		// check dist prev data and store dist. 
 		if(g_index>0)
 		{
@@ -159,9 +132,9 @@ inline void drive(struct image_data* idata)
 			break;
 
 		case IF_LEFT:
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 		sprintf(buffer, "img angle  %d \n", idata->angle[LEFT]); // buffer에 저장
-		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+		if(send(sock, buffer, sizeof(buffer), 0) < 0)
 			printf("img angle send failed\n");
 #endif
 			if(g_index>0 && d_data[g_index-1].flag == IF_RIGHT )
@@ -186,9 +159,9 @@ inline void drive(struct image_data* idata)
 			break;
 
 		case IF_RIGHT:
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 		sprintf(buffer, "img angle  %d \n", idata->angle[RIGHT]); // buffer에 저장
-		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+		if(send(sock, buffer, sizeof(buffer), 0) < 0)
 			printf("img angle send failed\n");
 #endif
 			if(g_index>0 && d_data[g_index-1].flag == IF_LEFT )
@@ -291,9 +264,9 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 			else
 			{
 				//printf("prev mid flag : %d\n",d_data[g_index-1].mid_flag);
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 				sprintf(buffer, "prev mid flag : %d\n", d_data[g_index-1].mid_flag);
-				if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+				if(send(sock, buffer, sizeof(buffer), 0) < 0)
 					printf("prev mid flag send failed\n");
 #endif
 				temp_flag = MID_CURVE_STRAIGHT;
@@ -304,18 +277,18 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		if(g_index == 0 || (g_index>0 && (d_data[g_index-1].mid_flag == MID_STRAIGHT || d_data[g_index-1].mid_flag == MID_STOP || d_data[g_index-1].mid_flag == MID_SPEED_BUMP_ST)))
 		{
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 			sprintf(buffer, "g index : %d, prev data mid flag : %d\n", g_index, d_data[g_index-1].mid_flag);
-			if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+			if(send(sock, buffer, sizeof(buffer), 0) < 0)
 				printf("g index and prev data mid flag send failed\n");
 #endif
 			temp_flag = MID_STRAIGHT;
 		}
 		else
 		{
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 			sprintf(buffer, "prev mid flag : %d\n", d_data[g_index-1].mid_flag);
-			if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+			if(send(sock, buffer, sizeof(buffer), 0) < 0)
 				printf("prev mid flag send failed\n");
 #endif
 			//printf("prev mid flag : %d\n",d_data[g_index-1].mid_flag);
@@ -327,10 +300,10 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		temp_flag = MID_CURVE;
 	}
 
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 	//printf("temp flag : %d \n",temp_flag);
 	sprintf(buffer, "temp flag : %d\n", temp_flag);
-	if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+	if(send(sock, buffer, sizeof(buffer), 0) < 0)
 		printf("temp flag send failed\n");
 
 #endif
@@ -375,17 +348,17 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		mid_bot.x = MIDWIDTH;
 		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
 		dest.x = (int)((dest.y - intercept)/gradient);
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 		sprintf(buffer,"dest (%d, %d)\n", dest.x, dest.y);
-		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+		if(send(sock, buffer, sizeof(buffer), 0) < 0)
 			printf("dest send failed\n");
 		//printf("dest (%d, %d)\n", dest.x, dest.y);
 #endif
 
 		dest_angle = get_angle(mid_bot,dest);
-#ifdef DRIVE_DEBUG
+#ifdef SOCKET
 		sprintf(buffer, "dest angle : %d\n", dest_angle);
-		if(send(clntSock, buffer, sizeof(buffer), 0) < 0)
+		if(send(sock, buffer, sizeof(buffer), 0) < 0)
 			printf("dest angle send failed\n");
 
 		//printf("dest angle : %d\n", dest_angle);

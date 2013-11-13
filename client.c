@@ -17,8 +17,6 @@ int main(int argc, char *argv[]) {
 	char *servIP;                    /* Server IP address (dotted quad) */
 	int bytesRcvd = 0, totalBytesRcvd = 0;   /* Bytes read in single recv() and total bytes read */
 
-	char fileBuf[BUFSIZE];
-
 	char buffer[1024];
 
 	servIP = argv[1];             /* First arg: server IP address (dotted quad) */

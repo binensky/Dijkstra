@@ -181,7 +181,7 @@ struct image_data* left_set_image_data(struct image_data* img_data, char is_stra
 {
 	int i;
 
-	if(is_straight && !had_change_line && is_broken_linee)
+	if(is_straight && !had_change_line && is_broken_line)
 	{
 		img_data->flag = IF_CL_LEFT;
 		had_change_line = TRUE;
@@ -201,7 +201,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 {				
 	int i;
 
-	if( is_straight && !had_change_line && is_broken_linee)
+	if( is_straight && !had_change_line && is_broken_line)
 	{
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
@@ -421,7 +421,7 @@ int left_line_trace(int i, int offset)
 				}
 			}if(x == 0){			// 오른쪽에서 1,0 을 못 찾은 경우
 				if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y)){
-					is_broken_linee = TRUE;
+					is_broken_line = TRUE;
 					return TRUE;
 				}
 				else if(pt[BOT+1].x == -1){
@@ -462,7 +462,7 @@ int left_line_trace(int i, int offset)
 			}
 			if(x == MAXWIDTH-1){		// 왼쪽에서 (10)을 못 찾은 경우
 				if(check_change_line(LEFT, pt_tmp.x, pt_tmp.y)){
-					is_broken_linee = TRUE;
+					is_broken_line = TRUE;
 					return TRUE;
 				}else if(pt[BOT+1].x == -1){
 					init_point();
@@ -513,7 +513,7 @@ int right_line_trace(int i, int offset)
 				}
 			}if(x == 0){		// 오른쪽에서 (0,1) 을 못 찾은 경우
 				if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
-					is_broken_linee = TRUE;
+					is_broken_line = TRUE;
 					return TRUE;
 				}
 				else if(pt[BOT+1].x == -1){
@@ -549,7 +549,7 @@ int right_line_trace(int i, int offset)
 				}
 			}if(x == MAXWIDTH-1){// 왼쪽에서 (0,1)을 못 찾은 경우
 				if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
-					is_broken_linee = TRUE;
+					is_broken_line = TRUE;
 					return TRUE;
 				}else if(pt[BOT+1].x == -1){
 					init_point();

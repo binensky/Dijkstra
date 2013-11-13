@@ -35,31 +35,55 @@ void* key_handler(void* data)
 		{
 			case KEY1:
 				// STOP / RESET
-				buzzer_on();
-				usleep(500000);
-				stop();
-				exit_camera(cm_handle);
-				exit(0);
+				if( g_drive_flag == DF_DRIVE )
+				{
+					buzzer_on();
+					usleep(500000);
+					g_drive_flag = DF_READY;
+					stop();
+				}else if( g_drive_flag == DF_READY){
+		
+					// write image data into file. 
+					fwrite_data(d_data);
+
+					g_drive_flag = DF_END;
+					exit_camera(cm_handle);
+					exit(0);
+				}else{}
+				
 				break;
 			case KEY2:
 				// START CM_MODE
-
-				buzzer_on();
-				usleep(500000);
-				buzzer_on();
-				usleep(500000);
-
+				if( g_drive_flag == DF_READY)
+				{
+					g_drive_flag = DF_DRIVE;
+					g_drive_mode = CM_MODE;
+					buzzer_on();
+					usleep(500000);
+					buzzer_on();
+					usleep(500000);
+				}
 				break;
+
 			case KEY3:
-				// START AI_MODE
-				buzzer_on();
-				usleep(500000);
-				buzzer_on();
-				usleep(500000);
-				buzzer_on();
-				usleep(500000);
-				// start
+				if( g_drive_flag == DF_READY)
+				{
+					// get image data from file. 
+					fread_data(d_data);
+
+					g_drive_flag = DF_DRIVE;
+					g_drive_mode = AI_MODE;
+			
+					buzzer_on();
+					usleep(500000);
+					buzzer_on();
+					usleep(500000);
+					buzzer_on();
+					usleep(500000);
+					// start
+				}
 				break;
+
 			default:
 				break;
 		}

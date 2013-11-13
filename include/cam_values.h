@@ -132,7 +132,7 @@ struct pxacam_setting camset;
 int find_left = FL_NONE, find_right = FL_NONE;
 int img_buf_y[MAXHEIGHT][MAXWIDTH];
 int width_scan_point = MIDWIDTH;
-
-void sighandler(int signo);
+int is_broken_line = FALSE;
+int had_change_line = FALSE;
 
 #endif

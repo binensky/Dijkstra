@@ -19,7 +19,6 @@
 pthread_t thread[3];	// 0:key handling , 1:sensor handling, 2:distance_check
 
 void init_drive(void);
-int set_drive_mode();
 void drive_ai();
 void drive_cm();
 void drive_md();
@@ -36,27 +35,10 @@ int main(void)
 	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
-	//	g_drive_mode = set_drive_mode();
-	g_drive_mode = CM_MODE;
-
 	if(g_drive_mode == AI_MODE)
-	{
-		// get image data from file. 
-		fread_data(d_data);
 		drive_ai();
-	}else if(g_drive_mode == MD_MODE)
-	{ 
-		// get image data from file. 
-		fread_data(d_data);
-		drive_md();
-		// modify stored drive data
-		fwrite_data(d_data);
-	}else if( g_drive_mode == CM_MODE)
-	{
+	else
 		drive_cm();
-		// write image data into file. 
-		fwrite_data(d_data);
-	}
 
 	//direct_test();
 	pthread_join(thread[0],NULL);
@@ -88,7 +70,7 @@ void drive_cm()
 	struct image_data* idata;
 	g_index = 0;
 
-	while(g_index<100)
+	while(TRUE)
 	{
 		// store image data into d_data
 		idata = line_check();
@@ -114,26 +96,6 @@ void drive_cm()
 		}
 		g_index+=1;
 	}
-}
-
-// DRIVE WITH STORED DATA AND CAMERA AND MODIFY STORED DATA. 
-void drive_md()
-{
-	struct image_data* idata;
-	g_index = 0;
-
-	while(TRUE)
-	{
-		// get idata from img processing and store 'd_data'
-		idata = line_check(); // get image data 
-		printf("idata flag %d \n",idata->flag ); 
-
-		// drive flag check and drive. - inline function
-		drive(idata);
-		free(idata);
-		g_index+=1;
-	}
-
 }
 
 inline void drive(struct image_data* idata)
@@ -262,47 +224,6 @@ inline void drive(struct image_data* idata)
 	}
 #endif
 
-}
-
-int set_drive_mode()
-{
-
-	unsigned char buf,read_key;
-	int key;
-
-	if((keyFD = open(keyDev,O_RDONLY))<0)
-	{	
-		perror("Cannot open /dev/key!");
-		buzzer_on();
-	}
-
-	read_key= read(keyFD,&buf,sizeof(buf));
-	key = read_key;
-
-	printf("key %d\n",key);
-
-	switch(key)
-	{
-		case KEY1:
-			buzzer_on();
-			usleep(500000);
-			buzzer_on();
-			usleep(500000);
-			buzzer_on();
-			usleep(500000);
-			return AI_MODE;
-
-		case KEY2:
-			buzzer_on();
-			usleep(500000);
-			buzzer_on();
-			usleep(500000);
-			return MD_MODE;
-		case KEY3:
-			buzzer_on();
-			usleep(500000);
-			return CM_MODE;
-	}
 }
 
 void drive_turn(struct image_data* idata, double gradient, int intercept, int height)

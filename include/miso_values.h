@@ -20,9 +20,9 @@
 
 // drive flag
 #define DF_STOP 0
-#define DF_DRIVE 1
-#define DF_VPARK 3
-#define DF_PPARK 4
+#define DF_READY 1
+#define DF_DRIVE 2
+#define DF_MODULE 3
 #define DF_END 9
 
 // image flag 
@@ -62,24 +62,21 @@
 #define AI_MODE 1
 #define MD_MODE 2
 
-#define DATA_SIZE 1000
+#define DATA_SIZE 10000
 
-struct p_point
-{
+struct p_point{
 	int x;		// x좌표 (0~319)
 	int y;		// y좌표 (0~239)
 };
 
-struct image_data
-{
+struct image_data{
 	int flag; 		// whole image process flag. 
 	int mid_flag;		// mid line image process flag. 
 	struct p_point bot[3];	// bottom point of lines(none, left, right). 
 	int angle[3];		// angle of lines (none, left, right)
 };
 
-struct drive_data
-{
+struct drive_data{
 	int flag;	// whole image process flag. 
 	int mid_flag;	// mid line image process flag 
 	int angle;	// image process angle. 
@@ -88,10 +85,7 @@ struct drive_data
 
 // car status flags
 static int g_drive_flag = DF_DRIVE;
-static int g_image_flag = IF_NO_PROCESS;
-static int g_broken_line = FALSE;
-static int g_change_line = FALSE;
-static int g_drive_mode = 0;
+static int g_drive_mode = CM_MODE;
 static int g_index = 0;
 
 // camera fd

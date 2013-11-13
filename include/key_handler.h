@@ -47,6 +47,7 @@ void* key_handler(void* data)
 				buzzer_on();
 				usleep(500000);
 				buzzer_on();
+				usleep(500000);
 
 				break;
 			case KEY3:

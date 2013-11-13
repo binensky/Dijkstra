@@ -75,7 +75,7 @@ void direct_test()
 		switch(input)
 		{
 			case '0':
-				idata = line_check(cm_handle); // get image data 
+				idata = line_check(); // get image data 
 				printf("idata flag : %d\n", idata->flag);
 				break;	
 			case '1':	

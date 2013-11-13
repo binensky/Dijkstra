@@ -8,6 +8,7 @@
 #include <pthread.h>
 
 #include "include/miso_values.h"
+#include "include/key_handler.h"
 #include "include/miso_car_lib.h"
 #include "include/miso_camera.h"
 #include "include/sensor_handler.h"
@@ -31,6 +32,7 @@ int main(void)
 	car_connect();
 
 	init_drive();
+	pthread_create(&thread[0],NULL,key_handler,NULL);
 	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
@@ -57,6 +59,7 @@ int main(void)
 	}
 
 	//direct_test();
+	pthread_join(thread[0],NULL);
 	//	pthread_join(thread[1],NULL);
 	//	pthread_join(thread[2],NULL);
 	return 0;
@@ -88,7 +91,7 @@ void drive_cm()
 	while(g_index<100)
 	{
 		// store image data into d_data
-		idata = line_check(cm_handle);
+		idata = line_check();
 		printf("idata flag %d \n",idata->flag );  
 
 		// check dist prev data and store dist. 
@@ -122,7 +125,7 @@ void drive_md()
 	while(TRUE)
 	{
 		// get idata from img processing and store 'd_data'
-		idata = line_check(cm_handle); // get image data 
+		idata = line_check(); // get image data 
 		printf("idata flag %d \n",idata->flag ); 
 
 		// drive flag check and drive. - inline function

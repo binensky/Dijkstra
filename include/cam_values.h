@@ -15,6 +15,7 @@
 #define CUTLINE_CL 120
 #define CUTLINE_POINT 100
 #define CUTLINE_CURVE 60
+#define CUTLINE_OUTLINE 10
 #define GAP 10
 
 #define DEST_HEIGHT 140
@@ -50,17 +51,24 @@
 #define FL_PASS 2
 
 // mid line flag
-#define MID_STRAIGHT 0
-#define MID_CURVE 1
+
+#define MID_NONE -1
+#define MID_STOP 0
+#define MID_STRAIGHT 1
 #define MID_CURVE_STRAIGHT 2
-#define MID_STOP 3
-#define MID_CL_LEFT 4
-#define MID_CL_RIGHT 5
-#define MID_SPEED_BUMP_CUR 6
-#define MID_SPEED_BUMP_ST 7
-#define MID_SPEED_DOWN 8
-#define MID_WHITE_SPEED_DOWN 9
-#define MID_OUTLINE 10
+#define MID_CURVE 3
+
+
+#define MID_SPEED_BUMP_ST 11
+#define MID_SPEED_BUMP_CUR 12
+
+#define MID_SPEED_DOWN 23
+#define MID_WHITE_SPEED_DOWN 24
+
+#define MID_OUTLINE 31
+
+#define MID_CL_LEFT 54
+#define MID_CL_RIGHT 55
 
 // screen size 
 #define MAXHEIGHT 240
@@ -100,14 +108,26 @@
 #define IS_TRAFFIC_YELLOW(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) >= THRESHOLD_YELLOW_CR && CR(X,Z) < THRESHOLD_RED_CR)
 #define IS_TRAFFIC_GREEN(X,Z) (Y(X,Z) >= THRESHOLD  && CB(X,Z) < THRESHOLD_CB && CR(X,Z) < THRESHOLD_GREEN_CR)
 
+struct pxa_camera
+{
+	int handle;
+	int status;
+	int mode;
+	int sensor;
+	int ref_count;
+
+	// Video Buffer
+	int width;
+	int height;
+	enum    pxavid_format format;
+};
+
+
 struct p_point pt[PT_SIZE];
 
 struct sigaction act;
 struct pxa_video_buf* vidbuf;
 struct pxacam_setting camset;
-
-static int cm_handle;
-static int fd;
 
 int find_left = FL_NONE, find_right = FL_NONE;
 int img_buf_y[MAXHEIGHT][MAXWIDTH];

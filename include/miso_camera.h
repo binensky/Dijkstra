@@ -70,7 +70,7 @@ struct image_data* line_check(int handle)
 	// init values
 	init_values(cm_handle,img_data);
 #ifdef DEBUG
-	print_screen_y();
+	//print_screen_y();
 	//print_screen_org();
 	//print_screen_cb();
 	//print_screen_cr();
@@ -398,27 +398,31 @@ int find_outline(int rl_info, int y, int w)
 
 }
 int red_count(){
-	int i = 0, j = 0;
+	int i = 0, j = 0, red_count = 0;
 	for(i = 70 ; i < 150; i ++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3)
 		{
 			if(IS_RED(j,i))
 			{
-				if(i < 120)
-				{
-#ifdef DEBUG
-					printf("MID_STOP in %d\n", i);
-#endif
-					return MID_STOP;
-				}
-				else if(i > 140)
-				{
-#ifdef DEBUG
-					printf("SLow Down in %d\n", i);
-#endif
-					return MID_SPEED_DOWN;
-				}
+				red_count += 1;
 			}
+		}
+	}
+
+	if(red_count >= 3){
+		if(i < 120)
+		{
+#ifdef DEBUG
+			printf("MID_STOP in %d\n", i);
+#endif
+			return MID_STOP;
+		}
+		else if(i > 140)
+		{
+#ifdef DEBUG
+			printf("SLow Down in %d\n", i);
+#endif
+			return MID_SPEED_DOWN;
 		}
 	}
 }

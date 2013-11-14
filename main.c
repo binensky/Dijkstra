@@ -44,13 +44,13 @@ int main(void)
 
 	g_drive_mode = CM_MODE;
 
-	if(g_drive_mode == AI_MODE)
+/*	if(g_drive_mode == AI_MODE)
 		drive_ai();
 	else
 		drive_cm();
-
-	printf("1\n");
-	//direct_test();
+*/
+//	printf("1\n");
+	direct_test();
 	pthread_join(thread[0],NULL);
 	//	pthread_join(thread[1],NULL);
 	//	pthread_join(thread[2],NULL);

@@ -14,7 +14,7 @@
 #define CUTLINE 140
 #define CUTLINE_CL 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 60
+#define CUTLINE_CURVE 70
 #define CUTLINE_OUTLINE 10
 #define GAP 10
 

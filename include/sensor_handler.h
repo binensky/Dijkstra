@@ -38,5 +38,3 @@ void* sensor_handler(void* data)
 }
 
 #endif
-
-

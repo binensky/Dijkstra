@@ -1,5 +1,5 @@
-#ifndef __CAMERA_H__
-#define __CAMERA_H__
+#ifndef _CM_PROCESS_H__
+#define _CM_PROCESS_H__
 
 #include <stdlib.h>
 #include <math.h>
@@ -46,7 +46,7 @@ int angles[PT_SIZE-1];
 int pt_cnt;			// left pt, right pt,
 int g_first = TRUE;
 
-struct image_data* line_check()
+struct image_data* cm_img_process()
 {
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
 
@@ -816,12 +816,18 @@ int check_traffic_light()
 
 	if(red_count >= 100)
 		return IF_SG_STOP;
-	else if(yellow_count >= 100)
+	else if(yellow_count >= 100){	
 		printf("COLOR : YELLOW!\n");
-	else if(green_count >= 250)
+		return IF_SG_STOP;
+	}
+	else if(green_count >= 250){
 		printf("RIGHT TURN!\n");
-	else if(green_count >= 100)
+		return IF_CL_RIGHT;
+	}
+	else if(green_count >= 100){
 		printf("LEFT TURN!\n");
+		return IF_CL_LEFT;
+	}
 	else
 		return IF_SG_STOP;
 }
@@ -890,9 +896,6 @@ void init_values(int handle,struct image_data* idata)
 #ifdef TRACE
 	printf("init values\n");
 #endif
-	if(idata == NULL)
-		idata = (struct image_data*)malloc(sizeof(struct image_data));
-
 	init_point();
 	//width_scan_point = get_width_scan_point();
 	width_scan_point = MIDWIDTH;

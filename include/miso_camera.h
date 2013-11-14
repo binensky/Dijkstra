@@ -60,7 +60,7 @@ struct image_data* line_check()
 	{
 		case DF_DRIVE:
 			img_data->mid_flag = check_mid_line();	// mid flag set. 
-			//printf(">> mid flag : %d\n", img_data->mid_flag);
+			printf(">> mid flag : %d\n", img_data->mid_flag);
 			return make_image_data(img_data);	// img flag set. 
 
 		case DF_STOP:
@@ -152,10 +152,10 @@ struct image_data* make_image_data(struct image_data* img_data){
 		}
 	//	printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
 	//			,find_left,find_right,img_data->flag);
-		if(find_left == FL_NONE && find_right == FL_NONE)	// find all
+		if(find_left == FL_NONE && find_right == FL_NONE)	// not find
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
-				&& find_left != FL_NONE && find_right != FL_NONE) // not find. (= else)
+				&& find_left != FL_NONE && find_right != FL_NONE) // find both and not change line. (= else)
 					img_data->flag = IF_STRAIGHT;
 
 		return img_data;
@@ -170,8 +170,9 @@ struct image_data* make_image_data(struct image_data* img_data){
 			}else	continue;
 
 		}
-		if( find_left != FL_NONE && find_right != FL_NONE) // not find. else of branchs.
+		if( find_left == FL_NONE && find_right == FL_NONE) // not find. else of branchs.
 			img_data->flag = IF_STRAIGHT;
+		
 
 		return img_data;
 

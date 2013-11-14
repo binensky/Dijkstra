@@ -12,9 +12,9 @@
 // -------- MISO Defined Value ----------
 
 #define CUTLINE 140
-#define CUTLINE_CL 120
+#define CUTLINE_CL 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 60
+#define CUTLINE_CURVE 70
 #define CUTLINE_OUTLINE 10
 #define GAP 10
 
@@ -134,5 +134,6 @@ int img_buf_y[MAXHEIGHT][MAXWIDTH];
 int width_scan_point = MIDWIDTH;
 int is_broken_line = FALSE;
 int had_change_line = FALSE;
+int cnt_change_line = 0;
 
 #endif

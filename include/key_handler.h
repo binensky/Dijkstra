@@ -37,9 +37,11 @@ void* key_handler(void* data)
 				// STOP / RESET
 				if( g_drive_flag == DF_DRIVE )
 				{
+					g_drive_flag = DF_READY;
+				
 					buzzer_on();
 					usleep(500000);
-					g_drive_flag = DF_READY;
+
 					stop();
 				}else if( g_drive_flag == DF_READY){
 		
@@ -47,6 +49,11 @@ void* key_handler(void* data)
 					fwrite_data(d_data);
 
 					g_drive_flag = DF_END;
+			
+					buzzer_on();
+					usleep(500000);
+
+					stop();
 					exit_camera(cm_handle);
 					exit(0);
 				}else{}

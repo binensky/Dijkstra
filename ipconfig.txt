@@ -1,0 +1,10 @@
+iwconfig eth0 essid hb
+iwconfig eth0 channel 10
+ifconfig eth0 10.10.10.1 up
+
+
+---- 우분투에서
+
+인터넷을 essid로 설정하고
+ip를 10.10.10.2로 설정한다.
+그다음에 ./client 10.10.10.1로 실행시킨다.

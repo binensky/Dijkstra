@@ -104,7 +104,7 @@ void line_stop(void)
 {
 	buf[0] = 0x83;
 	write(uart_fd, &buf[0], 1);
-	printf("Line Stop\n");
+//	printf("Line Stop\n");
 }
 
 void control_led(int mode, char* value)

@@ -60,7 +60,7 @@ struct image_data* cm_img_process()
 	{
 		case DF_DRIVE:
 			img_data->mid_flag = check_mid_line();	// mid flag set. 
-			//printf(">> mid flag : %d\n", img_data->mid_flag);
+			printf(">> mid flag : %d\n", img_data->mid_flag);
 			return make_image_data(img_data);	// img flag set. 
 
 		case DF_STOP:
@@ -100,16 +100,9 @@ int check_mid_line()
 				return speed_bump_ret;
 
 			// det mid flag
-			if( i <= CUTLINE_OUTLINE )	// <10
-				return MID_OUTLINE;	// ret 31
-			else if( i <= CUTLINE_CURVE)	// <=60
-				return  MID_CURVE;	// 3
-			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
-				return MID_CURVE_STRAIGHT;	// 2
-			else if(IS_WHITE(MIDWIDTH,i)) 
+			if(IS_WHITE(MIDWIDTH,i)) 
 			{
 				int k, w_cnt=0, y_cnt=0;
-
 				for( k = i ; k < CUTLINE-1; k++){
 					if( IS_BLACK(MIDWIDTH,k+1) && !IS_BLACK(MIDWIDTH,k) )
 						break;
@@ -117,9 +110,17 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
-				if(w_cnt > y_cnt && w_cnt > 10)
+				if(w_cnt > y_cnt && w_cnt > 7)
 					return MID_WHITE_SPEED_DOWN;	//24
+				
 			}
+			else if( i <= CUTLINE_OUTLINE )	// <10
+				return MID_OUTLINE;	// ret 31
+			else if( i <= CUTLINE_CURVE)	// <=60
+				return  MID_CURVE;	// 3
+			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
+				return MID_CURVE_STRAIGHT;	// 2
+			
 			else 
 				break;	// 1
 		}else{// is black 
@@ -152,10 +153,10 @@ struct image_data* make_image_data(struct image_data* img_data){
 		}
 	//	printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
 	//			,find_left,find_right,img_data->flag);
-		if(find_left == FL_NONE && find_right == FL_NONE)	// find all
+		if(find_left == FL_NONE && find_right == FL_NONE)	// not find
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
-				&& find_left != FL_NONE && find_right != FL_NONE) // not find. (= else)
+				&& find_left != FL_NONE && find_right != FL_NONE) // find both and not change line. (= else)
 					img_data->flag = IF_STRAIGHT;
 
 		return img_data;
@@ -170,8 +171,9 @@ struct image_data* make_image_data(struct image_data* img_data){
 			}else	continue;
 
 		}
-		if( find_left != FL_NONE && find_right != FL_NONE) // not find. else of branchs.
+		if( find_left == FL_NONE && find_right == FL_NONE) // not find. else of branchs.
 			img_data->flag = IF_STRAIGHT;
+		
 
 		return img_data;
 

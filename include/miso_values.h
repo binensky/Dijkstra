@@ -24,6 +24,8 @@
 #define DF_DRIVE 2
 #define DF_MODULE 3
 #define DF_END 9
+#define DF_VPARK 61
+#define DF_PPARK 62
 
 // image flag 
 #define IF_NO_PROCESS -1
@@ -58,10 +60,16 @@
 #define KEY2 2
 #define KEY3 3
 
+#define INIT_THREAD 0
+#define WAIT_THREAD 1
+#define RESUME_THREAD 2
+#define END_THREAD 3
 
 #define NO_MODE -1
 #define CM_MODE 0
 #define AI_MODE 1
+
+#define RESUME_INDEX 150
 
 #define DATA_SIZE 10000
 
@@ -88,6 +96,8 @@ struct drive_data{
 static int g_drive_flag = DF_READY;
 static int g_drive_mode = NO_MODE;
 static int g_index = 0;
+static int g_park_dis = 0;
+static int g_wait_thread = INIT_THREAD;
 
 // camera fd
 static int cm_handle;	

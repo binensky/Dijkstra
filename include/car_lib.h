@@ -296,7 +296,7 @@ void stop(void)
 {
 	buf[0] = 0xca;
 	write(uart_fd, &buf[0], 1);
-	printf("Stop\n");
+	printf("****************************************************************** Stop\n");
 }
 
 char read_speed(void)

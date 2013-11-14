@@ -2,7 +2,7 @@
 #define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-//#define TRACE
+#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -35,11 +35,13 @@ int main(void)
 	//	pthread_create(&thread[1],NULL,sensor_handler,NULL);
 	//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
-	if(g_drive_mode == AI_MODE)
-		drive_ai();
-	else
-		drive_cm();
-
+	while(TRUE)
+	{
+		if(g_drive_flag == DF_DRIVE && g_drive_mode == AI_MODE)
+			drive_ai();
+		else if(g_drive_flag == DF_DRIVE && g_drive_mode == CM_MODE)
+			drive_cm();
+	}
 	//direct_test();
 	pthread_join(thread[0],NULL);
 	//	pthread_join(thread[1],NULL);
@@ -53,7 +55,7 @@ void drive_ai()
 	struct image_data* idata;
 	g_index = 0;
 
-	while(TRUE)
+	while(g_drive_flag != DF_READY)
 	{
 		// busy waiting for next image data. 
 		while( g_index>0 && d_data[g_index-1].dist < mDistance()){}
@@ -70,7 +72,7 @@ void drive_cm()
 	struct image_data* idata;
 	g_index = 0;
 
-	while(TRUE)
+	while(g_drive_flag != DF_READY)
 	{
 		// store image data into d_data
 		idata = line_check();
@@ -141,7 +143,7 @@ inline void drive(struct image_data* idata)
 
 		case IF_RIGHT:
 #ifdef DRIVE_DEBUG
-			printf("img angle %d\n", idata->angle[RIGHT]);
+			printf("right img angle %d\n", idata->angle[RIGHT]);
 #endif
 			if(g_index>0 && d_data[g_index-1].flag == IF_LEFT )
 			{
@@ -214,6 +216,7 @@ inline void drive(struct image_data* idata)
 	}
 
 #ifdef DRIVE
+	printf(" idata->flag %d / g_drive_flag %d \n",idata->flag, g_drive_flag);
 	if(idata->flag != IF_STOP && idata->flag != IF_SG_STOP 
 			&& idata->flag  != IF_SG_LEFT && idata->flag !=IF_SG_RIGHT 
 			&& idata->flag != IF_CL_LEFT && idata->flag != IF_CL_RIGHT

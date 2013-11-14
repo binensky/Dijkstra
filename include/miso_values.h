@@ -58,9 +58,10 @@
 #define KEY2 2
 #define KEY3 3
 
+
+#define NO_MODE -1
 #define CM_MODE 0
 #define AI_MODE 1
-#define MD_MODE 2
 
 #define DATA_SIZE 10000
 
@@ -84,8 +85,8 @@ struct drive_data{
 };
 
 // car status flags
-static int g_drive_flag = DF_DRIVE;
-static int g_drive_mode = CM_MODE;
+static int g_drive_flag = DF_READY;
+static int g_drive_mode = NO_MODE;
 static int g_index = 0;
 
 // camera fd

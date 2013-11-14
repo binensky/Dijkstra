@@ -1,4 +1,4 @@
-#ifndef  __CAM_VALUES_H__
+#ifndef __CAM_VALUES_H__
 #define __CAM_VALUES_H__
 
 // VIDEOBUF_COUNT must be larger than STILLBUF_COUNT

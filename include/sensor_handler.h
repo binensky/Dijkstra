@@ -28,7 +28,6 @@ void* sensor_handler(void* data)
 				buzzer_on();
 				status = 1;
 			}
-
 			g_drive_flag = DF_STOP;
 		}
 		line_stop();

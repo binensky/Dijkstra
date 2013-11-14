@@ -1,8 +1,8 @@
 //#define DEBUG
-#define DRIVE_DEBUG
+//#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
-#define TRACE
+//#define TRACE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -42,7 +42,7 @@ int main(void)
 		else if(g_drive_flag == DF_DRIVE && g_drive_mode == CM_MODE)
 			drive_cm();
 	}
-	//direct_test();
+
 	pthread_join(thread[0],NULL);
 	//	pthread_join(thread[1],NULL);
 	//	pthread_join(thread[2],NULL);
@@ -53,7 +53,9 @@ int main(void)
 void drive_ai()
 {
 	struct image_data* idata;
+
 	g_index = 0;
+	distance_reset();
 
 	while(g_drive_flag != DF_READY)
 	{
@@ -61,7 +63,24 @@ void drive_ai()
 		while( g_index>0 && d_data[g_index-1].dist < mDistance()){}
 
 		// get image data from the file.
+		if(idata->mid_flag == MID_STOP || idata->mid_flag == IF_SG_STOP){
+
+			int flag = ai_img_process(MID_STOP);
+
+			switch(flag){
+				case MID_STOP:
+					
+					break;
+				case IF_SG_STOP:
+					break;
+				case IF_SG_LEFT:
+					break;
+				case IF_SG_RIGHT:
+					break;
+			}		
+		}		
 		turn_set(d_data[g_index].angle);
+		g_index++;
 	}
 }
 
@@ -70,33 +89,38 @@ void drive_cm()
 {
 	int prev_dist=0;
 	struct image_data* idata;
-	g_index = 0;
 
-	while(g_drive_flag != DF_READY)
-	{
+	g_index = 0;
+	distance_reset();
+
+	while(g_drive_flag != DF_READY){
 		// store image data into d_data
-		idata = line_check();
+		idata = cm_img_process();
 		printf("idata flag %d \n",idata->flag );  
 
 		// check dist prev data and store dist. 
-		if(g_index>0)
-		{
+		if(g_index>0){
 			d_data[g_index-1].dist = mDistance()-prev_dist;
 			prev_dist = mDistance();
+		}else if(g_index == 0){
+			prev_dist = mDistance();
+		}else{
+			printf("g_index error\n");
+			exit(0);
 		}
 
 		// drive flag check and drive. - inline function
 		drive(idata);
 		free(idata);
 
-		if(g_index == 0)
-		{
+		if(g_index == 0){
 			d_data[g_index].flag = IF_STRAIGHT;
 			d_data[g_index].mid_flag = MID_STRAIGHT;
 			d_data[g_index].angle = 0;
 			d_data[g_index].dist = 0;
 		}
-		g_index+=1;
+			g_index+=1;
+		}
 	}
 }
 

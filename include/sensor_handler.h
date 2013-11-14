@@ -22,14 +22,15 @@ void* sensor_handler(void* data)
 		//printf("ret : %d\n",ret);
 		if( ret == 127 )
 		{
+			g_drive_flag = DF_STOP;
 			stop();
+			sleep(1);
 			//sudden_stop(250);
 			if(status == 0){
+			//	printf("buzzor!!!\n");
 				buzzer_on();
 				status = 1;
 			}
-
-			g_drive_flag = DF_STOP;
 		}
 		line_stop();
 		usleep(2000);

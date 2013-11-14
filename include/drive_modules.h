@@ -14,9 +14,9 @@ void  change_course(){
 	turn_set(DM_ANGLE_MIN);
 	while(mDistance() - n < 820){}
 	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 3220){}
+	while(mDistance() - n < 3620){}
 	turn_set(DM_ANGLE_MAX);
-	while(mDistance() - n < 4020){}
+	while(mDistance() - n < 4120){}
 	turn_set(DM_STRAIGHT);
 	speed_set(1000);
 	winker_light(OFF);
@@ -30,7 +30,6 @@ void traffic_drive(int flag){
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
-			buzzer_on();
 			g_drive_flag = DF_STOP;
 			break;
 

@@ -100,16 +100,9 @@ int check_mid_line()
 				return speed_bump_ret;
 
 			// det mid flag
-			if( i <= CUTLINE_OUTLINE )	// <10
-				return MID_OUTLINE;	// ret 31
-			else if( i <= CUTLINE_CURVE)	// <=60
-				return  MID_CURVE;	// 3
-			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
-				return MID_CURVE_STRAIGHT;	// 2
-			else if(IS_WHITE(MIDWIDTH,i)) 
+			if(IS_WHITE(MIDWIDTH,i)) 
 			{
 				int k, w_cnt=0, y_cnt=0;
-
 				for( k = i ; k < CUTLINE-1; k++){
 					if( IS_BLACK(MIDWIDTH,k+1) && !IS_BLACK(MIDWIDTH,k) )
 						break;
@@ -117,9 +110,17 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
-				if(w_cnt > y_cnt && w_cnt > 10)
+				if(w_cnt > y_cnt && w_cnt > 7)
 					return MID_WHITE_SPEED_DOWN;	//24
+				
 			}
+			else if( i <= CUTLINE_OUTLINE )	// <10
+				return MID_OUTLINE;	// ret 31
+			else if( i <= CUTLINE_CURVE)	// <=60
+				return  MID_CURVE;	// 3
+			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
+				return MID_CURVE_STRAIGHT;	// 2
+			
 			else 
 				break;	// 1
 		}else{// is black 

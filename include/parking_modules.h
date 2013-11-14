@@ -78,7 +78,7 @@ void* parking_check(void* p_data)
 
 	while(1)
 	{
-		if(g_wait_thread == WAIT_THREAD)
+		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
 			continue;
 
 		//printf(">mode : %d / dist(2) %d / dist(3) %d\n",park_mode, get_dist_sensor(2),get_dist_sensor(3)); 

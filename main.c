@@ -40,8 +40,8 @@ int main(void)
 
 	init_drive();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	//pthread_create(&thread[2],NULL,parking_check,NULL);
+	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
+	pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	while(TRUE)
 	{
@@ -53,7 +53,7 @@ int main(void)
 	//direct_test();
 	pthread_join(thread[0],NULL);
 	pthread_join(thread[1],NULL);
-	//pthread_join(thread[2],NULL);
+	pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -86,6 +86,9 @@ void drive_cm()
 		printf("g_index : %d g_wait_thread : %d\n", g_index, g_wait_thread);
 		if(g_wait_thread == WAIT_THREAD && g_index >= RESUME_INDEX)
 			g_wait_thread = RESUME_THREAD;
+
+		if(g_wait_thread == END_THREAD)
+			pthread_create(&thread[1],NULL,sensor_handler,NULL);
 
 		idata = line_check();
 #ifdef SOCKET
@@ -343,9 +346,9 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 
 		if(idata->flag == IF_RIGHT)
 		{
-			if(idata->bot[RIGHT].y < 60)
+			if(idata->bot[RIGHT].y < 70)
 			{	
-				int angle = DM_STRAIGHT + (180 - 3*idata->bot[RIGHT].y);
+				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -356,9 +359,9 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		}
 		else if(idata->flag == IF_LEFT)
 		{
-			if(idata->bot[LEFT].y < 60)
+			if(idata->bot[LEFT].y < 70)
 			{
-				int angle = DM_STRAIGHT - (180 - 3*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (210 - 3*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}

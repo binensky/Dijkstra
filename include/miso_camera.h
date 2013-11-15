@@ -62,7 +62,10 @@ struct image_data* cm_img_process()
 			img_data->mid_flag = check_mid_line();	// mid flag set. 
 			printf(">> mid flag : %d\n", img_data->mid_flag);
 			return make_image_data(img_data);	// img flag set. 
-
+		case DF_SPEED_DOWN:
+			img_data->flag = IF_WHITE_SPEED_DOWN;
+			img_data->flag = MID_WHITE_SPEED_DOWN;
+			return img_data;
 		case DF_STOP:
 			img_data->flag = check_traffic_light();
 			printf(">> traffic falg : %d\n", img_data->flag);
@@ -350,7 +353,7 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 			}
 		}
 	}
-	if( red_cnt > 100)
+	if( red_cnt > 200)
 	{
 		if(red_bot <= 120){
 #ifdef DRIVE_DEBUG

@@ -129,7 +129,7 @@ void parking(int flag)
 	g_drive_flag = DF_DRIVE;
 }
 
-void direct_test()
+void drive_test()
 {
 	struct image_data* idata;
 	while(TRUE)
@@ -143,7 +143,7 @@ void direct_test()
 		switch(input)
 		{
 			case '0':
-				idata = line_check(); // get image data 
+				idata = cm_img_process(); // get image data 
 				printf("idata flag : %d\n", idata->flag);
 				break;	
 			case '1':	

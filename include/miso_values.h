@@ -29,7 +29,7 @@
 
 // image flag 
 #define IF_NO_PROCESS -1
-#define IF_STOP 0
+
 #define IF_STRAIGHT 1
 #define IF_LEFT 4
 #define IF_RIGHT 5
@@ -38,20 +38,24 @@
 #define IF_SPEED_BUMP_ST 11
 #define IF_SPEED_BUMP_CUR 12
 
-#define IF_SPEED_DOWN 23
+#define IF_RED_SPEED_DOWN 23
 #define IF_WHITE_SPEED_DOWN 24
 
 #define IF_OUTLINE 31
 
-#define IF_SG_STOP 40
+#define IF_NO_DRIVE 40
+
 #define IF_SG_LEFT 44
 #define IF_SG_RIGHT 45
+#define IF_SG_STOP 49
 
 #define IF_CL_LEFT 54
 #define IF_CL_RIGHT 55
 
 #define IF_PARK_V 61
 #define IF_PARK_H 62
+
+#define IF_RED_STOP 99
 
 #define DM_STRAIGHT 1533
 #define CM_STRAIGHT 1515

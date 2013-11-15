@@ -1,5 +1,5 @@
-#ifndef _CM_PROCESS_H__
-#define _CM_PROCESS_H__
+#ifndef _MISO_CAMERA_H__
+#define _MISO_CAMERA_H__
 
 #include <stdlib.h>
 #include <math.h>
@@ -202,8 +202,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 {				
 	int i;
 
-	if(is_straight && !had_change_line && is_broken_line)
-	{
+	if(is_straight && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
 		return img_data;
@@ -350,12 +349,12 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif
-			return MID_STOP;
+			return MID_RED_STOP;
 		}else if(120 < red_bot && red_bot <= 170){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~   Slow Down in %d\n", red_bot);
 #endif
-			return MID_SPEED_DOWN;
+			return MID_RED_SPEED_DOWN;
 
 		}
 	}

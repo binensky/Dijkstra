@@ -237,7 +237,6 @@ inline void drive(struct image_data* idata){
 			break;
 
 		case IF_BOTH:
-			printf("left : (%d,%d) right : (%d, %d)\n",idata->bot[LEFT].x,idata->bot[LEFT].y,idata->bot[RIGHT].x,idata->bot[RIGHT].y);
 			if(idata->bot[RIGHT].y < 70)
 			{
 				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
@@ -321,7 +320,6 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 				temp_flag = MID_STRAIGHT;
 			else
 			{
-				//printf("prev mid flag : %d\n",d_data[g_index-1].mid_flag);
 				temp_flag = MID_CURVE_STRAIGHT;
 			}
 		}
@@ -333,7 +331,6 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		}
 		else
 		{
-			//printf("prev mid flag : %d\n",d_data[g_index-1].mid_flag);
 			temp_flag = MID_CURVE_STRAIGHT;
 		}
 	}
@@ -341,6 +338,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		temp_flag = MID_CURVE;
 	}
+	printf("temp flag : %d\n",temp_flag);
 
 	if(temp_flag == MID_STRAIGHT)
 	{
@@ -384,6 +382,8 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
+
+		printf("dest (%d,%d) dest angle : %d\n",dest.x,dest.y,dest_angle);
 	
 		if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95){
 			d_data[g_index].mid_flag = MID_STRAIGHT;

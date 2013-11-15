@@ -102,7 +102,6 @@ void drive_cm()
 	g_index = 0;
 	distance_reset();
 
-
 	while(g_drive_flag != DF_READY){
 		// store image data into d_data
 		
@@ -119,7 +118,7 @@ void drive_cm()
 		idata = cm_img_process();
 
 //#ifdef DRInVE_DEBUG
-		printf(">>>>>>>>>>>>>>>.idata flag %d \n",idata->flag );  
+		printf(">>>>>>>>>>>>>>>idata flag %d \n",idata->flag );  
 //#endif
 	// check dist prev data and store dist. 
 		if(g_index>0){
@@ -128,6 +127,10 @@ void drive_cm()
 			d_data[g_index-1].dist = mDistance()-prev_dist;
 			prev_dist = mDistance();
 		}else if(g_index == 0){
+			d_data[g_index].flag = IF_STRAIGHT;
+			d_data[g_index].mid_flag = MID_STRAIGHT;
+			d_data[g_index].angle = 0;
+			d_data[g_index].dist = 0;
 			prev_dist = mDistance();
 		}else{
 			printf("g_index error\n");
@@ -137,13 +140,6 @@ void drive_cm()
 		// drive flag check and drive. - inline function
 		drive(idata);
 		free(idata);
-
-		if(g_index == 0){
-			d_data[g_index].flag = IF_STRAIGHT;
-			d_data[g_index].mid_flag = MID_STRAIGHT;
-			d_data[g_index].angle = 0;
-			d_data[g_index].dist = 0;
-		}
 		g_index+=1;
 	}
 }

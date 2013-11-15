@@ -95,13 +95,10 @@ int check_mid_line()
 	for(i=1; i < CUTLINE; i++){
 		if(!IS_BLACK(MIDWIDTH, i)){
 			int speed_bump_ret;
-
 			printf("mid height %d \n", i);
-
 			// speed bump check 
 			if( 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
 				return speed_bump_ret;
-
 			// det mid flag
 			if(IS_WHITE(MIDWIDTH,i)) 
 			{
@@ -114,8 +111,7 @@ int check_mid_line()
 					else 				continue;
 				}
 				if(w_cnt > y_cnt && w_cnt > 7)
-					return MID_WHITE_SPEED_DOWN;	//24
-				
+					return MID_WHITE_SPEED_DOWN;	//24	
 			}
 			else if( i <= CUTLINE_OUTLINE )	// <10
 				return MID_OUTLINE;	// ret 31
@@ -123,7 +119,6 @@ int check_mid_line()
 				return  MID_CURVE;	// 3
 			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
 				return MID_CURVE_STRAIGHT;	// 2
-			
 			else 
 				break;	// 1
 		}else{// is black 
@@ -216,6 +211,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 {				
 	int i;
 
+	printf("is_straight %d,  \n", is_straight,!had_change_line, is_broken_line);
 	if( is_straight && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
@@ -937,11 +933,9 @@ void init_values(int handle,struct image_data* idata)
 	// 버퍼 초기화 
 	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
 
-	if(g_first)
-	{
+	if(g_first){
 		g_first = FALSE;
-		for( i = 0; i < 5; i++)
-		{
+		for( i = 0; i < 5; i++){
 			vidbuf = camera_get_frame(cm_handle);
 			camera_release_frame(cm_handle,vidbuf);
 		}

@@ -370,7 +370,7 @@ void distance_reset(void)
 {
 	buf[0] = 0xd1;
 	write(uart_fd, &buf[0], 1);
-	printf("Distance Reset\n");
+	//printf("Distance Reset\n");
 }
 
 void motor_hold(void)

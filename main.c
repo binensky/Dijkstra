@@ -36,7 +36,7 @@ int main(void)
 //	drive_test();
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
+	//pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	printf("thread create\n");
 	
@@ -225,16 +225,16 @@ inline void drive(struct image_data* idata){
 			break;
 
 		case IF_BOTH:
-			printf("left  %d, right %d ",idata->bot[LEFT].y, idata->bot[RIGHT].y);
+			printf("left  %d, right %d\n",idata->bot[LEFT].y, idata->bot[RIGHT].y);
 			if(idata->bot[RIGHT].y < 70)
 			{
-				int angle = DM_STRAIGHT + (350 - 5*idata->bot[RIGHT].y);
+				int angle = DM_STRAIGHT + (560 - 8*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
 			else if(idata->bot[LEFT].y < 70)
 			{
-				int angle = DM_STRAIGHT - (350 - 5*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (560 - 8*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -336,9 +336,10 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 
 		if(idata->flag == IF_RIGHT)
 		{
+			printf("bot right %d\n", idata->bot[RIGHT].y);
 			if(idata->bot[RIGHT].y < 70)
-			{	
-				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
+			{
+				int angle = DM_STRAIGHT + (560 - 8*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -349,9 +350,10 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		}
 		else if(idata->flag == IF_LEFT)
 		{
+			printf("bot left %d\n", idata->bot[LEFT].y);
 			if(idata->bot[LEFT].y < 70)
 			{
-				int angle = DM_STRAIGHT - (210 - 3*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (560 - 8*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}

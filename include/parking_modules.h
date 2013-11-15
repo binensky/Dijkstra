@@ -259,8 +259,10 @@ void parking(int flag)
 	int n;
 	int tmp_dist;
 
-	distance_reset();
+	//distance_reset();
+	//usleep(10000);
 	distance_set(100);
+	usleep(10000);
 	if(flag == IF_PARK_V)
 	{
 	
@@ -274,8 +276,7 @@ void parking(int flag)
 		turn_set(DM_ANGLE_MIN);
 		usleep(10000);
 		backward_dis();
-		usleep(10000);
-		while(mDistance() - n > -1600){}
+		while(mDistance() - n > -1600){printf("dis : %d\n", mDistance() - n);}
 		turn_straight();
 		usleep(10000);
 		while(get_dist_sensor(4) < 170){}
@@ -294,7 +295,6 @@ void parking(int flag)
 	}
 	else
 	{
-
 		printf("in parking H\n");
 ////////////////////////////??????????????????????????????????????????????????? how????
 		printf("g park dis : %d\n", g_park_dis);

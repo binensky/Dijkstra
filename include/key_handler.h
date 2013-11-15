@@ -41,7 +41,7 @@ void* key_handler(void* data)
 					g_drive_flag = DF_READY;
 				
 					buzzer_on();
-					usleep(500000);
+					usleep(10000);
 
 					stop();
 				}else if( g_drive_flag == DF_READY){
@@ -53,7 +53,7 @@ void* key_handler(void* data)
 					g_drive_flag = DF_END;
 			
 					buzzer_on();
-					usleep(500000);
+					usleep(10000);
 
 					stop();
 					

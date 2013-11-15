@@ -115,15 +115,25 @@ int check_mid_line()
 				
 			}
 			else if( i <= CUTLINE_OUTLINE )	// <10
+			{
 				return MID_OUTLINE;	// ret 31
+			}
 			else if( i <= CUTLINE_CURVE)	// <=60
+			{
 				return  MID_CURVE;	// 3
+			}
 			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
+			{
 				return MID_CURVE_STRAIGHT;	// 2
-			
-			else 
+			}
+			else
+			{
+				printf("here ???\n");
 				break;	// 1
-		}else{// is black 
+			}
+		}
+		else
+		{// is black 
 			continue;
 		}
 	} // end for

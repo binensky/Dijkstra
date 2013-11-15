@@ -34,7 +34,7 @@ int main(void)
 
 	init_drive();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	//pthread_create(&thread[2],NULL,parking_check,NULL);
+	pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	while(TRUE)
 	{
@@ -379,11 +379,16 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		mid_bot.y = 0;
 		mid_bot.x = MIDWIDTH;
-		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
+		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+100;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
 
-		printf("dest (%d,%d) dest angle : %d\n",dest.x,dest.y,dest_angle);
+		if(idata->flag == IF_LEFT)
+			printf("gra %.2lf, bot (%d,%d) dest (%d,%d) dest angle : %d\n",gradient, idata->bot[LEFT].x, idata->bot[LEFT].y,dest.x,dest.y,dest_angle);
+		else
+			printf("gra %.2lf, bot (%d,%d) dest (%d,%d) dest angle : %d\n",gradient, idata->bot[RIGHT].x, idata->bot[RIGHT].y,dest.x,dest.y,dest_angle);
+		
+		
 	
 		if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95){
 			d_data[g_index].mid_flag = MID_STRAIGHT;

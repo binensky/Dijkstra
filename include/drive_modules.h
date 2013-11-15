@@ -128,6 +128,7 @@ void parking(int flag)
 		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
 	}
 	distance_reset();
+	usleep(10000);
 	g_drive_flag = DF_DRIVE;
 }
 

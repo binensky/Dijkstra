@@ -19,6 +19,8 @@
 #define FAR_DIST 60
 
 #define VERTICAL_DIST 1700
+#define OVER_DIST 5000
+#define UNDER_DIST 800
 
 #define PARK_NONE 0
 #define PARK_FIND 1
@@ -74,8 +76,7 @@ void* parking_check(void* p_data)
 	for(i=0; i<10; i++){
 		get_dist_sensor(2);
 	}
-	sleep(3);
-
+	
 	while(1)
 	{
 		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
@@ -108,7 +109,14 @@ void* parking_check(void* p_data)
 				{
 					// check dist range 
 					park_dist = mDistance() - prev_dist;
-					if(park_dist < VERTICAL_DIST)
+
+					if(park_dist > OVER_DIST || park_dist < UNDER_DIST)	// 이정도면 잘못 잡은거 
+					{
+						printf("it is not parking area!\n");
+						park_mode = PARK_NONE;
+						continue;
+					}	
+					else if(park_dist < VERTICAL_DIST)
 						g_drive_flag = PARK_VER;
 					else
 						g_drive_flag = PARK_HOR;
@@ -122,7 +130,6 @@ void* parking_check(void* p_data)
 					// 차이를 구하고 그 값으로 차를 돌린다. 
 					//check_car_angle(front_dist[0], front_dist[1]);
 					//park_mode = PARK_WAITING;
-
 					printf("////// PARK_INFO_SAVE -> PARK_ON\n");
 					park_mode = PARK_ON;
 				}
@@ -156,9 +163,11 @@ void* parking_check(void* p_data)
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
+					/*
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
+					*/
 						g_wait_thread = END_THREAD;
 				}
 				break;

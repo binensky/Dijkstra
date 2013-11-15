@@ -151,13 +151,13 @@ struct image_data* make_image_data(struct image_data* img_data){
 					break;
 			}
 		}
-	//	printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
-	//			,find_left,find_right,img_data->flag);
+		printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
+				,find_left,find_right,img_data->flag);
 		if(find_left == FL_NONE && find_right == FL_NONE)	// not find
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
 				&& find_left != FL_NONE && find_right != FL_NONE) // find both and not change line. (= else)
-					img_data->flag = IF_STRAIGHT;
+					img_data->flag = IF_BOTH;
 
 		return img_data;
 
@@ -481,6 +481,9 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 	const int above_pix_1 = 1;
 	struct p_point pt_tmp;
 
+	pt_tmp.x = -1;
+	pt_tmp.y = -1;
+
 #ifdef TRACE
 	printf(" right line trace %d , %d\n",offset,i);
 #endif
@@ -512,13 +515,21 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 			}
 
 			if(x == 0){
-				printf("x : %d, y : %d \n", pt_tmp.x,pt_tmp.y);
+				printf("x is zero x : %d, y : %d \n", pt_tmp.x,pt_tmp.y);
+				
+				if(pt_tmp.x == -1 && pt_tmp.y == -1){
+					printf(" pt_tmp not find. \n");
+					return FALSE;
+				}
+
 				if( check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
 					printf(" above is black~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ cnt change line %d \n",cnt_change_line+1);
 					cnt_change_line+=1;
 					if( cnt_change_line >2 )
+					{	
 						is_broken_line = TRUE;
-					printf(" ################################################################################## line trace ret TRUE\n");
+						printf(" ################################################################################## line trace ret TRUE\n");
+					}
 					return TRUE;	// ---- trace end. return broken size.
 				}else if(pt[BOT+1].x == -1){
 					init_point();
@@ -529,8 +540,9 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 					return TRUE;	// ------ trace_ end. find line. 
 				}
 			}
-		}else{ 			// above is line. 
-			for( x = offset; x<MAXWIDTH-1; x++){
+		}else{ 	// above is line. 
+			int xRange = is_broken_trace? MIDWIDTH-1:MAXWIDTH-1;
+			for( x = offset; x<xRange; x++){
 				if( !IS_BLACK(x,y) && IS_BLACK(x+1,y)){
 					if(!is_broken_trace){
 						if(pt[pt_cnt-1].y + 10 == y){
@@ -545,7 +557,6 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 					pt_tmp.y = y;
 					pt_tmp.x = x;
 					offset = x;
-					printf("pt_tmp set %d %d\n",pt_tmp.x,pt_tmp.y);
 					if(set_end_point(RIGHT,&pt_tmp,above_pix_1, &direct)){
 						if(!is_broken_trace && pt_cnt == 1 && pt[pt_cnt].x != -1)
 							pt_cnt += 1;
@@ -555,12 +566,20 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				}
 			}
 			if(x == MAXWIDTH-1){// 왼쪽에서 (0,1)을 못 찾은 경우
-				printf("x : %d, y : %d \n", pt_tmp.x,pt_tmp.y);
+				printf("x is MAXWIDTH-1 x : %d, y : %d \n", pt_tmp.x,pt_tmp.y);
+				
+				if(pt_tmp.x == -1 && pt_tmp.y == -1){
+					printf(" pt_tmp not find. \n");
+					return FALSE;
+				}
+
 				if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
 					printf(" above is line ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ cnt change line %d \n", cnt_change_line+1);
 					if( ++cnt_change_line >2)
+					{
 						is_broken_line = TRUE;
-					printf(" ################################################################################## line trace ret TRUE\n");
+						printf(" ################################################################################## line trace ret TRUE\n");
+					}
 					return TRUE;
 				}else if(pt[BOT+1].x == -1){
 					init_point();
@@ -758,7 +777,7 @@ int check_change_line(int rl_info, int x, int y)
 		}else{
 			for(i=x; ( i<x+50 && i<MAXWIDTH ); i++){
 				if( !IS_BLACK(i,j) && IS_BLACK(i+1,j)){		// 01 <-
-					printf(">> check change line i%d,j%d",i,j);
+					printf(">> check change line i%d,j%d\n",i,j);
 					int tmp = find_broken_line(RIGHT, i, j);
 					printf(" > check_change_line ret %d\n",tmp);
 					return 	tmp;			

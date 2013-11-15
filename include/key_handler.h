@@ -3,7 +3,7 @@
 #define __KEY_HANDLER_H__
 
 #include "miso_car_lib.h" 
-#include "miso_values.h" 	// for cm_handle
+#include "miso_camera.h"
 
 #define KEY1 1
 #define KEY2 2
@@ -54,6 +54,12 @@ void* key_handler(void* data)
 					usleep(500000);
 
 					stop();
+					
+					struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
+
+					while(camera->ref_count > 0){
+						camera_release_frame(cm_handle,vidbuf);
+					}
 					exit_camera(cm_handle);
 					exit(0);
 				}else{}

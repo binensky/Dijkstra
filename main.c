@@ -16,7 +16,6 @@
 #include "include/parking_modules.h"
 #include "include/drive_modules.h"
 #include "include/file_lib.h"
-#include "include/socket_lib.h"
 
 pthread_t thread[3];	// 0:key handling , 1:sensor handling, 2:distance_check
 void init_drive(void);
@@ -40,7 +39,6 @@ int main(void)
 	init_drive();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	//pthread_create(&thread[1],NULL,sensor_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	while(TRUE)
 	{
@@ -52,7 +50,6 @@ int main(void)
 
 	pthread_join(thread[0],NULL);
 	pthread_join(thread[1],NULL);
-	pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -72,7 +69,8 @@ void drive_ai()
 		// get image data from the file.
 		if(idata->mid_flag == MID_STOP || idata->mid_flag == IF_SG_STOP){
 
-			int flag = ai_img_process(MID_STOP);
+			int flag = 0;
+//			int flag = ai_img_process(MID_STOP);
 
 			switch(flag){
 				case MID_STOP:
@@ -100,30 +98,25 @@ void drive_cm()
 	g_index = 0;
 	distance_reset();
 
+	pthread_create(&thread[2],NULL,parking_check,NULL);
+
 	while(g_drive_flag != DF_READY){
 		// store image data into d_data
-<<<<<<< HEAD
 		printf("g_index : %d g_wait_thread : %d\n", g_index, g_wait_thread);
 		if(g_wait_thread == WAIT_THREAD && g_index >= RESUME_INDEX)
 			g_wait_thread = RESUME_THREAD;
 
 		if(g_wait_thread == END_THREAD)
+		{
 			pthread_create(&thread[1],NULL,sensor_handler,NULL);
+			had_change_line = FALSE;
+		}
 
-		idata = line_check();
-#ifdef SOCKET
-		sprintf(buffer, "idata flag %d \n", idata->flag); // buffer에 저장
-		if(send(sock, buffer, sizeof(buffer), 0) < 0)
-			printf("idata flag send failed\n");
-#endif
-=======
-		
 		idata = cm_img_process();
->>>>>>> 514dbaf19aa902b116870dd636ce005f486ee78d
 
-#ifdef DRIVE_DEBUG
-		printf("idata flag %d \n",idata->flag );  
-#endif
+//#ifdef DRIVE_DEBUG
+		printf(">>>>>>>>>>>>>>>.idata flag %d \n",idata->flag );  
+//#endif
 		// check dist prev data and store dist. 
 		if(g_index>0){
 			d_data[g_index-1].dist = mDistance()-prev_dist;
@@ -146,8 +139,9 @@ void drive_cm()
 			d_data[g_index].dist = 0;
 		}
 			g_index+=1;
-		}
 	}
+
+	pthread_join(thread[2],NULL);
 }
 
 inline void drive(struct image_data* idata)
@@ -252,8 +246,28 @@ inline void drive(struct image_data* idata)
 		case IF_SPEED_BUMP_CUR:
 			d_data[g_index].angle = d_data[g_index-1].angle;
 			break;
-		case IF_SPEED_BUMP_ST:
+
 		case IF_BOTH:
+			if(idata->bot[RIGHT].y < 70)
+			{
+				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
+				turn_set(angle);
+				d_data[g_index].angle = angle;
+			}
+			else if(idata->bot[LEFT].y < 70)
+			{
+				int angle = DM_STRAIGHT - (210 - 3*idata->bot[LEFT].y);
+				turn_set(angle);
+				d_data[g_index].angle = angle;
+			}
+			else{
+				turn_straight();
+				d_data[g_index].angle = DM_STRAIGHT;
+			}
+
+			
+			break;
+		case IF_SPEED_BUMP_ST:
 		case IF_STRAIGHT:
 			turn_straight();
 			d_data[g_index].angle = DM_STRAIGHT;

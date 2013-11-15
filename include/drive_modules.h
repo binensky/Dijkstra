@@ -2,17 +2,17 @@
 
 void  change_course(){
 
-	int n = 0;
-	n = mDistance();
+	int n = mDistance();
+	winker_light(EMERGENCY);
 	distance_set(1300);
 	speed_set(2000);
-	winker_light(EMERGENCY);
 	forward_dis();
 	while(mDistance() - n < 20){}
 	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 320){}
+	while(mDistance() - n < 320){printf("2\n");}
 	turn_set(DM_ANGLE_MIN);
-	while(mDistance() - n < 820){}
+	while(mDistance() - n < 820){
+	}
 	turn_set(DM_STRAIGHT);
 	while(mDistance() - n < 3620){}
 	turn_set(DM_ANGLE_MAX);
@@ -143,7 +143,7 @@ void direct_test()
 		switch(input)
 		{
 			case '0':
-				idata = line_check(); // get image data 
+				idata = cm_img_process();
 				printf("idata flag : %d\n", idata->flag);
 				break;	
 			case '1':	

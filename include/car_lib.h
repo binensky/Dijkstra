@@ -459,7 +459,7 @@ void winker_light(char* status)
 		printf("Winker OFF\n");
 	}
 	write(uart_fd, &buf[0], 2);
-
+	printf("Asdfasdf\n");
 }
 
 char dm_angle(char* angle1, char* angle2)

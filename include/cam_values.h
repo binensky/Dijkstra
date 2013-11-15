@@ -133,7 +133,7 @@ int find_left = FL_NONE, find_right = FL_NONE;
 int img_buf_y[MAXHEIGHT][MAXWIDTH];
 int width_scan_point = MIDWIDTH;
 int is_broken_line = FALSE;
-int had_change_line = FALSE;
+int had_change_line = TRUE;
 int cnt_change_line = 0;
 
 #endif

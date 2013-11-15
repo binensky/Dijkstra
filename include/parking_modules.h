@@ -163,11 +163,10 @@ void* parking_check(void* p_data)
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
-					/*
+					
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
-					*/
 						g_wait_thread = END_THREAD;
 				}
 				break;

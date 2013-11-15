@@ -34,7 +34,7 @@ int main(void)
 
 	init_drive();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
+	//pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	while(TRUE)
 	{
@@ -45,7 +45,7 @@ int main(void)
 	}
 
 	pthread_join(thread[0],NULL);
-	pthread_join(thread[2],NULL);
+	//pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -250,11 +250,11 @@ inline void drive(struct image_data* idata){
 				d_data[g_index].angle = angle;
 			}
 			else{
-				turn_straight();
+				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
+				turn_set(angle);
 				d_data[g_index].angle = DM_STRAIGHT;
 			}
 
-			
 			break;
 		case IF_SPEED_BUMP_ST:
 		case IF_STRAIGHT:
@@ -320,7 +320,6 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 				temp_flag = MID_STRAIGHT;
 			else
 			{
-				//printf("prev mid flag : %d\n",d_data[g_index-1].mid_flag);
 				temp_flag = MID_CURVE_STRAIGHT;
 			}
 		}
@@ -332,7 +331,6 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		}
 		else
 		{
-			//printf("prev mid flag : %d\n",d_data[g_index-1].mid_flag);
 			temp_flag = MID_CURVE_STRAIGHT;
 		}
 	}
@@ -340,6 +338,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		temp_flag = MID_CURVE;
 	}
+	printf("temp flag : %d\n",temp_flag);
 
 	if(temp_flag == MID_STRAIGHT)
 	{
@@ -383,6 +382,8 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
+
+		printf("dest (%d,%d) dest angle : %d\n",dest.x,dest.y,dest_angle);
 	
 		if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95){
 			d_data[g_index].mid_flag = MID_STRAIGHT;
@@ -409,21 +410,21 @@ void init_drive()
 	sleep(3);
 #endif
 	turn_straight();
-	usleep(2000);	
+	usleep(10000);	
 	camera_turn_right();
 	usleep(500000);
 	camera_straight();
-	usleep(2000);
+	usleep(10000);
 	speed_set(1000);
-	usleep(2000);
+	usleep(10000);
 	dm_speed_set(5);
-	usleep(2000);
+	usleep(10000);
 	accel(0x02f);
-	usleep(2000);
+	usleep(10000);
 	reduction(0x2f);
-	usleep(2000);
+	usleep(10000);
 	distance_set(2000);
-	usleep(2000);
+	usleep(10000);
 	line_stop();
 }
 

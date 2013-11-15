@@ -167,8 +167,8 @@ struct image_data* make_image_data(struct image_data* img_data){
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
 				&& find_left != FL_NONE && find_right != FL_NONE) // find both and not change line. (= else)
-					img_data->flag = IF_STRAIGHT;
-					//img_data->flag = IF_BOTH;
+					//img_data->flag = IF_STRAIGHT;
+					img_data->flag = IF_BOTH;
 
 		printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
 				,find_left,find_right,img_data->flag);

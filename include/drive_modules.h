@@ -7,11 +7,10 @@ void  change_course(){
 	distance_set(1300);
 	speed_set(2000);
 	forward_dis();
-	while(mDistance() - n < 20){
-		printf("1\n");
-	}
-
+	//while(mDistance() - n < 20){printf("1\n");}
+	usleep(10000);
 	turn_set(DM_STRAIGHT);
+	usleep(10000);
 	while(mDistance() - n < 320){printf("2\n");}
 	turn_set(DM_ANGLE_MIN);
 	while(mDistance() - n < 820){

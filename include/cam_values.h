@@ -39,7 +39,6 @@
 #define THRESHOLD_RED_STOP_CB 120
 #define THRESHOLD_RED_STOP_CR 180 
 
-
 #define BOT 0
 #define MID 1
 #define END 2
@@ -53,7 +52,6 @@
 // mid line flag
 
 #define MID_NONE -1
-#define MID_STOP 0
 #define MID_STRAIGHT 1
 #define MID_CURVE_STRAIGHT 2
 #define MID_CURVE 3
@@ -62,13 +60,15 @@
 #define MID_SPEED_BUMP_ST 11
 #define MID_SPEED_BUMP_CUR 12
 
-#define MID_SPEED_DOWN 23
+#define MID_RED_SPEED_DOWN 23
 #define MID_WHITE_SPEED_DOWN 24
 
 #define MID_OUTLINE 31
 
 #define MID_CL_LEFT 54
 #define MID_CL_RIGHT 55
+
+#define MID_RED_STOP 99
 
 // screen size 
 #define MAXHEIGHT 240

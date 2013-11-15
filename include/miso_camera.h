@@ -1,5 +1,5 @@
-#ifndef _CM_PROCESS_H__
-#define _CM_PROCESS_H__
+#ifndef _MISO_CAMERA_H__
+#define _MISO_CAMERA_H__
 
 #include <stdlib.h>
 #include <math.h>
@@ -145,10 +145,15 @@ struct image_data* make_image_data(struct image_data* img_data){
 
 
 			if((find_right == FL_NONE) && right_line_check(i)){
+				
 				// img_data setting with left line check result.
+
 				right_set_image_data(img_data,TRUE);
-				if(img_data->flag == IF_CL_RIGHT)
+				printf(" right set image result img_data, %d\n",img_data->flag);
+				if(img_data->flag == IF_CL_RIGHT){
+					printf("asdfasdfasdf^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 					break;
+				}
 			}
 		}
 		printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
@@ -157,8 +162,11 @@ struct image_data* make_image_data(struct image_data* img_data){
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
 				&& find_left != FL_NONE && find_right != FL_NONE) // find both and not change line. (= else)
-					img_data->flag = IF_BOTH;
+					img_data->flag = IF_STRAIGHT;
+					//img_data->flag = IF_BOTH;
 
+		printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
+				,find_left,find_right,img_data->flag);
 		return img_data;
 
 	}else if( img_data->mid_flag == MID_CURVE || img_data->mid_flag == MID_CURVE_STRAIGHT)
@@ -174,7 +182,6 @@ struct image_data* make_image_data(struct image_data* img_data){
 		if( find_left == FL_NONE && find_right == FL_NONE) // not find. else of branchs.
 			img_data->flag = IF_STRAIGHT;
 		
-
 		return img_data;
 
 	}else	// other mid_flags are equal img_data->mid_flag to img_data->flag. 
@@ -202,8 +209,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 {				
 	int i;
 
-	if(is_straight && !had_change_line && is_broken_line)
-	{
+	if(is_straight && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
 		return img_data;
@@ -350,12 +356,12 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif
-			return MID_STOP;
+			return MID_RED_STOP;
 		}else if(120 < red_bot && red_bot <= 170){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~   Slow Down in %d\n", red_bot);
 #endif
-			return MID_SPEED_DOWN;
+			return MID_RED_SPEED_DOWN;
 
 		}
 	}
@@ -519,10 +525,15 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				
 				if(pt_tmp.x == -1 && pt_tmp.y == -1){
 					printf(" pt_tmp not find. \n");
-					return FALSE;
+					return TRUE;
+				}
+				if( had_change_line || cnt_change_line >2)
+				{
+					printf(" ######################################################already found\n");
+					return TRUE;
 				}
 
-				if( check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
+				else if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
 					printf(" above is black~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ cnt change line %d \n",cnt_change_line+1);
 					cnt_change_line+=1;
 					if( cnt_change_line >2 )

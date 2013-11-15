@@ -7,7 +7,10 @@ void  change_course(){
 	distance_set(1300);
 	speed_set(2000);
 	forward_dis();
-	while(mDistance() - n < 20){}
+	while(mDistance() - n < 20){
+		printf("1\n");
+	}
+
 	turn_set(DM_STRAIGHT);
 	while(mDistance() - n < 320){printf("2\n");}
 	turn_set(DM_ANGLE_MIN);
@@ -129,7 +132,7 @@ void parking(int flag)
 	g_drive_flag = DF_DRIVE;
 }
 
-void direct_test()
+void drive_test()
 {
 	struct image_data* idata;
 	while(TRUE)
@@ -143,7 +146,8 @@ void direct_test()
 		switch(input)
 		{
 			case '0':
-				idata = cm_img_process();
+
+				idata = cm_img_process(); // get image data 
 				printf("idata flag : %d\n", idata->flag);
 				break;	
 			case '1':	

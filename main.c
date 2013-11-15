@@ -33,9 +33,13 @@ int main(void)
 	car_connect();
 
 	init_drive();
+
+//	drive_test();
+
+
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	pthread_create(&thread[2],NULL,parking_check,NULL);
-
+	
 	while(TRUE)
 	{
 		if(g_drive_flag == DF_DRIVE && g_drive_mode == AI_MODE)
@@ -44,7 +48,7 @@ int main(void)
 			drive_cm();
 	}
 
-	pthread_join(thread[0],NULL);
+	//pthread_join(thread[0],NULL);
 	//pthread_join(thread[2],NULL);
 	return 0;
 }
@@ -110,21 +114,13 @@ void drive_cm()
 		if(g_wait_thread == WAIT_THREAD && g_index >= RESUME_INDEX)
 			g_wait_thread = RESUME_THREAD;
 
-		if(g_wait_thread == END_THREAD)
-		{
-			pthread_create(&thread[1],NULL,sensor_handler,NULL);
-			had_change_line = FALSE;
-		}
-
 		idata = cm_img_process();
 
 //#ifdef DRInVE_DEBUG
-		printf(">>>>>>>>>>>>>>>.idata flag %d \n",idata->flag );  
+		printf("> df_ %d>>>>>if%d \n",g_drive_flag,idata->flag );  
 //#endif
 	// check dist prev data and store dist. 
 		if(g_index>0){
-			if(d_data[g_index-1].flag == IF_WHITE_SPEED_DOWN)
-				continue;
 			d_data[g_index-1].dist = mDistance()-prev_dist;
 			prev_dist = mDistance();
 		}else if(g_index == 0){
@@ -229,7 +225,10 @@ inline void drive(struct image_data* idata){
 		case IF_WHITE_SPEED_DOWN:
 			printf("---WHITE SPEED DOWN---\n");
 			speed_set(500);
-			d_data[g_index].angle = d_data[g_index-1].angle;
+			g_drive_flag = DF_SPEED_DOWN;
+			turn_straight();
+			d_data[g_index].angle = DM_STRAIGHT;
+			pthread_create(&thread[1],NULL,sensor_handler,NULL);
 			break;
 
 		case IF_SPEED_BUMP_CUR:
@@ -237,15 +236,16 @@ inline void drive(struct image_data* idata){
 			break;
 
 		case IF_BOTH:
+			printf("left  %d, right %d ",idata->bot[LEFT].y, idata->bot[RIGHT].y);
 			if(idata->bot[RIGHT].y < 70)
 			{
-				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
+				int angle = DM_STRAIGHT + (350 - 5*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
 			else if(idata->bot[LEFT].y < 70)
 			{
-				int angle = DM_STRAIGHT - (210 - 3*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (350 - 5*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -287,6 +287,7 @@ inline void drive(struct image_data* idata){
 		case IF_SG_STOP:
 		case IF_SG_LEFT:
 		case IF_SG_RIGHT:
+			printf("traffic^^^^^^^^^^^^^^^^^^^^^^^^%d\n",d_data[g_index].flag);
 			traffic_drive(d_data[g_index].flag);
 			break;
 		case IF_PARK_V:

@@ -31,6 +31,7 @@ void* sensor_handler(void* data)
 				buzzer_on();
 				status = 1;
 			}
+			sleep(1000);
 		}
 		line_stop();
 		usleep(2000);

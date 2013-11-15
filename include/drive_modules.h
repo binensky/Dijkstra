@@ -11,7 +11,7 @@ void  change_course(){
 	usleep(10000);
 	turn_set(DM_STRAIGHT);
 	usleep(10000);
-	while(mDistance() - n < 320){printf("2\n");}
+	while(mDistance() - n < 320){}
 	turn_set(DM_ANGLE_MIN);
 	while(mDistance() - n < 820){
 	}
@@ -22,7 +22,9 @@ void  change_course(){
 	turn_set(DM_STRAIGHT);
 	speed_set(1000);
 	winker_light(OFF);
+	usleep(10000);
 	distance_reset();
+	usleep(10000);
 }
 
 
@@ -38,7 +40,9 @@ void traffic_drive(int flag){
 		case IF_SG_LEFT:
 			n = mDistance();
 			distance_set(1200);
+			usleep(10000);
 			speed_set(1000);	
+			usleep(10000);
 			forward_dis();
 			while(mDistance() - n < 1720){}
 			turn_set(DM_ANGLE_MAX);
@@ -51,7 +55,9 @@ void traffic_drive(int flag){
 		case IF_SG_RIGHT:
 			n = mDistance();
 			distance_set(1200);
+			usleep(10000);
 			speed_set(1000);
+			usleep(10000);
 			forward_dis();
 			while(mDistance() - n < 1720){}
 			turn_set(DM_ANGLE_MIN);
@@ -84,7 +90,7 @@ void parking(int flag)
 		while(mDistance() - n > -1600){}
 		turn_straight();
 		//while(get_dist_sensor(4) < 200){}
-		while(get_dist_sensor(4) < 150){}
+		while(get_dist_sensor(4) < 170){}
 		stop();
 		sleep(1);
 		buzzer_on();

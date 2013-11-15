@@ -52,7 +52,8 @@ struct image_data* cm_img_process()
 
 	init_values(cm_handle,img_data);
 #ifdef DEBUG
-	//print_screen_y();//print_screen_org();//print_screen_cb();//print_screen_cr();//print_screen_color();//print_traffic_light();//exit(0);
+	//print_screen_y();//print_screen_org();//print_screen_cb();//print_screen_cr();
+	print_screen_color();//print_traffic_light();//exit(0);
 #endif
 	printf("> drive flag : %d\n",g_drive_flag);
 
@@ -113,6 +114,7 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
+				printf("ekekekekekekekek ycnt %d\n",y_cnt);
 				if(w_cnt > y_cnt && w_cnt > 7)
 					return MID_WHITE_SPEED_DOWN;	//24
 				
@@ -225,7 +227,7 @@ struct image_data* left_set_image_data(struct image_data* img_data, char is_stra
 struct image_data* right_set_image_data(struct image_data* img_data, char is_straight)
 {				
 	int i;
-
+	printf("is straight %d / !had_change_line %d / && is_broken_line %d \n",is_straight, !had_change_line, is_broken_line); 
 	if( is_straight && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
@@ -363,7 +365,7 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 			}
 		}
 	}
-	if( red_cnt > 200)
+	if( red_cnt > 500)
 	{
 		if(red_bot <= 120){
 #ifdef DRIVE_DEBUG
@@ -545,13 +547,14 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 					printf("###############################already found\n");
 					return TRUE;
 				}else if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
+					cnt_change_line+=1;
+				
 					if( cnt_change_line >2 )
 					{
 						is_broken_line = TRUE;
 						printf(" ######### line trace ret TRUE\n");
 					}
 
-					cnt_change_line+=1;
 					printf(" above is black~~ cnt change line %d \n",cnt_change_line);
 					return TRUE;	// ---- trace end. return broken size.
 				}else if(pt[BOT+1].x == -1){
@@ -597,13 +600,14 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				}
 
 				if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
+				
+					cnt_change_line+=1;
+					printf(" above is line~~ cnt change line %d \n", cnt_change_line);
 					if(cnt_change_line >2)
 					{
 						is_broken_line = TRUE;
 						printf("##### line trace ret TRUE \n");
 					}
-					cnt_change_line+=1;
-					printf(" above is line~~ cnt change line %d \n", cnt_change_line);
 					return TRUE;
 				}else if(pt[BOT+1].x == -1){
 					init_point();
@@ -864,11 +868,11 @@ int check_traffic_light()
 	}
 	else if(green_count >= 250){
 		printf("RIGHT TURN!\n");
-		return IF_CL_RIGHT;
+		return IF_SG_RIGHT;
 	}
 	else if(green_count >= 100){
 		printf("LEFT TURN!\n");
-		return IF_CL_LEFT;
+		return IF_SG_LEFT;
 	}
 	else
 		return IF_SG_STOP;

@@ -167,7 +167,11 @@ void* parking_check(void* p_data)
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
+					{
 						g_wait_thread = END_THREAD;
+						had_change_line = FALSE;
+						sleep(1000);
+					}
 				}
 				break;
 			default:

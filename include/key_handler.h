@@ -35,7 +35,7 @@ void* key_handler(void* data)
 		{
 			case KEY1:
 				// STOP / RESET
-				if( g_drive_flag == DF_DRIVE )
+				if( g_drive_flag == DF_DRIVE || g_drive_flag == DF_SPEED_DOWN )
 				{
 					g_drive_flag = DF_READY;
 				

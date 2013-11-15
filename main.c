@@ -34,7 +34,7 @@ int main(void)
 
 	init_drive();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	//pthread_create(&thread[2],NULL,parking_check,NULL);
+	pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	while(TRUE)
 	{
@@ -207,8 +207,7 @@ inline void drive(struct image_data* idata){
 			intercept = idata->bot[RIGHT].y - idata->bot[RIGHT].x * gradient;
 			height = gradient * MIDWIDTH + intercept;
 
-			if(idata->angle[RIGHT] > 90)
-			{
+			if(idata->angle[RIGHT] > 90){
 				turn_set(DM_ANGLE_MIN);
 				d_data[g_index].angle = DM_ANGLE_MIN;
 				break;
@@ -233,14 +232,12 @@ inline void drive(struct image_data* idata){
 			break;
 
 		case IF_BOTH:
-			if(idata->bot[RIGHT].y < 70)
-			{
+			if(idata->bot[RIGHT].y < 70){
 				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
-			else if(idata->bot[LEFT].y < 70)
-			{
+			else if(idata->bot[LEFT].y < 70){
 				int angle = DM_STRAIGHT - (210 - 3*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
@@ -375,11 +372,16 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		mid_bot.y = 0;
 		mid_bot.x = MIDWIDTH;
-		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+60;
+		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+100;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
 
-		printf("dest (%d,%d) dest angle : %d\n",dest.x,dest.y,dest_angle);
+		if(idata->flag == IF_LEFT)
+			printf("gra %.2lf, bot (%d,%d) dest (%d,%d) dest angle : %d\n",gradient, idata->bot[LEFT].x, idata->bot[LEFT].y,dest.x,dest.y,dest_angle);
+		else
+			printf("gra %.2lf, bot (%d,%d) dest (%d,%d) dest angle : %d\n",gradient, idata->bot[RIGHT].x, idata->bot[RIGHT].y,dest.x,dest.y,dest_angle);
+		
+		
 	
 		if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95){
 			d_data[g_index].mid_flag = MID_STRAIGHT;

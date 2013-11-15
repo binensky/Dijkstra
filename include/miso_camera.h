@@ -104,7 +104,7 @@ int check_mid_line()
 			{
 				int k, w_cnt=0, y_cnt=0;
 				for( k = i ; k < CUTLINE-1; k++){
-					if( IS_BLACK(MIDWIDTH,k+1) && !IS_BLACK(MIDWIDTH,k) )
+					if(IS_BLACK(MIDWIDTH,k+1)&&!IS_BLACK(MIDWIDTH,k))
 						break;
 					if(IS_WHITE(MIDWIDTH,k))	w_cnt++;
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
@@ -114,14 +114,25 @@ int check_mid_line()
 					return MID_WHITE_SPEED_DOWN;	//24	
 			}
 			else if( i <= CUTLINE_OUTLINE )	// <10
+			{
 				return MID_OUTLINE;	// ret 31
+			}
 			else if( i <= CUTLINE_CURVE)	// <=60
+			{
 				return  MID_CURVE;	// 3
+			}
 			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
+			{
 				return MID_CURVE_STRAIGHT;	// 2
-			else 
+			}
+			else
+			{
+				printf("here ???\n");
 				break;	// 1
-		}else{// is black 
+			}
+		}
+		else
+		{// is black 
 			continue;
 		}
 	} // end for
@@ -349,7 +360,7 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 			}
 		}
 	}
-	if( red_cnt > 200)
+	if( red_cnt > 500)
 	{
 		if(red_bot <= 120){
 #ifdef DRIVE_DEBUG

@@ -4,6 +4,7 @@
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
+// #define SAVE_FILE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -18,7 +19,6 @@
 #include "include/drive_modules.h"
 #include "include/file_lib.h"
 
-pthread_t thread[3];	
 // 0:key handling , 1:sensor handling, 2:distance_check
 
 void init_drive(void);
@@ -33,18 +33,18 @@ int main(void)
 	car_connect();
 
 	init_drive();
-
 //	drive_test();
-
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	pthread_create(&thread[2],NULL,parking_check,NULL);
+
+	printf("thread create\n");
 	
-	while(TRUE)
+	while(g_drive_flag != DF_END)
 	{
-		if(g_drive_flag == DF_DRIVE && g_drive_mode == AI_MODE)
+		if( g_drive_mode == AI_MODE)
 			drive_ai();
-		else if(g_drive_flag == DF_DRIVE && g_drive_mode == CM_MODE)
+		else if( g_drive_mode == CM_MODE)
 			drive_cm();
 	}
 
@@ -57,44 +57,34 @@ int main(void)
 void drive_ai()
 {
 	struct image_data* idata;
+	int prev_dist=0;
+	
+	int it_index = 181;// for test.. 
+	g_index = 183;	//for test
+	distance_set(200);
+	forward_dis();
+	// park_init();	
 
-	g_index = 0;
-	distance_reset();
-
-	while(g_drive_flag != DF_READY){
+	while(g_drive_flag != DF_READY && it_index <= g_index ){
 		// busy waiting for next image data.
-		while( g_index>0 && d_data[g_index-1].dist < mDistance()){}
 
+		while(d_data[it_index-1].dist > mDistance()-prev_dist){}
+		prev_dist = mDistance();
+
+		printf("---------------- g_index : %d / %2d / %2d / %4d / %4d -------------------\n",it_index,d_data[it_index].flag, d_data[it_index].mid_flag,d_data[it_index].angle, d_data[it_index].dist);
 		// if need to ai_img_processing.. 
-		if(idata->flag == IF_RED_STOP || idata->flag == IF_RED_SPEED_DOWN 
-				|| idata->flag == IF_SG_STOP){
-			while(TRUE){
-				int flag = ai_img_process(MID_RED_STOP);
-				if(flag == IF_RED_SPEED_DOWN){
-					speed_set(500);
-					turn_straight();
-					pthread_create(&thread[1],NULL,sensor_handler,NULL);
-					// sensoring??
-					g_index++;
-				}
-				else if(flag == IF_RED_STOP){
-					stop();
-				}else if( flag==IF_SG_STOP || flag==IF_SG_LEFT || flag==IF_SG_RIGHT){
-					traffic_drive(flag); //how to end drive mode??
-				}else // exit of the states.. 
-				{
-					g_index++;
-					break;
-				}
-			}	
-		}else	// have not need to additional image processing. 
-		{
-			turn_set(d_data[g_index].angle);
-			distance_set(d_data[g_index].dist+100);
+		if(d_data[it_index].flag > IF_NO_DRIVE || d_data[it_index].flag == IF_WHITE_SPEED_DOWN){
+			ai_event_proc(d_data[it_index].flag);
+
+		}else{
+			turn_set(d_data[it_index].angle);
+			distance_set(d_data[it_index].dist+100);
 			forward_dis();
-			g_index++;
 		}
+
+		it_index++;
 	}
+	g_drive_flag = DF_END;
 }
 
 // DRIVE WITH ONLY CAMERA AND STORE THE DATA. 
@@ -106,10 +96,9 @@ void drive_cm()
 	g_index = 0;
 	distance_reset();
 
-
 	while(g_drive_flag != DF_READY){
-		// store image data into d_data
-		
+
+		// init thread.. 
 	//	printf("g_index : %d g_wait_thread : %d\n", g_index, g_wait_thread);
 		if(g_wait_thread == WAIT_THREAD && g_index >= RESUME_INDEX)
 			g_wait_thread = RESUME_THREAD;
@@ -432,6 +421,14 @@ void init_drive()
 	distance_set(2000);
 	usleep(10000);
 	line_stop();
+
+// set flags...
+	g_drive_flag = DF_READY;
+	g_drive_mode = NO_MODE;
+	g_index = 0;
+	g_park_dis = 0;
+	g_wait_thread =INIT_THREAD;
+	printf("init drive end\n");
 }
 
 

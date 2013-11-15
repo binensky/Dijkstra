@@ -97,16 +97,16 @@ struct drive_data{
 };
 
 // car status flags
-static int g_drive_flag = DF_READY;
-static int g_drive_mode = NO_MODE;
-static int g_index = 0;
-static int g_park_dis = 0;
-static int g_wait_thread = INIT_THREAD;
+static int g_drive_flag;
+static int g_drive_mode;
+static int g_index ;
+static int g_park_dis;
+static int g_wait_thread ;
 
 // camera fd
 static int cm_handle;	
 
 // car drive datas of previous drive. 
 struct drive_data d_data[DATA_SIZE];
-
+pthread_t thread[3];	
 #endif

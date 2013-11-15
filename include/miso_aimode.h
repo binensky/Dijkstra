@@ -1,20 +1,20 @@
 #ifndef _AI_PROCESS_H__
 #define _AI_PROCESS_H__
 
-#include <stdlib.h>
-#include <math.h>
-#include <pxa_lib.h>
-#include <pxa_camera_zl.h>
+#include <pthread.h>
+#include <stdio.h>
 
 #include "miso_car_lib.h"
 #include "miso_values.h"
 #include "miso_camera.h"
+#include "sensor_handler.h"
+#include "parking_modules.h"
 
 void init_ai_values(int handle);
 
 int ai_img_process(int flag){ 
 
-        init_ai_values(cm_handle);
+        init_ai_camera(cm_handle);
 
 	if( flag == IF_RED_STOP){
 		int red_flag = red_pixel_check(90,180);
@@ -30,15 +30,18 @@ int ai_img_process(int flag){
 }                                 
 
 
-void init_ai_values(int handle)
+void init_ai_camera()
 {
 	int i;
 	// 버퍼 초기화 
 	struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
 
-	for( i = 0; i < 5; i++){
-		vidbuf = camera_get_frame(cm_handle);
-		camera_release_frame(cm_handle,vidbuf);
+	if(g_first){
+		g_first = FALSE;
+		for( i = 0; i < 5; i++){
+			vidbuf = camera_get_frame(cm_handle);
+			camera_release_frame(cm_handle,vidbuf);
+		}
 	}
 
 	if(camera->ref_count>0){
@@ -47,6 +50,61 @@ void init_ai_values(int handle)
 	vidbuf = camera_get_frame(cm_handle);
 
 }    
+
+void ai_event_proc(int flag)
+{
+
+	//check_modules... 
+	if(flag ==  IF_CL_RIGHT || flag == IF_CL_LEFT){
+		printf(">>>>>> ai  change line  %d\n", flag);
+		distance_set(100);
+		usleep(10000);
+		change_course();
+	}else if(flag == IF_PARK_V || flag == IF_PARK_H){
+		stop();
+		park_mode = PARK_ON;
+		parking(flag);
+	}else	// not module , but need to image processing.. 
+	{
+		while(TRUE){
+
+			init_ai_camera();
+			if(flag == IF_WHITE_SPEED_DOWN){
+				speed_set(500);
+				usleep(10000);
+				distance_set(500);
+				usleep(10000);
+				forward_dis();
+				usleep(10000);
+				turn_straight();
+				pthread_create(&thread[1],NULL,sensor_handler,NULL);
+				while(g_drive_flag != DF_STOP)
+				{	
+					distance_set(200);
+					usleep(10000);
+					forward_dis();
+				}
+				stop();
+				break;
+			}else if(flag == IF_RED_STOP){
+				stop();
+				flag = red_pixel_check(90,180);
+				printf("red pix check flag %d\n",flag);
+			}else if( flag==IF_SG_STOP || flag==IF_SG_LEFT || flag==IF_SG_RIGHT){
+				stop();
+				flag = check_traffic_light();
+				if( flag == IF_SG_STOP)
+					continue;
+				else{
+					traffic_drive(flag);
+					break;
+				}
+			}else 
+				break;
+		}
+
+	}
+}	
 
 void arrange_stored_data(struct drive_data* d_data, int index)
 {

@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "miso_values.h"
 
-#define DATAFILE "img_data.dat"
+
+//#define DATAFILE "img_data.dat"
+#define DATAFILE "good_data.dat"
 
 int fread_data(struct drive_data* dat)
 {
@@ -15,8 +17,10 @@ int fread_data(struct drive_data* dat)
 
 	i = 0;
 	
+	printf("bbbb######\n");
 	fscanf(ifp,"[index]:%d\n",&g_index);
 
+	printf("g index %d\n",g_index);
 	while(!feof(ifp))
 	{
 		fscanf(ifp,"[%d] %d %d %d %d\n",
@@ -25,12 +29,18 @@ int fread_data(struct drive_data* dat)
 		i++;
 	}
 	fclose(ifp);
+	printf("file read success ! \n");
 	return 0;
 
 }
 
 int fwrite_data(struct drive_data* dat)
 {
+	if(g_drive_mode == AI_MODE)
+	{
+		printf(" ai will not save the file \n");
+		return 0;
+	}
 	FILE* ofp = fopen(DATAFILE,"w");
 	int i,tmp;
 	if(ofp == NULL )
@@ -49,6 +59,8 @@ int fwrite_data(struct drive_data* dat)
 	}
 
 	fclose(ofp);
+
+	printf("file write success ! \n");
 	return 0;
 }
 

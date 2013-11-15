@@ -91,6 +91,7 @@ void distance_set(int dis)
 
 int mDistance(){
 
+	// distance...
 	buf[0] = 0xce;
 	write(uart_fd, &buf[0], 1);
 	read(uart_fd, &read_buf[0], 4);

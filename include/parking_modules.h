@@ -1,3 +1,7 @@
+
+#ifndef _PARKING_MODULES_H
+#define _PARKING_MODULES_H
+
 #include "miso_car_lib.h"
 #include "miso_values.h"
 
@@ -87,7 +91,7 @@ void* parking_check(void* p_data)
 		{
 			case PARK_NONE:
 				// 주차 시작점을 잡는다.
-				if( get_dist_sensor(3) >= CLOSE_DIST )
+				if( g_drive_mode == CM_MODE && get_dist_sensor(3) >= CLOSE_DIST )
 				{
 					printf("/////// PARK_NONE -> PARK_FIND\n");
 					front_dist[0] = get_dist_sensor(3);
@@ -227,3 +231,103 @@ int get_dist_sensor(int index)
 	}
 	return total/AVR_CNT;
 }
+
+
+void park_init()
+{
+	int i;
+	if((distFD = open("/dev/FOUR_ADC", O_RDONLY )) < 0)
+	{      
+		perror("open faile /dev/FOUR_ADC");
+		exit(-1);
+	}
+
+	for(i=0; i<10; i++){
+		get_dist_sensor(2);
+		get_dist_sensor(3);
+	}
+}
+
+void park_exit()
+{
+	fclose(distFD);	
+}
+
+
+void parking(int flag)
+{
+	int n;
+	int tmp_dist;
+
+	distance_reset();
+	distance_set(100);
+	if(flag == IF_PARK_V)
+	{
+	
+		printf("in parking V\n");
+		n = mDistance();
+		usleep(10000);
+		distance_set(2500);
+		usleep(10000);
+		speed_set(1500);
+		usleep(10000);
+		turn_set(DM_ANGLE_MIN);
+		usleep(10000);
+		backward_dis();
+		usleep(10000);
+		while(mDistance() - n > -1600){}
+		turn_straight();
+		usleep(10000);
+		while(get_dist_sensor(4) < 170){}
+		stop();
+		sleep(1);
+		buzzer_on();
+		sleep(1);
+		forward_dis();
+		//while(get_dist_sensor(4) > 60){}
+		while(get_dist_sensor(4) > 100){}
+		turn_set(DM_ANGLE_MIN);
+		n = mDistance();
+		while(mDistance() - n < 2000){}
+		turn_straight();
+		speed_set(1000);
+	}
+	else
+	{
+
+		printf("in parking H\n");
+////////////////////////////??????????????????????????????????????????????????? how????
+		printf("g park dis : %d\n", g_park_dis);
+		n = mDistance();
+		distance_set(2500);
+		speed_set(1300);
+		backward_dis();
+		while(mDistance() - n > -20){}
+		turn_set(DM_ANGLE_MIN);
+		while(mDistance() - n > -1500 - ( 240 - 2*g_park_dis)){}
+		turn_set(DM_ANGLE_MAX);
+		while(get_dist_sensor(4) < 290 && get_dist_sensor(3) < 290 ){}
+		stop();
+		sleep(1);
+		buzzer_on();
+		sleep(1);
+		tmp_dist = get_dist_sensor(4);
+		printf("tmp dist : %d\n", tmp_dist);
+		forward_dis();
+		while(get_dist_sensor(4) > 100 || get_dist_sensor(3) > 100 ){}
+		turn_straight();
+		n = mDistance();
+		while(mDistance() - n < 1300 - (500 - tmp_dist)){}
+		turn_set(DM_ANGLE_MIN);
+		while(mDistance() - n < 2300){}
+		turn_straight();
+		speed_set(1000);
+		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
+	}
+	distance_reset();
+	usleep(10000);
+	g_drive_flag = DF_DRIVE;
+}
+
+
+#endif

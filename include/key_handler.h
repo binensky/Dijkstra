@@ -26,11 +26,12 @@ void* key_handler(void* data)
 		buzzer_on();
 	}
 
+	printf("key handling start\n");
 	// buzy wait to pushing key. 
+
 	while(1){
 		read_key= read(keyFD, &buf,sizeof(buf));
 		key = read_key;
-
 		switch(key)
 		{
 			case KEY1:
@@ -46,8 +47,9 @@ void* key_handler(void* data)
 				}else if( g_drive_flag == DF_READY){
 		
 					// write image data into file. 
+#ifdef SAVE_FILE
 					fwrite_data(d_data);
-
+#endif
 					g_drive_flag = DF_END;
 			
 					buzzer_on();

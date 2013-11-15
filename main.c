@@ -34,7 +34,7 @@ int main(void)
 
 	init_drive();
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
+	//pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	while(TRUE)
 	{
@@ -45,7 +45,7 @@ int main(void)
 	}
 
 	pthread_join(thread[0],NULL);
-	pthread_join(thread[2],NULL);
+	//pthread_join(thread[2],NULL);
 	return 0;
 }
 
@@ -237,6 +237,7 @@ inline void drive(struct image_data* idata){
 			break;
 
 		case IF_BOTH:
+			printf("left : (%d,%d) right : (%d, %d)\n",idata->bot[LEFT].x,idata->bot[LEFT].y,idata->bot[RIGHT].x,idata->bot[RIGHT].y);
 			if(idata->bot[RIGHT].y < 70)
 			{
 				int angle = DM_STRAIGHT + (210 - 3*idata->bot[RIGHT].y);
@@ -250,11 +251,11 @@ inline void drive(struct image_data* idata){
 				d_data[g_index].angle = angle;
 			}
 			else{
-				turn_straight();
+				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
+				turn_set(angle);
 				d_data[g_index].angle = DM_STRAIGHT;
 			}
 
-			
 			break;
 		case IF_SPEED_BUMP_ST:
 		case IF_STRAIGHT:
@@ -409,21 +410,21 @@ void init_drive()
 	sleep(3);
 #endif
 	turn_straight();
-	usleep(2000);	
+	usleep(10000);	
 	camera_turn_right();
 	usleep(500000);
 	camera_straight();
-	usleep(2000);
+	usleep(10000);
 	speed_set(1000);
-	usleep(2000);
+	usleep(10000);
 	dm_speed_set(5);
-	usleep(2000);
+	usleep(10000);
 	accel(0x02f);
-	usleep(2000);
+	usleep(10000);
 	reduction(0x2f);
-	usleep(2000);
+	usleep(10000);
 	distance_set(2000);
-	usleep(2000);
+	usleep(10000);
 	line_stop();
 }
 

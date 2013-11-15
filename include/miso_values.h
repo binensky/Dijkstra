@@ -73,7 +73,7 @@
 #define CM_MODE 0
 #define AI_MODE 1
 
-#define RESUME_INDEX 150
+#define RESUME_INDEX 140
 
 #define DATA_SIZE 10000
 

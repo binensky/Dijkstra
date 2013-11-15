@@ -22,7 +22,7 @@
 #define DF_STOP 0
 #define DF_READY 1
 #define DF_DRIVE 2
-#define DF_MODULE 3
+#define DF_SPEED_DOWN 3
 #define DF_END 9
 #define DF_VPARK 61
 #define DF_PPARK 62

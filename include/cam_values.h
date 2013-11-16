@@ -14,7 +14,7 @@
 #define CUTLINE 140
 #define CUTLINE_CL 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 70
+#define CUTLINE_CURVE 85
 #define CUTLINE_OUTLINE 10
 #define GAP 10
 
@@ -135,5 +135,6 @@ int width_scan_point = MIDWIDTH;
 int is_broken_line = FALSE;
 int had_change_line = TRUE;
 int cnt_change_line = 0;
+int had_speed_bump = FALSE;
 
 #endif

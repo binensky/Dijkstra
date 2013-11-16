@@ -24,7 +24,7 @@ void  change_course(){
 	turn_set(DM_ANGLE_MAX);
 	while(mDistance() - n < 4120){}
 	turn_set(DM_STRAIGHT);
-	speed_set(1000);
+	speed_set(1500);
 	winker_light(OFF);
 	usleep(10000);
 	distance_reset();

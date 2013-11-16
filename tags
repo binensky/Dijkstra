@@ -18,6 +18,7 @@ AVR_CNT	include/parking_modules.h	20;"	d
 BASE_VIDIOC_PRIVATE	include/videodev2.h	1457;"	d
 BAUDRATE	include/car_lib.h	29;"	d
 BOT	include/cam_values.h	42;"	d
+BUFSIZE	client.c	11;"	d	file:
 CAMERA_IMAGE_FORMAT_RAW10	include/pxa_camera_zl.h	75;"	d
 CAMERA_IMAGE_FORMAT_RAW8	include/pxa_camera_zl.h	73;"	d
 CAMERA_IMAGE_FORMAT_RAW9	include/pxa_camera_zl.h	74;"	d
@@ -156,6 +157,7 @@ LEFT	include/car_lib.h	25;"	d
 LOW	include/miso_car_lib.h	11;"	d
 LSPEED_MAX	include/miso_values.h	12;"	d
 LSPEED_MIN	include/miso_values.h	13;"	d
+MAX	include/gaussian_filter.h	4;"	d
 MAXHEIGHT	include/cam_values.h	74;"	d
 MAXWIDTH	include/cam_values.h	75;"	d
 MID	include/cam_values.h	43;"	d
@@ -197,12 +199,17 @@ PARK_VER	include/parking_modules.h	36;"	d
 PARK_WAITING	include/parking_modules.h	32;"	d
 PI	include/cam_values.h	5;"	d
 PT_SIZE	include/cam_values.h	45;"	d
+RCVBUFSIZE	client.c	10;"	d	file:
 RESUME_INDEX	include/miso_values.h	76;"	d
 RESUME_THREAD	include/miso_values.h	69;"	d
 RGB565_BPP	include/pxa_camera_zl.h	100;"	d
 RGB666_PACKED_BPP	include/pxa_camera_zl.h	102;"	d
 RGB666_UNPACKED_BPP	include/pxa_camera_zl.h	101;"	d
 RIGHT	include/car_lib.h	26;"	d
+SIGMA	include/gaussian_filter.h	3;"	d
+STATE_BUF_SIZE	include/state_manage.h	1;"	d
+STATE_FILE	include/state_manage.h	3;"	d
+STATE_TOKEN	include/state_manage.h	2;"	d
 STILLBUF_COUNT	driver/camera.c	115;"	d	file:
 STILLBUF_COUNT	driver/camera_ori.c	115;"	d	file:
 STILLBUF_COUNT	include/cam_values.h	7;"	d
@@ -754,6 +761,7 @@ WHEEL_STRAIGHT	include/cam_values.h	86;"	d
 WHEEL_TURN	include/cam_values.h	87;"	d
 Y	include/cam_values.h	90;"	d
 YUV422_BPP	include/pxa_camera_zl.h	99;"	d
+_AI_PROCESS_H__	include/miso_ai.h	2;"	d
 _AI_PROCESS_H__	include/miso_aimode.h	2;"	d
 _MISO_CAMERA_H__	include/miso_camera.h	2;"	d
 _PARKING_MODULES_H	include/parking_modules.h	3;"	d
@@ -770,8 +778,10 @@ __XSCALE_SOURCE_DEBUG_HEADER__	include/pxa_dbg.h	18;"	d
 __user	include/videodev2.h	62;"	d
 accel	include/car_lib.h	/^char accel(char* acc)$/;"	f
 act	include/cam_values.h	/^struct sigaction act;$/;"	v	typeref:struct:sigaction
+add_states	include/state_manage.h	/^void add_states(struct img_data* idata)$/;"	f
 afc	include/videodev2.h	/^	__s32			afc;$/;"	m	struct:v4l2_tuner
 ai_event_proc	include/miso_aimode.h	/^void ai_event_proc(int flag)$/;"	f
+ai_img_process	include/miso_ai.h	/^int ai_img_process(struct image_data* img_data){ $/;"	f
 ai_img_process	include/miso_aimode.h	/^int ai_img_process(int flag){ $/;"	f
 angle	include/miso_values.h	/^	int angle;	\/\/ image process angle. $/;"	m	struct:drive_data
 angle	include/miso_values.h	/^	int angle[3];		\/\/ angle of lines (none, left, right)$/;"	m	struct:image_data
@@ -787,6 +797,7 @@ audmode	include/videodev2.h	/^	__u32			audmode;$/;"	m	struct:v4l2_tuner
 backward_dis	include/car_lib.h	/^void backward_dis(void)$/;"	f
 backward_step	include/car_lib.h	/^void backward_step(int x)$/;"	f
 base	include/videodev2.h	/^	void*                   base;$/;"	m	struct:v4l2_framebuffer
+before	include/state_manage.h	/^	struct state_node *before, *next;$/;"	m	struct:state_node	typeref:struct:state_node::state_node
 bitmap	include/videodev2.h	/^	void			__user *bitmap;$/;"	m	struct:v4l2_window
 bot	include/miso_values.h	/^	struct p_point bot[3];	\/\/ bottom point of lines(none, left, right). $/;"	m	struct:image_data	typeref:struct:image_data::p_point
 bounds	include/videodev2.h	/^	struct v4l2_rect        bounds;$/;"	m	struct:v4l2_cropcap	typeref:struct:v4l2_cropcap::v4l2_rect
@@ -844,6 +855,7 @@ capture	include/videodev2.h	/^		struct v4l2_captureparm	capture;$/;"	m	union:v4l
 capture_view	include/car_lib.h	/^void capture_view(char* cap)$/;"	f
 capturemode	include/videodev2.h	/^	__u32		   capturemode;	  \/*  Current mode *\/$/;"	m	struct:v4l2_captureparm
 car_connect	include/car_lib.h	/^int car_connect(void)$/;"	f
+car_state	include/state_manage.h	/^struct car_state$/;"	s
 card	include/videodev2.h	/^	__u8	card[32];	\/* i.e. "Hauppauge WinTV" *\/$/;"	m	struct:v4l2_capability
 cb	include/pxa_lib.h	/^			unsigned char *y,*cb,*cr;$/;"	m	struct:pxa_video_buf::__anon3::__anon5
 cbstep	include/pxa_lib.h	/^			unsigned int ystep,cbstep,crstep;$/;"	m	struct:pxa_video_buf::__anon3::__anon5
@@ -854,6 +866,8 @@ check_distance	include/car_lib.h	/^int check_distance(int ch)$/;"	f
 check_distance_inner	include/car_lib.h	/^int check_distance_inner(int ch, int total)$/;"	f
 check_mid_line	include/miso_camera.h	/^int check_mid_line()$/;"	f
 check_speed_bump	include/miso_camera.h	/^int check_speed_bump(int w, int y)$/;"	f
+check_speed_bump_st	include/miso_camera.h	/^int check_speed_bump_st(int w, int y)$/;"	f
+check_traffic_light	include/miso_ai.h	/^int check_traffic_light()$/;"	f
 check_traffic_light	include/miso_camera.h	/^int check_traffic_light()$/;"	f
 chromakey	include/videodev2.h	/^	__u32			chromakey;$/;"	m	struct:v4l2_window
 clipcount	include/videodev2.h	/^	__u32			clipcount;$/;"	m	struct:v4l2_window
@@ -887,6 +901,8 @@ default_value	include/videodev2.h	/^	__s32		     default_value;$/;"	m	struct:v4l
 defrect	include/videodev2.h	/^	struct v4l2_rect        defrect;$/;"	m	struct:v4l2_cropcap	typeref:struct:v4l2_cropcap::v4l2_rect
 denominator	include/videodev2.h	/^	__u32   denominator;$/;"	m	struct:v4l2_fract
 description	include/videodev2.h	/^	__u8		    description[32];   \/* Description string *\/$/;"	m	struct:v4l2_fmtdesc
+dim	include/gaussian_filter.h	/^int dim = (((int)MAX(3.0, 2*4*SIGMA+1.0)%2==0)? ((int)MAX(3.0, 2*4*SIGMA+1.0)+1):((int)MAX(3.0, 2*4*SIGMA+1.0)));$/;"	v
+dim2	include/gaussian_filter.h	/^int dim2 = (int)(MAX(3.0, 2*4*SIGMA+1.0)\/2);$/;"	v
 discrete	include/videodev2.h	/^		struct v4l2_fract		discrete;$/;"	m	union:v4l2_frmivalenum::__anon7	typeref:struct:v4l2_frmivalenum::__anon7::v4l2_fract
 discrete	include/videodev2.h	/^		struct v4l2_frmsize_discrete	discrete;$/;"	m	union:v4l2_frmsizeenum::__anon6	typeref:struct:v4l2_frmsizeenum::__anon6::v4l2_frmsize_discrete
 disp_inv_down	include/car_lib.h	/^void disp_inv_down(void)$/;"	f
@@ -894,6 +910,8 @@ disp_inv_up	include/car_lib.h	/^void disp_inv_up(void)$/;"	f
 dist	include/miso_values.h	/^	int dist;	\/\/ distance of drive moter. $/;"	m	struct:drive_data
 distFD	include/parking_modules.h	/^static int distFD = 0;$/;"	v
 distance	include/car_lib.h	/^char distance(char* dis1, char* dis2)$/;"	f
+distance_check	include/distance_check.h	/^void* distance_check(void* data)$/;"	f
+distance_check	include/old_parking_module.h	/^void* distance_check(void* data)$/;"	f
 distance_reset	include/car_lib.h	/^void distance_reset(void)$/;"	f
 distance_set	include/miso_car_lib.h	/^void distance_set(int dis)$/;"	f
 dm_angle	include/car_lib.h	/^char dm_angle(char* angle1, char* angle2)$/;"	f
@@ -967,14 +985,18 @@ g_index	include/miso_values.h	/^static int g_index ;$/;"	v
 g_park_dis	include/miso_values.h	/^static int g_park_dis;$/;"	v
 g_sleep	include/miso_car_lib.h	/^static char g_sleep = FALSE;$/;"	v
 g_sp	include/miso_car_lib.h	/^static int g_sp = 0;$/;"	v
+g_state_list	include/state_manage.h	/^}g_state_list;$/;"	v	typeref:struct:state_list
 g_wait_thread	include/miso_values.h	/^static int g_wait_thread ;$/;"	v
+gaussian_filter	include/gaussian_filter.h	/^void gaussian_filter()$/;"	f
 get_angle	include/miso_camera.h	/^int get_angle( struct p_point a, struct p_point b)$/;"	f
 get_dist_sensor	include/parking_modules.h	/^int get_dist_sensor(int index)$/;"	f
 get_road_angle	include/miso_camera.h	/^int get_road_angle()$/;"	f
 had_change_line	include/cam_values.h	/^int had_change_line = TRUE;$/;"	v
+had_speed_bump	include/cam_values.h	/^int had_speed_bump = FALSE;$/;"	v
 handle	driver/camera.c	/^	int	handle;$/;"	m	struct:pxa_camera	file:
 handle	driver/camera_ori.c	/^	int	handle;$/;"	m	struct:pxa_camera	file:
 handle	include/cam_values.h	/^	int handle;$/;"	m	struct:pxa_camera
+head	include/state_manage.h	/^	struct state_node* head;$/;"	m	struct:state_list	typeref:struct:state_list::state_node
 height	driver/camera.c	/^	int	height;$/;"	m	struct:pxa_camera	file:
 height	driver/camera_ori.c	/^	int	height;$/;"	m	struct:pxa_camera	file:
 height	include/cam_values.h	/^	int height;$/;"	m	struct:pxa_camera
@@ -1012,6 +1034,7 @@ index	include/videodev2.h	/^	__u32                   index;$/;"	m	struct:v4l2_tu
 info_scan	include/car_lib.h	/^char info_scan(void)$/;"	f
 info_write	include/car_lib.h	/^void info_write(char* id)$/;"	f
 init_ai_camera	include/miso_aimode.h	/^void init_ai_camera()$/;"	f
+init_ai_values	include/miso_ai.h	/^void init_ai_values(int handle)$/;"	f
 init_camera	include/miso_camera.h	/^int init_camera(){$/;"	f
 init_drive	main.c	/^void init_drive()$/;"	f
 init_point	include/miso_camera.h	/^void init_point()$/;"	f
@@ -1027,6 +1050,7 @@ key_handler	include/key_handler.h	/^void* key_handler(void* data)$/;"	f
 lcd_disp_num	include/car_lib.h	/^void lcd_disp_num(int num)$/;"	f
 lcd_disp_pic	include/car_lib.h	/^void lcd_disp_pic(char* pic)$/;"	f
 left	include/videodev2.h	/^	__s32   left;$/;"	m	struct:v4l2_rect
+left_angle	include/angle_table.h	/^int left_angle[21][30] ={$/;"	v
 left_line_check	include/miso_camera.h	/^int left_line_check(int i)$/;"	f
 left_line_trace	include/miso_camera.h	/^int left_line_trace(int i, int offset, int is_broken_trace)$/;"	f
 left_set_image_data	include/miso_camera.h	/^struct image_data* left_set_image_data(struct image_data* img_data, char is_straight)$/;"	f
@@ -1035,14 +1059,17 @@ length	driver/camera.c	/^	unsigned int length;$/;"	m	struct:videobuf_dev	file:
 length	driver/camera_ori.c	/^	unsigned int length;$/;"	m	struct:videobuf_dev	file:
 length	include/videodev2.h	/^	__u32			length;$/;"	m	struct:v4l2_buffer
 length	include/videodev2.h	/^	__u32 length;$/;"	m	struct:v4l2_enc_idx_entry
+limit	include/gaussian_filter.h	/^unsigned char limit(double a)$/;"	f
 line	include/videodev2.h	/^	__u32   line;           \/* 1-23 *\/$/;"	m	struct:v4l2_sliced_vbi_data
 line_start	include/car_lib.h	/^void line_start(void)$/;"	f
 line_stop	include/car_lib.h	/^void line_stop(void)$/;"	f
 lm_break	include/car_lib.h	/^char lm_break(char* brea)$/;"	f
 lm_speed	include/car_lib.h	/^char lm_speed(char* speed1, char* speed2)$/;"	f
 lm_step	include/car_lib.h	/^char lm_step(char* step1, char* step2)$/;"	f
+load_car_state_	include/state_manage.h	/^struct car_state** load_car_state_() \/\/ 배열 동적 할당. $/;"	f
 m	include/videodev2.h	/^	} m;$/;"	m	struct:v4l2_buffer	typeref:union:v4l2_buffer::__anon8
 mDistance	include/miso_car_lib.h	/^int mDistance(){$/;"	f
+main	client.c	/^int main(int argc, char *argv[]) {$/;"	f
 main	main.c	/^int main(void)$/;"	f
 make_image_data	include/miso_camera.h	/^struct image_data* make_image_data(struct image_data* img_data){$/;"	f
 map	driver/overlay2.c	/^	unsigned char*	map;$/;"	m	struct:overlay2_object	file:
@@ -1082,6 +1109,7 @@ name	include/videodev2.h	/^	__u8	     name[32];		\/*  Label *\/$/;"	m	struct:v4l
 name	include/videodev2.h	/^	__u8	     name[32];		\/*  Label *\/$/;"	m	struct:v4l2_output
 name	include/videodev2.h	/^	__u8	name[32];$/;"	m	struct:v4l2_audio
 name	include/videodev2.h	/^	__u8	name[32];$/;"	m	struct:v4l2_audioout
+next	include/state_manage.h	/^	struct state_node *before, *next;$/;"	m	struct:state_node	typeref:struct:state_node::
 next	include/videodev2.h	/^	struct v4l2_clip	__user *next;$/;"	m	struct:v4l2_clip	typeref:struct:v4l2_clip::__user
 numerator	include/videodev2.h	/^	__u32   numerator;$/;"	m	struct:v4l2_fract
 offset	include/videodev2.h	/^		__u32           offset;$/;"	m	union:v4l2_buffer::__anon8
@@ -1151,6 +1179,7 @@ readbuffers	include/videodev2.h	/^	__u32              readbuffers;   \/*  # of b
 rear_sensor_stop	include/car_lib.h	/^void rear_sensor_stop(void)$/;"	f
 recvFileSize	include/socket_lib.h	/^int recvFileSize;$/;"	v
 recvMsgSize	include/socket_lib.h	/^int recvMsgSize;$/;"	v
+red_pixel_check	include/miso_ai.h	/^int red_pixel_check(const int BOT_Y, const int TOP_Y){$/;"	f
 red_pixel_check	include/miso_camera.h	/^int red_pixel_check(const int BOT_Y, const int TOP_Y){$/;"	f
 reduction	include/car_lib.h	/^char reduction(char* reduc)$/;"	f
 ref_count	driver/camera.c	/^	int	ref_count;$/;"	m	struct:pxa_camera	file:
@@ -1191,6 +1220,7 @@ reserved_3	include/videodev2.h	/^	__u8                            reserved_3[3];
 reserved_4	include/videodev2.h	/^	__u32                           reserved_4:30; \/* align *\/$/;"	m	struct:v4l2_mpeg_compression
 reserved_5	include/videodev2.h	/^	__u32				reserved_5[8];$/;"	m	struct:v4l2_mpeg_compression
 rggb10	include/pxa_lib.h	/^		}rggb10;$/;"	m	union:pxa_video_buf::__anon3	typeref:struct:pxa_video_buf::__anon3::__anon4
+right_angle	include/angle_table.h	/^int right_angle[21][30] = {$/;"	v
 right_line_check	include/miso_camera.h	/^int right_line_check(int i)$/;"	f
 right_line_trace	include/miso_camera.h	/^int right_line_trace(int i, int offset, int is_broken_trace)$/;"	f
 right_set_image_data	include/miso_camera.h	/^struct image_data* right_set_image_data(struct image_data* img_data, char is_straight)$/;"	f
@@ -1200,6 +1230,7 @@ rxsubchans	include/videodev2.h	/^	__u32			rxsubchans;$/;"	m	struct:v4l2_tuner
 sample_format	include/videodev2.h	/^	__u32	sample_format;		\/* V4L2_PIX_FMT_* *\/$/;"	m	struct:v4l2_vbi_format
 samples_per_line	include/videodev2.h	/^	__u32	samples_per_line;$/;"	m	struct:v4l2_vbi_format
 sampling_rate	include/videodev2.h	/^	__u32	sampling_rate;		\/* in 1 Hz *\/$/;"	m	struct:v4l2_vbi_format
+save_car_state	include/state_manage.h	/^void save_car_state()$/;"	f
 seconds	include/videodev2.h	/^	__u8	seconds;$/;"	m	struct:v4l2_timecode
 sensor	driver/camera.c	/^	int	sensor;$/;"	m	struct:pxa_camera	file:
 sensor	driver/camera_ori.c	/^	int	sensor;$/;"	m	struct:pxa_camera	file:
@@ -1215,6 +1246,7 @@ service_set	include/videodev2.h	/^	__u16   service_set;$/;"	m	struct:v4l2_sliced
 set_end_point	include/miso_camera.h	/^int set_end_point(int rl_info, struct p_point* pt_tmp, int flag, int* direct)$/;"	f
 signal	include/videodev2.h	/^	__s32			signal;$/;"	m	struct:v4l2_tuner
 size	include/pxa_camera_zl.h	/^	unsigned int size;$/;"	m	struct:hst_context_s
+size	include/state_manage.h	/^	int size;$/;"	m	struct:state_list
 sizeimage	include/videodev2.h	/^	__u32          		sizeimage;$/;"	m	struct:v4l2_pix_format
 sliced	include/videodev2.h	/^		struct v4l2_sliced_vbi_format	sliced;  \/\/ V4L2_BUF_TYPE_SLICED_VBI_CAPTURE$/;"	m	union:v4l2_format::__anon12	typeref:struct:v4l2_format::__anon12::v4l2_sliced_vbi_format
 smem_len	driver/overlay2.c	/^	int	smem_len;$/;"	m	struct:overlay2_object	file:
@@ -1225,6 +1257,10 @@ speed_up	include/miso_car_lib.h	/^void speed_up(int v)$/;"	f
 st_bitrate	include/videodev2.h	/^	struct v4l2_bitrate		st_bitrate;$/;"	m	struct:v4l2_mpeg_compression	typeref:struct:v4l2_mpeg_compression::v4l2_bitrate
 st_type	include/videodev2.h	/^	enum v4l2_mpeg_streamtype	st_type;$/;"	m	struct:v4l2_mpeg_compression	typeref:enum:v4l2_mpeg_compression::v4l2_mpeg_streamtype
 start	include/videodev2.h	/^	__s32	start[2];$/;"	m	struct:v4l2_vbi_format
+state	include/state_manage.h	/^	struct car_state state;$/;"	m	struct:state_node	typeref:struct:state_node::car_state
+state_array	include/state_manage.h	/^}* state_array;$/;"	v	typeref:struct:car_state
+state_list	include/state_manage.h	/^struct state_list$/;"	s
+state_node	include/state_manage.h	/^struct state_node$/;"	s
 status	driver/camera.c	/^	int	status;$/;"	m	struct:pxa_camera	file:
 status	driver/camera_ori.c	/^	int	status;$/;"	m	struct:pxa_camera	file:
 status	include/cam_values.h	/^	int status;$/;"	m	struct:pxa_camera
@@ -1240,6 +1276,7 @@ stepwise	include/videodev2.h	/^		struct v4l2_frmsize_stepwise	stepwise;$/;"	m	un
 stop	include/car_lib.h	/^void stop(void)$/;"	f
 sudden_stop	include/car_lib.h	/^char sudden_stop(char* sud)$/;"	f
 sum	include/pxa_camera_zl.h	/^	unsigned int sum;$/;"	m	struct:hst_context_s
+tail	include/state_manage.h	/^	struct state_node* tail;$/;"	m	struct:state_list	typeref:struct:state_list::state_node
 target	include/videodev2.h	/^	__u32			target;  \/* use this one for CBR *\/$/;"	m	struct:v4l2_bitrate
 thread	include/miso_values.h	/^pthread_t thread[3];	$/;"	v
 timecode	include/videodev2.h	/^	struct v4l2_timecode	timecode;$/;"	m	struct:v4l2_buffer	typeref:struct:v4l2_buffer::v4l2_timecode
@@ -1259,6 +1296,7 @@ tuner	include/videodev2.h	/^	__u32        tuner;             \/*  Associated tun
 turn_set	include/miso_car_lib.h	/^void turn_set(int v)$/;"	f
 turn_straight	include/miso_car_lib.h	/^void turn_straight()$/;"	f
 txsubchans	include/videodev2.h	/^	__u32			txsubchans;$/;"	m	struct:v4l2_modulator
+type	include/state_manage.h	/^	char type;$/;"	m	struct:car_state
 type	include/videodev2.h	/^	__u32			type;		\/* Frame interval type the device supports. *\/$/;"	m	struct:v4l2_frmivalenum
 type	include/videodev2.h	/^	__u32			type;		\/* Frame size type the device supports. *\/$/;"	m	struct:v4l2_frmsizeenum
 type	include/videodev2.h	/^	__u32	     type;		\/*  Type of input *\/$/;"	m	struct:v4l2_input
@@ -1365,6 +1403,7 @@ v4l2buf	driver/camera_ori.c	/^	struct v4l2_buffer	v4l2buf;$/;"	m	struct:ext_vide
 val	include/videodev2.h	/^	__u64 val;$/;"	m	struct:v4l2_register
 val1	include/pxa_camera_zl.h	/^    int  val1;$/;"	m	struct:reg_set_s
 val2	include/pxa_camera_zl.h	/^    int  val2;$/;"	m	struct:reg_set_s
+value	include/state_manage.h	/^	int value;$/;"	m	struct:car_state
 value	include/videodev2.h	/^		__s32 value;$/;"	m	union:v4l2_ext_control::__anon9
 value	include/videodev2.h	/^	__s32		     value;$/;"	m	struct:v4l2_control
 value64	include/videodev2.h	/^		__s64 value64;$/;"	m	union:v4l2_ext_control::__anon9

@@ -35,6 +35,7 @@ int set_end_point(int rl_info, struct p_point* pt_tmp, int flag, int* direct);
 
 int check_mid_line();
 int check_speed_bump(int w,int y);
+int check_speed_bump_st(int w, int y);
 int check_change_line(int rl_info, int x, int y);
 int find_broken_line(int rl_info, int x, int y);
 
@@ -55,8 +56,6 @@ struct image_data* cm_img_process()
 	//print_screen_y();//print_screen_org();//print_screen_cb();//print_screen_cr();
 	print_screen_color();//print_traffic_light();//exit(0);
 #endif
-	printf("> drive flag : %d\n",g_drive_flag);
-
 	switch(g_drive_flag)
 	{
 		case DF_DRIVE:
@@ -100,6 +99,7 @@ int check_mid_line()
 			printf("mid height %d \n", i);
 
 			// speed bump check 
+			//if( !had_speed_bump && 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
 			if( 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
 				return speed_bump_ret;
 
@@ -114,8 +114,7 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
-				printf("ekekekekekekekek ycnt %d\n",y_cnt);
-				if(w_cnt > y_cnt && w_cnt > 7)
+				if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
 					return MID_WHITE_SPEED_DOWN;	//24
 				
 			}
@@ -133,7 +132,6 @@ int check_mid_line()
 			}
 			else
 			{
-				printf("here ???\n");
 				break;	// 1
 			}
 		}
@@ -166,15 +164,11 @@ struct image_data* make_image_data(struct image_data* img_data){
 				find_right = FL_FIND;
 				// img_data setting with left line check result.
 				right_set_image_data(img_data,TRUE);
-				printf(" right set image result img_data, %d\n",img_data->flag);
 				if(img_data->flag == IF_CL_RIGHT){
-					printf("asdfasdfasdf^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 					break;
 				}
 			}
 		}
-		printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
-				,find_left,find_right,img_data->flag);
 		if(find_left == FL_NONE && find_right == FL_NONE)	// not find
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
@@ -182,8 +176,6 @@ struct image_data* make_image_data(struct image_data* img_data){
 					//img_data->flag = IF_STRAIGHT;
 					img_data->flag = IF_BOTH;
 
-		printf(" ================= end == findL %d/ findR %d/ imgflag %d/ ======== \n"
-				,find_left,find_right,img_data->flag);
 		return img_data;
 
 	}else if( img_data->mid_flag == MID_CURVE || img_data->mid_flag == MID_CURVE_STRAIGHT)
@@ -227,7 +219,7 @@ struct image_data* left_set_image_data(struct image_data* img_data, char is_stra
 struct image_data* right_set_image_data(struct image_data* img_data, char is_straight)
 {				
 	int i;
-	printf("is straight %d / !had_change_line %d / && is_broken_line %d \n",is_straight, !had_change_line, is_broken_line); 
+	printf("is straight %d / !had_change_line %d / is_broken_line %d \n ",is_straight, !had_change_line, is_broken_line); 
 	if( is_straight && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
@@ -365,7 +357,7 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 			}
 		}
 	}
-	if( red_cnt > 500)
+	if( red_cnt > 300)
 	{
 		if(red_bot <= 120){
 #ifdef DRIVE_DEBUG
@@ -536,26 +528,21 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 			}
 
 			if(x == 0){
-				printf("x is zero x : %d, y : %d \n", pt_tmp.x,pt_tmp.y);
-				
 				if(pt_tmp.x == -1 && pt_tmp.y == -1){
-					printf(" pt_tmp not find. \n");
 					return TRUE;
 				}
 				if( had_change_line && cnt_change_line >2)
 				{
-					printf("###############################already found\n");
 					return TRUE;
 				}else if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
+					
 					cnt_change_line+=1;
-				
+					printf(" >>>>>>>>>>>>>>>>>>>>>>>>>> cnt change line : %d\n",cnt_change_line);
 					if( cnt_change_line >2 )
 					{
 						is_broken_line = TRUE;
-						printf(" ######### line trace ret TRUE\n");
 					}
 
-					printf(" above is black~~ cnt change line %d \n",cnt_change_line);
 					return TRUE;	// ---- trace end. return broken size.
 				}else if(pt[BOT+1].x == -1){
 					init_point();
@@ -592,21 +579,18 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				}
 			}
 			if(x == MAXWIDTH-1){// 왼쪽에서 (0,1)을 못 찾은 경우
-				printf("x is MAXWIDTH-1 x : %d, y : %d \n", pt_tmp.x,pt_tmp.y);
-				
 				if(pt_tmp.x == -1 && pt_tmp.y == -1){
-					printf(" pt_tmp not find. \n");
 					return FALSE;
 				}
 
 				if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
 				
 					cnt_change_line+=1;
-					printf(" above is line~~ cnt change line %d \n", cnt_change_line);
+
+					printf("cnt change line : %d\n",cnt_change_line);
 					if(cnt_change_line >2)
 					{
 						is_broken_line = TRUE;
-						printf("##### line trace ret TRUE \n");
 					}
 					return TRUE;
 				}else if(pt[BOT+1].x == -1){
@@ -656,8 +640,11 @@ int check_speed_bump(int w, int y)
 
 		else if(g_index>0 && d_data[g_index-1].mid_flag == MID_SPEED_BUMP_CUR)
 		{
-			if(speed_bump_count == 6)
+			if(check_speed_bump_st(w,y))
+			{
+				had_speed_bump = TRUE;
 				return MID_SPEED_BUMP_ST;
+			}
 			else
 				return MID_SPEED_BUMP_CUR;
 		}
@@ -670,6 +657,31 @@ int check_speed_bump(int w, int y)
 	return -1;
 }
 
+int check_speed_bump_st(int w, int y)
+{
+	int i, j, max_height = 0, min_height = CUTLINE;
+	for(i = 0; i<MAXWIDTH ; i += 5)
+	{
+		for(j = 0; j< CUTLINE-1; j++)
+		{
+			if(!IS_BLACK(i,j) && IS_BLACK(i,j+1))
+			{
+				if(j > max_height)
+					max_height = j;
+				if(j < min_height)
+					min_height = j;
+
+				break;
+			}
+		}
+	}
+	printf("max : %d, min %d\n",max_height, min_height );
+	if(max_height - min_height <= 10)
+		return TRUE;
+	else
+		return FALSE;
+
+}
 
 int find_in_point(int rl_info, int y, int offset)
 {
@@ -796,7 +808,6 @@ int check_change_line(int rl_info, int x, int y)
 			for(i=x; ( i>x-50 && i>=0 ); i--){
 				if( !IS_BLACK(i,j) && IS_BLACK(i-1,j)){ //-> 10
 					int tmp = find_broken_line(LEFT, i, j);
-					printf(" > check_change_line ret %d\n",tmp);
 					return 	tmp;			
 				}
 
@@ -804,17 +815,13 @@ int check_change_line(int rl_info, int x, int y)
 		}else{
 			for(i=x; ( i<x+50 && i<MAXWIDTH ); i++){
 				if( !IS_BLACK(i,j) && IS_BLACK(i+1,j)){		// 01 <-
-					printf(">> check change line i%d,j%d\n",i,j);
 					int tmp = find_broken_line(RIGHT, i, j);
-					printf(" > check_change_line ret %d\n",tmp);
 					return 	tmp;			
 
 				}
 			}
 		}
 	}
-
-	printf(" > check_change_line ret FALSE\n");
 	return FALSE;
 }
 
@@ -828,15 +835,11 @@ int find_broken_line(int rl_info, int x, int y)
 
 	if(rl_info == LEFT){
 		int tmp = left_line_trace(y, x, TRUE);
-		printf(" >> find_broken_line ret %d\n",tmp);
 		return tmp;
 	}else{
 		int tmp = right_line_trace(y, x, TRUE);
-		printf(" >> find_broken_line ret %d\n",tmp);
 		return 	tmp;
 	}
-
-	printf(" >> find_broken_line ret FALSE\n");
 	return FALSE;
 }
 

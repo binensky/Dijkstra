@@ -96,6 +96,8 @@ void* parking_check(void* p_data)
 					printf("/////// PARK_NONE -> PARK_FIND\n");
 					front_dist[0] = get_dist_sensor(3);
 					park_mode = PARK_FIND;
+					speed_set(1000);
+					usleep(1000);
 				}
 				// 모드를 바꿔줘서 다음 플래그로 이동한다. 
 				break;
@@ -167,7 +169,6 @@ void* parking_check(void* p_data)
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
-					
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
@@ -276,7 +277,8 @@ void parking(int flag)
 		turn_set(DM_ANGLE_MIN);
 		usleep(10000);
 		backward_dis();
-		while(mDistance() - n > -1600){printf("dis : %d\n", mDistance() - n);}
+		//while(mDistance() - n > -1600){printf("dis : %d\n", mDistance() - n);}
+		while(mDistance() - n > -1500){printf("dis : %d\n", mDistance() - n);}
 		turn_straight();
 		usleep(10000);
 		while(get_dist_sensor(4) < 170){}
@@ -289,9 +291,8 @@ void parking(int flag)
 		while(get_dist_sensor(4) > 100){}
 		turn_set(DM_ANGLE_MIN);
 		n = mDistance();
-		while(mDistance() - n < 2000){}
+		while(mDistance() - n < 1900){}
 		turn_straight();
-		speed_set(1000);
 	}
 	else
 	{
@@ -321,9 +322,10 @@ void parking(int flag)
 		turn_set(DM_ANGLE_MIN);
 		while(mDistance() - n < 2300){}
 		turn_straight();
-		speed_set(1000);
 		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
 	}
+	speed_set(1500);
+	usleep(10000);
 	distance_reset();
 	usleep(10000);
 	g_drive_flag = DF_DRIVE;

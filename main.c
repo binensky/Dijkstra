@@ -1,10 +1,9 @@
-
 //#define DEBUG
 //#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-// #define SAVE_FILE
+#define SAVE_FILE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -154,6 +153,8 @@ inline void drive(struct image_data* idata){
 		case IF_RED_STOP:
 			stop();
 			d_data[g_index].mid_flag = MID_STRAIGHT;
+			speed_set(1500);
+			usleep(1000);
 			break;
 
 		case IF_LEFT:
@@ -221,12 +222,31 @@ inline void drive(struct image_data* idata){
 			break;
 
 		case IF_SPEED_BUMP_CUR:
-			d_data[g_index].angle = d_data[g_index-1].angle;
+			if(d_data[g_index-1].flag == IF_SPEED_BUMP_CUR)
+				turn_set(d_data[g_index-1].angle - 50);
+				//turn_set((d_data[g_index-1].angle + DM_STRAIGHT)/2);
+			d_data[g_index].angle = d_data[g_index-1].angle -50;
+			//d_data[g_index].angle = (d_data[g_index-1].angle + DM_STRAIGHT) / 2;
 			break;
 
 		case IF_BOTH:
 			printf("left  %d, right %d\n",idata->bot[LEFT].y, idata->bot[RIGHT].y);
-			if(idata->bot[RIGHT].y < 70)
+
+			if(d_data[g_index-1].flag == IF_SPEED_BUMP_ST)
+			{
+				d_data[g_index].flag = IF_SPEED_BUMP_ST;
+				turn_straight();
+				d_data[g_index].angle = DM_STRAIGHT;
+			}
+			else if(idata->bot[RIGHT].y < 80 && idata->bot[LEFT].y < 80)
+			{
+				speed_set(1000);
+				usleep(1000);
+				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
+				turn_set(angle);
+				d_data[g_index].angle = angle;
+			}
+			else if(idata->bot[RIGHT].y < 70)
 			{
 				int angle = DM_STRAIGHT + (480 - 6*idata->bot[RIGHT].y);
 				turn_set(angle);
@@ -241,7 +261,7 @@ inline void drive(struct image_data* idata){
 			else{
 				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
 				turn_set(angle);
-				d_data[g_index].angle = DM_STRAIGHT;
+				d_data[g_index].angle = angle;
 			}
 
 			break;
@@ -276,7 +296,6 @@ inline void drive(struct image_data* idata){
 		case IF_SG_STOP:
 		case IF_SG_LEFT:
 		case IF_SG_RIGHT:
-			printf("traffic^^^^^^^^^^^^^^^^^^^^^^^^%d\n",d_data[g_index].flag);
 			traffic_drive(d_data[g_index].flag);
 			break;
 		case IF_PARK_V:
@@ -333,7 +352,13 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	if(temp_flag == MID_STRAIGHT)
 	{
 		d_data[g_index].mid_flag = MID_STRAIGHT;
-
+		if(d_data[g_index-1].flag == IF_SPEED_BUMP_ST)
+		{
+			d_data[g_index].flag = IF_SPEED_BUMP_ST;
+			turn_straight();
+			d_data[g_index].angle = DM_STRAIGHT;
+			return;
+		}
 		if(idata->flag == IF_RIGHT)
 		{
 			printf("bot right %d\n", idata->bot[RIGHT].y);
@@ -406,13 +431,15 @@ void init_drive()
 #ifdef DRIVE
 	sleep(3);
 #endif
+	winker_light(OFF);
+	usleep(10000);	
 	turn_straight();
 	usleep(10000);	
 	camera_turn_right();
 	usleep(500000);
 	camera_straight();
 	usleep(10000);
-	speed_set(1000);
+	speed_set(1500);
 	usleep(10000);
 	dm_speed_set(5);
 	usleep(10000);

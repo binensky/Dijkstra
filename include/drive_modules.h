@@ -1,5 +1,9 @@
 #include "miso_car_lib.h"
 
+#ifndef _DRIVE_MODULES_H_
+#define _DRIVE_MODULES_H_
+
+
 void  change_course(){
 
 	int n = mDistance();
@@ -11,7 +15,7 @@ void  change_course(){
 	speed_set(2000);
 	usleep(10000);
 	forward_dis();
-	//while(mDistance() - n < 20){printf("1\n");}
+	
 	usleep(10000);
 	turn_set(DM_STRAIGHT);
 	usleep(10000);
@@ -148,3 +152,6 @@ void drive_test()
 		}
 	}
 }
+
+#endif
+

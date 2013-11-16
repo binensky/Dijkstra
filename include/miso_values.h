@@ -94,6 +94,7 @@ struct drive_data{
 	int mid_flag;	// mid line image process flag 
 	int angle;	// image process angle. 
 	int dist;	// distance of drive moter. 
+	int speed;	// speed of drive moter
 };
 
 // car status flags

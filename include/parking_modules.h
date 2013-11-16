@@ -249,12 +249,6 @@ void park_init()
 	}
 }
 
-void park_exit()
-{
-	fclose(distFD);	
-}
-
-
 void parking(int flag)
 {
 	int n;

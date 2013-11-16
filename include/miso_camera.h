@@ -42,6 +42,7 @@ int find_broken_line(int rl_info, int x, int y);
 struct image_data* make_image_data(struct image_data* img_data);
 struct image_data* left_set_image_data(struct image_data* img_data, char is_straight);
 struct image_data* right_set_image_data(struct image_data* img_data, char is_straight);
+struct image_data* speed_down_image_data(struct image_data* img_data);
 
 int angles[PT_SIZE-1];
 int pt_cnt;			// left pt, right pt,
@@ -65,7 +66,7 @@ struct image_data* cm_img_process()
 		case DF_SPEED_DOWN:
 			img_data->flag = IF_WHITE_SPEED_DOWN;
 			img_data->flag = MID_WHITE_SPEED_DOWN;
-			return img_data;
+			return speed_down_image_data(img_data);
 		case DF_STOP:
 			img_data->flag = check_traffic_light();
 			printf(">> traffic falg : %d\n", img_data->flag);
@@ -99,8 +100,7 @@ int check_mid_line()
 			printf("mid height %d \n", i);
 
 			// speed bump check 
-			//if( !had_speed_bump && 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
-			if( 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
+			if( !had_speed_bump && 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
 				return speed_bump_ret;
 
 			// det mid flag
@@ -115,6 +115,7 @@ int check_mid_line()
 					else 				continue;
 				}
 				if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
+				//if(w_cnt > y_cnt && w_cnt > 7)
 					return MID_WHITE_SPEED_DOWN;	//24
 				
 			}
@@ -143,6 +144,55 @@ int check_mid_line()
 	return MID_STRAIGHT;	// 1
 }
 
+struct image_data* speed_down_image_data(struct image_data* img_data)
+{
+	int i, j, left = FALSE, right = FALSE;
+	int b_flag = FALSE;
+	
+	for(j=0; j<CUTLINE-2; j++)
+	{
+		for(i = MIDWIDTH; i< MAXWIDTH-1; i++)
+		{
+			if(!IS_YELLOW(i,j) && IS_YELLOW(i+1,j) && IS_YELLOW(i+1,j+1) && IS_YELLOW(i+1,j+2))
+			{
+				printf("find left %d %d\n", i+1, j);
+				img_data->bot[LEFT].y = j;
+				left = TRUE;
+				b_flag = TRUE;
+				break;
+			}
+		}
+		if(b_flag)
+			break;
+	}
+
+	b_flag = FALSE;
+
+	for(j=0; j<CUTLINE-2; j++)
+	{
+		for(i = MIDWIDTH-1; i> 0; i--)
+		{
+			if(!IS_YELLOW(i,j) && IS_YELLOW(i-1,j) && IS_YELLOW(i-1,j+1) && IS_YELLOW(i-1,j+2) )
+			{
+				printf("find right %d %d\n", i-1, j);
+				img_data->bot[RIGHT].y = j;
+				right = TRUE;
+				b_flag = TRUE;
+				break;
+			}
+		}
+		if(b_flag)
+			break;
+	}
+
+	if(!left)
+		img_data->bot[LEFT].y = -1;
+	if(!right)
+		img_data->bot[RIGHT].y = -1;
+
+	return img_data;
+}
+
 struct image_data* make_image_data(struct image_data* img_data){
 
 	int i  = 0;
@@ -160,8 +210,10 @@ struct image_data* make_image_data(struct image_data* img_data){
 
 
 			if((find_right == FL_NONE) && right_line_check(i)){
-
-				find_right = FL_FIND;
+				if( cnt_change_line >=2)
+					find_right = FL_PASS;
+				else
+					find_right = FL_FIND;
 				// img_data setting with left line check result.
 				right_set_image_data(img_data,TRUE);
 				if(img_data->flag == IF_CL_RIGHT){
@@ -172,8 +224,7 @@ struct image_data* make_image_data(struct image_data* img_data){
 		if(find_left == FL_NONE && find_right == FL_NONE)	// not find
 			img_data->flag = IF_STRAIGHT;
 		else if( img_data->flag != IF_CL_LEFT && img_data->flag != IF_CL_RIGHT 
-				&& find_left != FL_NONE && find_right != FL_NONE) // find both and not change line. (= else)
-					//img_data->flag = IF_STRAIGHT;
+				&& find_left == FL_FIND && find_right == FL_FIND) // find both and not change line. (= else)
 					img_data->flag = IF_BOTH;
 
 		return img_data;
@@ -538,8 +589,7 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 					
 					cnt_change_line+=1;
 					printf(" >>>>>>>>>>>>>>>>>>>>>>>>>> cnt change line : %d\n",cnt_change_line);
-					if( cnt_change_line >2 )
-					{
+					if( cnt_change_line >2){
 						is_broken_line = TRUE;
 					}
 
@@ -587,7 +637,7 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				
 					cnt_change_line+=1;
 
-					printf("cnt change line : %d\n",cnt_change_line);
+					printf(">>>>>>>>>>>>>>>>>>>>>>>>>>.cnt change line : %d\n",cnt_change_line);
 					if(cnt_change_line >2)
 					{
 						is_broken_line = TRUE;
@@ -864,7 +914,9 @@ int check_traffic_light()
 	}
 
 	if(red_count >= 100)
+	{
 		return IF_SG_STOP;
+	}
 	else if(yellow_count >= 100){	
 		printf("COLOR : YELLOW!\n");
 		return IF_SG_STOP;
@@ -877,8 +929,10 @@ int check_traffic_light()
 		printf("LEFT TURN!\n");
 		return IF_SG_LEFT;
 	}
-	else
+	else{
+		printf(" ~~~~~~~~~~~~~~~~~~~~~~e l s e \n");
 		return IF_SG_STOP;
+	}
 }
 
 int get_road_angle()

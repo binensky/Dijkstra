@@ -19,7 +19,7 @@
 
 #define AVR_CNT 5
 
-#define CLOSE_DIST 80
+#define CLOSE_DIST 70
 #define FAR_DIST 60
 
 #define VERTICAL_DIST 1700
@@ -140,35 +140,13 @@ void* parking_check(void* p_data)
 					park_mode = PARK_ON;
 				}
 				break;
-
-			// 4단계로 축소 (앞쪽 센서 사용 x)
-			/*
-			case PARK_WAITING:
-				if( get_dist_sensor(2) >= CLOSE_DIST && get_dist_sensor(3) <=FAR_DIST)
-				{
-					park_mode = PARK_READY;
-				}
-
-				break;
-
-			case PARK_READY:
-				if( get_dist_sensor(3) >= CLOSE_DIST_SEN3)
-				{
-					stop();
-					g_drive_flag = vh_info;
-					park_mode = PARK_ON;
-					printf("ready for parking here??\n");
-					// run module in the main with flag
-				}
-				break;
-			*/
-
 			case PARK_ON:
 				if(g_drive_flag == DF_DRIVE)
 				{
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
+				
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else

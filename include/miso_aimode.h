@@ -78,6 +78,7 @@ void ai_event_proc(int flag)
 				usleep(10000);
 				turn_straight();
 				pthread_create(&thread[1],NULL,sensor_handler,NULL);
+			
 				while(g_drive_flag != DF_STOP)
 				{	
 					distance_set(200);
@@ -90,6 +91,9 @@ void ai_event_proc(int flag)
 				stop();
 				flag = red_pixel_check(90,180);
 				printf("red pix check flag %d\n",flag);
+				if( flag == MID_NONE)
+					break;
+
 			}else if( flag==IF_SG_STOP || flag==IF_SG_LEFT || flag==IF_SG_RIGHT){
 				stop();
 				flag = check_traffic_light();

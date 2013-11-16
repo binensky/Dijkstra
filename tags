@@ -94,7 +94,7 @@ DM_INTERVAL	include/miso_car_lib.h	7;"	d
 DM_STRAIGHT	include/miso_values.h	60;"	d
 DPRINTF	include/pxa_dbg.h	23;"	d
 DPRINTF	include/pxa_dbg.h	29;"	d
-DRIVE	main.c	5;"	d	file:
+DRIVE	main.c	4;"	d	file:
 EMERGENCY	include/car_lib.h	27;"	d
 END	include/cam_values.h	44;"	d
 END_THREAD	include/miso_values.h	70;"	d
@@ -206,6 +206,7 @@ RGB565_BPP	include/pxa_camera_zl.h	100;"	d
 RGB666_PACKED_BPP	include/pxa_camera_zl.h	102;"	d
 RGB666_UNPACKED_BPP	include/pxa_camera_zl.h	101;"	d
 RIGHT	include/car_lib.h	26;"	d
+SAVE_FILE	main.c	6;"	d	file:
 SIGMA	include/gaussian_filter.h	3;"	d
 STATE_BUF_SIZE	include/state_manage.h	1;"	d
 STATE_FILE	include/state_manage.h	3;"	d
@@ -1252,6 +1253,7 @@ sliced	include/videodev2.h	/^		struct v4l2_sliced_vbi_format	sliced;  \/\/ V4L2_
 smem_len	driver/overlay2.c	/^	int	smem_len;$/;"	m	struct:overlay2_object	file:
 sound_play	include/car_lib.h	/^void sound_play(char* sound)$/;"	f
 speed_down	include/miso_car_lib.h	/^void speed_down(int v)$/;"	f
+speed_down_image_data	include/miso_camera.h	/^struct image_data* speed_down_image_data(struct image_data* img_data)$/;"	f
 speed_set	include/miso_car_lib.h	/^void speed_set(int sp)$/;"	f
 speed_up	include/miso_car_lib.h	/^void speed_up(int v)$/;"	f
 st_bitrate	include/videodev2.h	/^	struct v4l2_bitrate		st_bitrate;$/;"	m	struct:v4l2_mpeg_compression	typeref:struct:v4l2_mpeg_compression::v4l2_bitrate

@@ -19,7 +19,7 @@
 
 #define AVR_CNT 5
 
-#define CLOSE_DIST 80
+#define CLOSE_DIST 70
 #define FAR_DIST 60
 
 #define VERTICAL_DIST 1700
@@ -96,6 +96,8 @@ void* parking_check(void* p_data)
 					printf("/////// PARK_NONE -> PARK_FIND\n");
 					front_dist[0] = get_dist_sensor(3);
 					park_mode = PARK_FIND;
+
+					d_data[g_index].speed = 1000;
 					speed_set(1000);
 					usleep(1000);
 				}
@@ -140,35 +142,13 @@ void* parking_check(void* p_data)
 					park_mode = PARK_ON;
 				}
 				break;
-
-			// 4단계로 축소 (앞쪽 센서 사용 x)
-			/*
-			case PARK_WAITING:
-				if( get_dist_sensor(2) >= CLOSE_DIST && get_dist_sensor(3) <=FAR_DIST)
-				{
-					park_mode = PARK_READY;
-				}
-
-				break;
-
-			case PARK_READY:
-				if( get_dist_sensor(3) >= CLOSE_DIST_SEN3)
-				{
-					stop();
-					g_drive_flag = vh_info;
-					park_mode = PARK_ON;
-					printf("ready for parking here??\n");
-					// run module in the main with flag
-				}
-				break;
-			*/
-
 			case PARK_ON:
 				if(g_drive_flag == DF_DRIVE)
 				{
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
+				
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
@@ -260,7 +240,6 @@ void parking(int flag)
 	usleep(10000);
 	if(flag == IF_PARK_V)
 	{
-	
 		printf("in parking V\n");
 		n = mDistance();
 		usleep(10000);
@@ -318,6 +297,8 @@ void parking(int flag)
 		turn_straight();
 		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
 	}
+
+	d_data[g_index].speed = 1000;
 	speed_set(1500);
 	usleep(10000);
 	distance_reset();

@@ -8,16 +8,20 @@ void  change_course(){
 
 	int n = mDistance();
 	usleep(10000);
+	turn_set(DM_STRAIGHT);
+	usleep(10000);
+	speed_set(1000);
 	winker_light(EMERGENCY);
 	usleep(10000);
 	distance_set(1300);
+	forward_dis();
 	usleep(10000);
 	speed_set(2000);
 	usleep(10000);
+	distance_set(1300);
+	usleep(10000);
 	forward_dis();
 	
-	usleep(10000);
-	turn_set(DM_STRAIGHT);
 	usleep(10000);
 	while(mDistance() - n < 320){}
 	turn_set(DM_ANGLE_MIN);
@@ -30,8 +34,6 @@ void  change_course(){
 	turn_set(DM_STRAIGHT);
 	speed_set(1500);
 	winker_light(OFF);
-	usleep(10000);
-	distance_reset();
 	usleep(10000);
 }
 
@@ -58,6 +60,7 @@ void traffic_drive(int flag){
 			turn_straight();
 			while(mDistance() - n < 4600){}
 			stop();
+			g_drive_flag = DF_END;
 			break;
 
 		case IF_SG_RIGHT:
@@ -73,6 +76,7 @@ void traffic_drive(int flag){
 			turn_straight();
 			while(mDistance() - n < 4600){}
 			stop();
+			g_drive_flag = DF_END;
 			break;
 	}
 	distance_reset();

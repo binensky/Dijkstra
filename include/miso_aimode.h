@@ -127,7 +127,7 @@ struct drive_data*  arrange_drive_data(struct drive_data* d_data, int index)
 		}
 	}
 
-	// stage 2. merge drive data into arr_data.
+	// stage 2. modify drive data into arr_data.
 	for(i = 0, j = 0; j < index; i++, j++){
 
 		// merge case 1: straight -> straight 
@@ -138,7 +138,10 @@ struct drive_data*  arrange_drive_data(struct drive_data* d_data, int index)
 				arr_data[i-1].dist += d_data[j].dist;
 				i-=1;
 			}
-		}else{ // set other
+		}else if( d_data[j].speed == 0 && d_data[j-1] != 0){
+			arr_data[i].speed = d_data[j-1].speed;
+		}
+		else{ // set other
 			arr_data[i].flag = IF_STRAIGHT;
 			arr_data[i].mid_flag = MID_STRAIGHT;
 			arr_data[i].angle = DM_STRAIGHT;

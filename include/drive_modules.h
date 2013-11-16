@@ -58,6 +58,7 @@ void traffic_drive(int flag){
 			turn_straight();
 			while(mDistance() - n < 4600){}
 			stop();
+			g_drive_flag = DF_END;
 			break;
 
 		case IF_SG_RIGHT:
@@ -73,6 +74,7 @@ void traffic_drive(int flag){
 			turn_straight();
 			while(mDistance() - n < 4600){}
 			stop();
+			g_drive_flag = DF_END;
 			break;
 	}
 	distance_reset();

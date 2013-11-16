@@ -39,13 +39,13 @@ int main(void)
 
 	printf("thread create\n");
 	
-	while(TRUE)
+	while(g_drive_flag != DF_END)
 	{
 		if( g_drive_mode == AI_MODE)
 			drive_ai();
 		else if( g_drive_mode == CM_MODE){
 			drive_cm();
-			//fwrite_data(d_data);
+			fwrite_data(d_data);
 		}
 	}
 	return 0;

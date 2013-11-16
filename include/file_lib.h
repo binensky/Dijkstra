@@ -17,15 +17,14 @@ int fread_data(struct drive_data* dat)
 
 	i = 0;
 	
-	printf("bbbb######\n");
 	fscanf(ifp,"[index]:%d\n",&g_index);
 
 	printf("g index %d\n",g_index);
 	while(!feof(ifp))
 	{
-		fscanf(ifp,"[%d] %d %d %d %d\n",
+		fscanf(ifp,"[%d] %d %d %d %d %d %d\n",
 			&tmp,
-			&dat[i].flag, &dat[i].mid_flag, &dat[i].angle, &dat[i].dist);
+			&dat[i].flag, &dat[i].mid_flag, &dat[i].angle, &dat[i].dist, &dat[i].speed);
 		i++;
 	}
 	fclose(ifp);
@@ -53,9 +52,9 @@ int fwrite_data(struct drive_data* dat)
 	fprintf(ofp,"[index]:%d\n",g_index);
 
 	for( i = 0; i < g_index; i++){
-		fprintf(ofp,"[%4d] %2d %2d %4d %5d\n", 
+		fprintf(ofp,"[%4d] %2d %2d %4d %5d %4d\n", 
 			i,
-			dat[i].flag, dat[i].mid_flag, dat[i].angle, dat[i].dist);
+			dat[i].flag, dat[i].mid_flag, dat[i].angle, dat[i].dist, dat[i].speed);
 	}
 
 	fclose(ofp);

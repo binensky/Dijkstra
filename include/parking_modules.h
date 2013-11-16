@@ -96,6 +96,8 @@ void* parking_check(void* p_data)
 					printf("/////// PARK_NONE -> PARK_FIND\n");
 					front_dist[0] = get_dist_sensor(3);
 					park_mode = PARK_FIND;
+
+					d_data[g_index].speed = 1000;
 					speed_set(1000);
 					usleep(1000);
 				}
@@ -227,12 +229,6 @@ void park_init()
 	}
 }
 
-void park_exit()
-{
-	fclose(distFD);	
-}
-
-
 void parking(int flag)
 {
 	int n;
@@ -244,7 +240,6 @@ void parking(int flag)
 	usleep(10000);
 	if(flag == IF_PARK_V)
 	{
-	
 		printf("in parking V\n");
 		n = mDistance();
 		usleep(10000);
@@ -302,6 +297,8 @@ void parking(int flag)
 		turn_straight();
 		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
 	}
+
+	d_data[g_index].speed = 1000;
 	speed_set(1500);
 	usleep(10000);
 	distance_reset();

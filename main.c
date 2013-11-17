@@ -34,7 +34,7 @@ int main(void)
 	car_connect();
 
 	init_drive();
-	drive_test();
+//	drive_test();
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 
@@ -394,7 +394,7 @@ inline void drive(struct image_data* idata){
 
 	//#ifdef DRIVE_DEBUG
 	printf(" idata->flag %d / g_drive_flag %d \n",idata->flag, g_drive_flag);
-	if( idata->flag < IF_NO_DRIVE && g_drive_flag == DF_DRIVE){		
+	if( idata->flag < IF_NO_DRIVE && g_drive_flag == DF_DRIVE || g_drive_flag == DF_SPEED_DOWN){		
 		distance_set(500);	
 		forward_dis();
 	}

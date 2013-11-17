@@ -10,28 +10,28 @@ void  change_course(){
 	usleep(10000);
 	turn_set(DM_STRAIGHT);
 	usleep(10000);
-	speed_set(1000);
+	speed_set(2500);
 	winker_light(EMERGENCY);
 	usleep(10000);
 	distance_set(1300);
 	forward_dis();
 	usleep(10000);
-	speed_set(2000);
-	usleep(10000);
-	distance_set(1300);
-	usleep(10000);
-	forward_dis();
+	//speed_set(2000);
+//	usleep(10000);
+	//distance_set(1300);
+//	usleep(10000);
+	//forward_dis();
 	
 	usleep(10000);
 	while(mDistance() - n < 320){}
 	turn_set(DM_ANGLE_MIN);
 	while(mDistance() - n < 820){}
 	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 3620){}
+	while(mDistance() - n < 3920){}
 	turn_set(DM_ANGLE_MAX);
-	while(mDistance() - n < 4120){}
+	while(mDistance() - n < 4420){}
 	turn_set(DM_STRAIGHT);
-	speed_set(1500);
+	speed_set(2500);
 	winker_light(OFF);
 	usleep(10000);
 }
@@ -53,11 +53,11 @@ void traffic_drive(int flag){
 			speed_set(2500);	
 			usleep(10000);
 			forward_dis();
-			while(mDistance() - n < 1720){}
+			while(mDistance() - n < 1400){}
 			turn_set(DM_ANGLE_MAX);
-			while(mDistance() - n < 3800){}
+			while(mDistance() - n < 3480){}
 			turn_straight();
-			while(mDistance() - n < 4600){}
+			while(mDistance() - n < 4480){}
 			stop();
 			g_drive_flag = DF_END;
 			break;
@@ -69,11 +69,11 @@ void traffic_drive(int flag){
 			speed_set(2500);
 			usleep(10000);
 			forward_dis();
-			while(mDistance() - n < 1720){}
+			while(mDistance() - n < 1400){}
 			turn_set(DM_ANGLE_MIN);
-			while(mDistance() - n < 3800){}
+			while(mDistance() - n < 3480){}
 			turn_straight();
-			while(mDistance() - n < 4600){}
+			while(mDistance() - n < 4480){}
 			stop();
 			g_drive_flag = DF_END;
 			break;
@@ -89,7 +89,7 @@ void drive_test()
 		char input;
 		int n;
 
-		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. mack, 6. traffic left, 7. traffic right \n");
+		printf("0.get image, 1. turn left, 2. turn right, 3. set straight, 4. go, 5. mack, 6. traffic left, 7. traffic right, 8. change course\n");
 		scanf("%c",&input);
 
 		switch(input)

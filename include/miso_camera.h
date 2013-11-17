@@ -116,8 +116,8 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
-				if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
-				//if(w_cnt > y_cnt && w_cnt > 7)
+				//if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
+				if(w_cnt > y_cnt && w_cnt > 8)
 					return MID_WHITE_SPEED_DOWN;	//24
 				
 			}

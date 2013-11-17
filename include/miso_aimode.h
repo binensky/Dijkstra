@@ -63,6 +63,7 @@ void ai_event_proc(int flag)
 		change_course();
 	}else if(flag == IF_PARK_V || flag == IF_PARK_H){
 		stop();
+		//g_park_dis = d_data[it_index].dist;
 		park_mode = PARK_ON;
 		parking(flag);
 	}else	// not module , but need to image processing.. 
@@ -138,7 +139,7 @@ struct drive_data*  arrange_drive_data(struct drive_data* d_data, int index)
 				arr_data[i-1].dist += d_data[j].dist;
 				i-=1;
 			}
-		}else if( d_data[j].speed == 0 && d_data[j-1] != 0){
+		}else if( d_data[j].speed == 0 && d_data[j-1].speed != 0){
 			arr_data[i].speed = d_data[j-1].speed;
 		}
 		else{ // set other

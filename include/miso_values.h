@@ -13,8 +13,8 @@
 #define LSPEED_MIN 500
 #define DISTANCE_MAX 65535
 #define DISTANCE_MIN 0	
-#define DM_ANGLE_MAX 2200
-#define DM_ANGLE_MIN 800 
+#define DM_ANGLE_MAX 2150
+#define DM_ANGLE_MIN 850 
 #define CM_SPEED_MAX 2200
 #define CM_SPEED_MIN 800
 

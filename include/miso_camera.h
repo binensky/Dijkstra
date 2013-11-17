@@ -54,8 +54,10 @@ struct image_data* cm_img_process()
 
 	init_values(cm_handle,img_data);
 #ifdef DEBUG
-	//print_screen_y();//print_screen_org();//print_screen_cb();//print_screen_cr();
-	print_screen_color();//print_traffic_light();//exit(0);
+//	print_screen_y(); //print_screen_org(); 
+	print_screen_cb();
+//	print_screen_cr();
+//	print_screen_color();//print_traffic_light();//exit(0);
 #endif
 	switch(g_drive_flag)
 	{

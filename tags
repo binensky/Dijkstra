@@ -206,7 +206,6 @@ RGB565_BPP	include/pxa_camera_zl.h	100;"	d
 RGB666_PACKED_BPP	include/pxa_camera_zl.h	102;"	d
 RGB666_UNPACKED_BPP	include/pxa_camera_zl.h	101;"	d
 RIGHT	include/car_lib.h	26;"	d
-SAVE_FILE	main.c	6;"	d	file:
 SIGMA	include/gaussian_filter.h	3;"	d
 STATE_BUF_SIZE	include/state_manage.h	1;"	d
 STATE_FILE	include/state_manage.h	3;"	d
@@ -764,6 +763,7 @@ Y	include/cam_values.h	90;"	d
 YUV422_BPP	include/pxa_camera_zl.h	99;"	d
 _AI_PROCESS_H__	include/miso_ai.h	2;"	d
 _AI_PROCESS_H__	include/miso_aimode.h	2;"	d
+_DRIVE_MODULES_H_	include/drive_modules.h	4;"	d
 _MISO_CAMERA_H__	include/miso_camera.h	2;"	d
 _PARKING_MODULES_H	include/parking_modules.h	3;"	d
 _PXA3XX_MEDIA_LIB_HEADER_	include/pxa_lib.h	16;"	d
@@ -787,7 +787,7 @@ ai_img_process	include/miso_aimode.h	/^int ai_img_process(int flag){ $/;"	f
 angle	include/miso_values.h	/^	int angle;	\/\/ image process angle. $/;"	m	struct:drive_data
 angle	include/miso_values.h	/^	int angle[3];		\/\/ angle of lines (none, left, right)$/;"	m	struct:image_data
 angles	include/miso_camera.h	/^int angles[PT_SIZE-1];$/;"	v
-arrange_stored_data	include/miso_aimode.h	/^void arrange_stored_data(struct drive_data* d_data, int index)$/;"	f
+arrange_drive_data	include/miso_aimode.h	/^struct drive_data*  arrange_drive_data(struct drive_data* d_data, int index)$/;"	f
 au_bitrate	include/videodev2.h	/^	struct v4l2_bitrate		au_bitrate;$/;"	m	struct:v4l2_mpeg_compression	typeref:struct:v4l2_mpeg_compression::v4l2_bitrate
 au_pesid	include/videodev2.h	/^	__u8                            au_pesid;$/;"	m	struct:v4l2_mpeg_compression
 au_sample_rate	include/videodev2.h	/^	__u32				au_sample_rate;$/;"	m	struct:v4l2_mpeg_compression
@@ -1124,7 +1124,6 @@ overlay2_object	driver/overlay2.c	/^struct overlay2_object{$/;"	s	file:
 overlay2_open	driver/overlay2.c	/^int overlay2_open(char* dev, enum pxavid_format format, struct pxa_rect* rect, int w, int h, int w_off, int h_off)$/;"	f
 overlay2_write	driver/overlay2.c	/^int overlay2_write(int handle, struct pxa_video_buf* srcbuf)$/;"	f
 p_point	include/miso_values.h	/^struct p_point{$/;"	s
-park_exit	include/parking_modules.h	/^void park_exit()$/;"	f
 park_init	include/parking_modules.h	/^void park_init()$/;"	f
 park_mode	include/parking_modules.h	/^static int park_mode = PARK_NONE;$/;"	v
 park_ready	include/parking_modules.h	/^void park_ready(int index)$/;"	f
@@ -1252,6 +1251,7 @@ sizeimage	include/videodev2.h	/^	__u32          		sizeimage;$/;"	m	struct:v4l2_p
 sliced	include/videodev2.h	/^		struct v4l2_sliced_vbi_format	sliced;  \/\/ V4L2_BUF_TYPE_SLICED_VBI_CAPTURE$/;"	m	union:v4l2_format::__anon12	typeref:struct:v4l2_format::__anon12::v4l2_sliced_vbi_format
 smem_len	driver/overlay2.c	/^	int	smem_len;$/;"	m	struct:overlay2_object	file:
 sound_play	include/car_lib.h	/^void sound_play(char* sound)$/;"	f
+speed	include/miso_values.h	/^	int speed;	\/\/ speed of drive moter$/;"	m	struct:drive_data
 speed_down	include/miso_car_lib.h	/^void speed_down(int v)$/;"	f
 speed_down_image_data	include/miso_camera.h	/^struct image_data* speed_down_image_data(struct image_data* img_data)$/;"	f
 speed_set	include/miso_car_lib.h	/^void speed_set(int sp)$/;"	f

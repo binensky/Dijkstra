@@ -1,4 +1,4 @@
-
+#define DEBUG
 //#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
@@ -32,13 +32,12 @@ int main(void)
 	car_connect();
 
 	init_drive();
-	//	drive_test();
+	drive_test();
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
-	pthread_create(&thread[2],NULL,parking_check,NULL);
+	//pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	printf("thread create\n");
-
 	while(g_drive_flag ==DF_READY){}
 		
 	if( g_drive_mode == AI_MODE)
@@ -62,16 +61,16 @@ void drive_ai()
 {
 	struct image_data* idata;
 	int prev_dist=0;
-
 	int it_index = 1;// for test.. 
-	distance_set(200);
+	
+	distance_reset();
+	distance_set(2000);
 	forward_dis();
-	// park_init();	
 
 	while(g_drive_flag != DF_READY && it_index <= g_index ){
 		// busy waiting for next image data.
-
-		while(d_data[it_index-1].dist > mDistance()-prev_dist){}
+		usleep(10000);	
+		while(d_data[it_index-1].dist > mDistance()-prev_dist){printf(">> %d > %d -  %d = %d ? \n",d_data[it_index-1].dist,mDistance,prev_dist,mDistance()-prev_dist);}
 		prev_dist = mDistance();
 
 		printf("---------------- g_index : %d / %2d / %2d / %4d / %4d -------------------\n",it_index,d_data[it_index].flag, d_data[it_index].mid_flag,d_data[it_index].angle, d_data[it_index].dist);
@@ -80,13 +79,19 @@ void drive_ai()
 			ai_event_proc(d_data[it_index].flag);
 
 		}else{
-			if( d_data[it_index-1].speed != d_data[it_index].speed)
-				speed_set(d_data[it_index].speed);
-			else if( d_data[it_index].speed)
+			if( d_data[it_index].speed ==0)
 				speed_set(d_data[it_index-1].speed);
+			else if( d_data[it_index-1].speed != d_data[it_index].speed)
+				speed_set(d_data[it_index].speed);
+			
 			turn_set(d_data[it_index].angle);
-			distance_set(d_data[it_index].dist+100);
+			usleep(10000);
+			printf("aaaaa\n");
+			distance_set(400);
+			printf("bbbbb\n");
+			usleep(10000);
 			forward_dis();
+			printf("cccc\n");
 		}
 
 		it_index++;
@@ -295,28 +300,27 @@ inline void drive(struct image_data* idata){
 			}
 			else if(idata->bot[RIGHT].y < 70 && idata->bot[LEFT].y < 70)
 			{
-
-				d_data[g_index].speed = 1000;
-				speed_set(1000);
+				//d_data[g_index].speed = 1000;
+				//speed_set(1500);
 				usleep(1000);
 				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
-			else if(idata->bot[RIGHT].y < 70)
+			else if(idata->bot[RIGHT].y < 60)
 			{
-				int angle = DM_STRAIGHT + (480 - 6*idata->bot[RIGHT].y);
+				int angle = DM_STRAIGHT + (240 - 4*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
-			else if(idata->bot[LEFT].y < 70)
+			else if(idata->bot[LEFT].y < 60)
 			{
-				int angle = DM_STRAIGHT - (480 - 6*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (240 - 4*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
 			else{
-				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
+				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*4;
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -419,9 +423,9 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		if(idata->flag == IF_RIGHT)
 		{
 			printf("bot right %d\n", idata->bot[RIGHT].y);
-			if(idata->bot[RIGHT].y < 70)
+			if(idata->bot[RIGHT].y < 60)
 			{
-				int angle = DM_STRAIGHT + (480 - 6*idata->bot[RIGHT].y);
+				int angle = DM_STRAIGHT + (240 - 4*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -433,9 +437,9 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		else if(idata->flag == IF_LEFT)
 		{
 			printf("bot left %d\n", idata->bot[LEFT].y);
-			if(idata->bot[LEFT].y < 70)
+			if(idata->bot[LEFT].y < 60)
 			{
-				int angle = DM_STRAIGHT - (480 - 6*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (240 - 4*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
@@ -453,7 +457,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		mid_bot.y = 0;
 		mid_bot.x = MIDWIDTH;
-		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT+100;
+		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
 
@@ -476,7 +480,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		}else if(dest_angle == 0 || dest_angle == 90 || dest_angle == 180){
 			d_data[g_index].angle = d_data[g_index-1].angle;
 		}else{
-			int angle =  (int)(2200 - dest_angle * 70 / 9) ;
+			int angle =  (int)(2100 - dest_angle * 20 / 3) ;
 			turn_set( angle );
 			d_data[g_index].angle = angle;
 		}
@@ -496,13 +500,13 @@ void init_drive()
 	usleep(500000);
 	camera_straight();
 	usleep(10000);
-	speed_set(1500);
+	speed_set(2500);
 	usleep(10000);
 	dm_speed_set(5);
 	usleep(10000);
-	accel(0x02f);
+	accel(0xff);
 	usleep(10000);
-	reduction(0x2f);
+	reduction(0xff);
 	usleep(10000);
 	distance_set(2000);
 	usleep(10000);

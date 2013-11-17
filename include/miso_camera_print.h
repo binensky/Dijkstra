@@ -66,10 +66,10 @@ void print_screen_cb()
 	   printf("%3d ", i);
 	   }
 	 */
-	for(j = 100; j>0 ; j--)
+	for(j = MAXHEIGHT - 1; j> 50 ; j--)
 	{
 		printf("%3d:",j);
-		for(i = MAXWIDTH-1; i>=0; i--)
+		for(i = 250; i>=100; i--)
 		{
 			printf("%3d ",CB(i,j));
 		}
@@ -89,10 +89,10 @@ void print_screen_cr()
 	   printf("%3d ", i);
 	   }
 	 */
-	for(j = 200; j>100 ; j--)
+	for(j = MAXHEIGHT - 1 ; j> 50 ; j--)
 	{
 		printf("%3d:",j);
-		for(i = MAXWIDTH -1; i>=0; i--)
+		for(i = 250; i>=100; i--)
 		{
 			printf("%3d ",CR(i, j));
 		}

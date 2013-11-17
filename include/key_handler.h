@@ -89,11 +89,11 @@ void* key_handler(void* data)
 					g_drive_flag = DF_DRIVE;
 					g_drive_mode = AI_MODE;
 			
-					buzzer_on();
+					//buzzer_on();
 					usleep(500000);
-					buzzer_on();
+					//buzzer_on();
 					usleep(500000);
-					buzzer_on();
+					//buzzer_on();
 					usleep(500000);
 					// start
 				}

@@ -14,11 +14,11 @@
 #define CUTLINE 140
 #define CUTLINE_CL 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 80
+#define CUTLINE_CURVE 95
 #define CUTLINE_OUTLINE 10
 #define GAP 10
 
-#define DEST_HEIGHT 140
+#define DEST_HEIGHT 120
 
 // threshold
 #define THRESHOLD 130

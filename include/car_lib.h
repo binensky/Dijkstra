@@ -68,7 +68,7 @@ int car_connect(void)
 	tcsetattr(fd,TCSANOW,&newtio);
 
 	uart_fd = fd;
-	
+
 	return fd;
 }
 
@@ -97,14 +97,14 @@ void line_start(void)
 {
 	buf[0] = 0x82;
 	write(uart_fd, &buf[0], 1);
-//	printf("Line Start\n");
+	//	printf("Line Start\n");
 }
 
 void line_stop(void)
 {
 	buf[0] = 0x83;
 	write(uart_fd, &buf[0], 1);
-//	printf("Line Stop\n");
+	//	printf("Line Stop\n");
 }
 
 void control_led(int mode, char* value)
@@ -119,7 +119,7 @@ void buzzer_on(void)
 {
 	buf[0] = 0x86;
 	write(uart_fd, &buf[0], 1);
-//	printf("Buzzer\n");
+	//	printf("Buzzer\n");
 }
 
 void buzzer_off(void)
@@ -135,7 +135,7 @@ char lm_speed(char* speed1, char* speed2)
 	buf[1] = speed1; //1-F
 	buf[2] = speed2; // 1-3C
 	write(uart_fd, &buf[0], 3);
-//	printf("Set Speed %x%x\n", speed1, speed2);
+	//	printf("Set Speed %x%x\n", speed1, speed2);
 
 	return speed1;
 }
@@ -168,8 +168,8 @@ char accel(char* acc)
 	buf[0] = 0xa8; 
 	buf[1] = acc; // < speed, 1-FA
 	write(uart_fd, &buf[0], 2);
-//	printf("Set Accel %d\n", acc);
-	
+	//	printf("Set Accel %d\n", acc);
+
 	return acc;
 }
 
@@ -219,7 +219,7 @@ int read_sensor(void)
 	printf("Sensor Value is %d\n", read_buf[0]);
 
 	if(read_buf[0] != 0)
-	    printf("Sensor value is %d\n", read_buf[0]);
+		printf("Sensor value is %d\n", read_buf[0]);
 
 	///////////////////
 	printf("buf[0] = %x, buf[1] = %x, buf[2] = %x\n",buf[0], buf[1], buf[2]);
@@ -236,7 +236,7 @@ char read_sensor_while(void)
 	read(uart_fd, &read_buf, 2);
 	printf("Sensor Value is %x\n", read_buf[0]);
 	////////////////////////
-	
+
 	///////////////////
 	printf("buf[0] = %x, buf[1] = %x, buf[2] = %x\n",buf[0], buf[1], buf[2]);
 	printf("read_buf[0] = %x, read_buf[1] = %x, read_buf[2] = %x\n", read_buf[0], read_buf[1], read_buf[2]);
@@ -279,14 +279,14 @@ void forward_dis(void)
 {
 	buf[0] = 0xc8;
 	write(uart_fd, &buf[0], 1);
-//	printf("Go Distance\n");
+	//	printf("Go Distance\n");
 }
 
 void backward_dis(void)
 {
 	buf[0] = 0xc9;
 	write(uart_fd, &buf[0], 1);
-//	printf("Back Distance\n");
+	//	printf("Back Distance\n");
 }
 
 void stop(void)
@@ -304,66 +304,18 @@ char read_speed(void)
 	printf("Speed is %x%x\n", read_buf[0], read_buf[1]);
 }
 
-int total_distance_back(void) //total distance 
+int total_distance(void)
 {
-        /*
-        time_t ltime;
-        struct tm *cur_time;
-        
-        time(&ltime);
-        
-        cur_time  = localtime(&ltime)*/
-/////////////////////////////////////////////////////////////////////////////////////////////////
-        
-	int temp; //cm 
-	int temp2; //original domain
 
-        buf[0] = 0xce;
+	buf[0] = 0xce;
+	write(uart_fd, &buf[0], 1);
+	read(uart_fd, &read_buf[0], 4);
 	write(uart_fd, &buf[0], 1);
 	read(uart_fd, &read_buf[0], 4);
 
-	read_buf[0] = 255 - read_buf[0];
-	read_buf[1] = 255 - read_buf[1];
-	read_buf[2] = 255 - read_buf[2];
-	read_buf[3] = 255 - read_buf[3];
-	
-
-	temp2 =((int)read_buf[0]*255*255*255) + ((int)read_buf[1]*255*255) + ((int)read_buf[2]*255)
-	       + (int)read_buf[3]; //original 
-
-	temp = temp2 / 36; //cm 
-
-	//printf("Current Time :%02d Hours/ %02d Minutes/ %02d secs/\n"
-	  //      ,cur_time->tm_hour,cur_time->tm_min,cur_time->tm_sec );
-	        
-	printf("Total Distance is %d%d%d%d ==> %d(original) ==>%d(cm)\n",
-	        read_buf[0], read_buf[1], read_buf[2], read_buf[3],temp2,temp);
-        usleep(100000); //0.1sec
-	return temp;
-}
-
-char total_distance(void)
-{
-
-	int temp; //cm 
-	int temp2; //original domain
-
-        buf[0] = 0xce;
-	write(uart_fd, &buf[0], 1);
-	read(uart_fd, &read_buf[0], 4);
-
-	temp2 =((int)read_buf[0]*255*255*255) + ((int)read_buf[1]*255*255) + ((int)read_buf[2]*255)
-	       + (int)read_buf[3]; //original 
-
-	temp = temp2 / 36; //cm 
-
-	//printf("Current Time :%02d Hours/ %02d Minutes/ %02d secs/\n"
-	  //      ,cur_time->tm_hour,cur_time->tm_min,cur_time->tm_sec );
-	        
-	printf("Total Distance is %d%d%d%d ==> %d(original) ==>%d(cm)\n",
-	        read_buf[0], read_buf[1], read_buf[2], read_buf[3],temp2,temp);
-        usleep(100000); //0.1sec
-	return temp;
+//	printf("> Tatal Distance is %4d %4d %4d %4d\n", read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
+//	printf(">>  %4d %4d %4d %4d\n", read_buf[0] , read_buf[1]*65536, read_buf[2]*256, read_buf[3]);
+	printf(">>>sum is %d \n",  read_buf[0]* 256*256*256 + read_buf[1]*65536 + read_buf[2]*256 + read_buf[3]);
 }
 
 void distance_reset(void)
@@ -480,7 +432,7 @@ char dm_speed(char* speed)
 	buf[1] = speed;
 	write(uart_fd, &buf[0], 2);
 	printf("Set Direction Speed %d\n", speed);
-	
+
 	return speed;
 }
 
@@ -491,7 +443,7 @@ char cm_angle(char* angle1, char* angle2)
 	buf[2] = angle2;
 	write(uart_fd, &buf[0], 3);
 	printf("Set Camera Angle %d%d\n", angle1, angle2);
-	
+
 	return angle1;
 }
 
@@ -501,7 +453,7 @@ char cm_speed(char* speed1)
 	buf[1] = speed1;
 	write(uart_fd, &buf[0], 2);
 	printf("Set Camera Speed %d\n", speed1);
-	
+
 	return speed1;
 }
 //----------------------Basic------------------------
@@ -612,7 +564,7 @@ int check_distance(int ch)
 {
 
 	int fd, i, j, k, total_s, sensor_value_default, sensor_value_mm;
-	
+
 	total_s = 0;
 	sensor_value_default = 0;
 	int sensor1;
@@ -620,24 +572,24 @@ int check_distance(int ch)
 	//sensor_value_mm = 0;	
 
 	for(j=0; j<4; j++)
-	    sensor[j] = 0;
+		sensor[j] = 0;
 
-    sensor_total = 0;
+	sensor_total = 0;
 
-    for(i=0; i<5; i++) 
-    {
-        total_s = 0;
+	for(i=0; i<5; i++) 
+	{
+		total_s = 0;
 
-	for(k=0; k<5; k++)
-		total_s = check_distance_inner(ch,total_s);
+		for(k=0; k<5; k++)
+			total_s = check_distance_inner(ch,total_s);
 
-	sensor1 = total_s / 5;
+		sensor1 = total_s / 5;
 
-	sensor_total+=sensor1;
-        
-    }
+		sensor_total+=sensor1;
+
+	}
 	printf("sensor before = %d\n",sensor_total);
-	
+
 	return sensor_total;
 }
 
@@ -654,4 +606,4 @@ char complete(void)
 #endif
 
 
-	
+

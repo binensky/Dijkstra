@@ -93,8 +93,9 @@ int mDistance(){
 	buf[0] = 0xce;
 	write(uart_fd, &buf[0], 1);
 	read(uart_fd, &read_buf[0], 4);
-	usleep(10000);
-	return read_buf[1]*65536 + read_buf[2]*256 + read_buf[3];
+	write(uart_fd, &buf[0], 1);
+	read(uart_fd, &read_buf[0], 4);
+	return  read_buf[0]* 256*256*256 + read_buf[1]*65536 + read_buf[2]*256 + read_buf[3];
 }
 #endif
 

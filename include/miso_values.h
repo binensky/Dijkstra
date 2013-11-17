@@ -76,6 +76,7 @@
 #define RESUME_INDEX 120
 
 #define DATA_SIZE 10000
+#define START_SPEED 2500
 
 struct p_point{
 	int x;		// x좌표 (0~319)

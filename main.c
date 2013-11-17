@@ -28,31 +28,44 @@ inline void drive(struct image_data* idata);
 
 int main(void)
 {
+	int i =0;
 	cm_handle = init_camera();
 	car_connect();
 
 	init_drive();
-	drive_test();
+//	drive_test();
 
-	pthread_create(&thread[0],NULL,key_handler,NULL);
+//	pthread_create(&thread[0],NULL,key_handler,NULL);
 	//pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	printf("thread create\n");
-	while(g_drive_flag ==DF_READY){}
-		
-	if( g_drive_mode == AI_MODE)
-		drive_ai();
-	else if( g_drive_mode == CM_MODE){
-		drive_cm();
-		fwrite_data(d_data);
+	distance_set(10000);
+	forward_dis();
 
-		buzzer_on();
-		usleep(10000);
-		buzzer_on();
-		usleep(10000);
-		buzzer_on();
-		usleep(10000);
+	while(g_drive_flag ==DF_READY){
+
+		printf("> %d \n",mDistance());
+		if((++i) % 10 == 0)
+		{
+			sleep(1);
+		}
+		//sleep(1);
 	}
+	/*		
+			if( g_drive_mode == AI_MODE)
+			drive_ai();
+			else if( g_drive_mode == CM_MODE){
+			drive_cm();
+			fwrite_data(d_data);
+
+			buzzer_on();
+			usleep(10000);
+			buzzer_on();
+			usleep(10000);
+			buzzer_on();
+			usleep(10000);
+			}
+	 */
 	return 0;
 }
 
@@ -62,7 +75,7 @@ void drive_ai()
 	struct image_data* idata;
 	int prev_dist=0;
 	int it_index = 1;// for test.. 
-	
+
 	distance_reset();
 	distance_set(2000);
 	forward_dis();
@@ -83,7 +96,7 @@ void drive_ai()
 				speed_set(d_data[it_index-1].speed);
 			else if( d_data[it_index-1].speed != d_data[it_index].speed)
 				speed_set(d_data[it_index].speed);
-			
+
 			turn_set(d_data[it_index].angle);
 			usleep(10000);
 			printf("aaaaa\n");
@@ -145,7 +158,9 @@ void drive_cm()
 			d_data[g_index].mid_flag = MID_STRAIGHT;
 			d_data[g_index].angle = 0;
 			d_data[g_index].dist = 0;
-		}
+			d_data[g_index].speed = START_SPEED;
+		}else if( d_data[g_index].speed == 0)
+			d_data[g_index].speed = d_data[g_index-1].speed;
 		g_index+=1;
 	}
 }
@@ -278,7 +293,7 @@ inline void drive(struct image_data* idata){
 					d_data[g_index].angle = angle;
 				}
 			}
-	
+
 			break;
 
 		case IF_SPEED_BUMP_CUR:

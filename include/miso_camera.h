@@ -133,10 +133,7 @@ int check_mid_line()
 			{
 				return MID_CURVE_STRAIGHT;	// 2
 			}
-			else
-			{
-				break;	// 1
-			}
+			break;	// 1
 		}
 		else
 		{// is black 
@@ -410,7 +407,7 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 			}
 		}
 	}
-	if( red_cnt > 300)
+	if( red_cnt > 100)
 	{
 		if(red_bot <= 120){
 #ifdef DRIVE_DEBUG
@@ -584,10 +581,10 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				if(pt_tmp.x == -1 && pt_tmp.y == -1){
 					return TRUE;
 				}
-				if( had_change_line && cnt_change_line >2)
+				if( had_change_line || cnt_change_line >2)
 				{
 					return TRUE;
-				}else if(check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
+				}else if( check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
 					
 					cnt_change_line+=1;
 					printf(" >>>>>>>>>>>>>>>>>>>>>>>>>> cnt change line : %d\n",cnt_change_line);
@@ -661,7 +658,7 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 int check_speed_bump(int w, int y)
 {
 	int current_color = ( !IS_BLACK(w,y)? COL_YELLOW : COL_WHITE );
-	int i, j;
+	int i, j, st = 0, en = 0;
 	int speed_bump_count = 0;
 
 #ifdef TRACE
@@ -676,7 +673,10 @@ int check_speed_bump(int w, int y)
 		for(i = MAXWIDTH-2; i>0; i--)
 		{
 			if(IS_BLACK_SPEED_BUMP(i,j))
+			{
+				en = i; 
 				break;
+			}
 			if(IS_YELLOW_SPEED_BUMP(i,j) && (current_color == COL_WHITE)){
 				current_color = COL_YELLOW;
 				speed_bump_count++;
@@ -685,6 +685,9 @@ int check_speed_bump(int w, int y)
 				current_color = COL_WHITE;
 				speed_bump_count++;
 			}
+			
+			if(speed_bump_count == 1)
+				st = i;
 		}
 
 		if(g_index>0 && d_data[g_index-1].mid_flag == MID_SPEED_BUMP_ST)
@@ -700,7 +703,7 @@ int check_speed_bump(int w, int y)
 			else
 				return MID_SPEED_BUMP_CUR;
 		}
-		else if( speed_bump_count >= 4)
+		else if( speed_bump_count >= 4 && st - en > 20 )
 			return MID_SPEED_BUMP_CUR;
 		else 
 			continue;

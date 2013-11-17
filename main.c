@@ -33,7 +33,7 @@ int main(void)
 	car_connect();
 
 	init_drive();
-//	drive_test();
+	drive_test();
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 //	pthread_create(&thread[2],NULL,parking_check,NULL);

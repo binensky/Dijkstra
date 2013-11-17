@@ -50,7 +50,7 @@ void traffic_drive(int flag){
 			n = mDistance();
 			distance_set(1200);
 			usleep(10000);
-			speed_set(1000);	
+			speed_set(2500);	
 			usleep(10000);
 			forward_dis();
 			while(mDistance() - n < 1720){}
@@ -66,7 +66,7 @@ void traffic_drive(int flag){
 			n = mDistance();
 			distance_set(1200);
 			usleep(10000);
-			speed_set(1000);
+			speed_set(2500);
 			usleep(10000);
 			forward_dis();
 			while(mDistance() - n < 1720){}
@@ -119,26 +119,10 @@ void drive_test()
 				backward_dis();
 				break;
 			case '6':
-				n = mDistance();
-				distance_set(1200);
-				speed_set(1000);	
-				forward_dis();
-				while(mDistance() - n < 1720){}
-				turn_set(DM_ANGLE_MAX);
-				while(mDistance() - n < 3800){}
-				turn_straight();
-				while(mDistance() - n < 4600){}
+				traffic_drive(IF_SG_LEFT);
 				break;
 			case '7':
-				n = mDistance();
-				distance_set(1200);
-				speed_set(1000);	
-				forward_dis();
-				while(mDistance() - n < 1720){}
-				turn_set(DM_ANGLE_MIN);
-				while(mDistance() - n < 3800){}
-				turn_straight();
-				while(mDistance() - n < 4600){}
+				traffic_drive(IF_SG_RIGHT);
 				break;
 			case '8':
 				change_course();

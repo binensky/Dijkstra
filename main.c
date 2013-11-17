@@ -1,4 +1,4 @@
-#define DEBUG
+//#define DEBUG
 //#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
@@ -35,37 +35,30 @@ int main(void)
 	init_drive();
 //	drive_test();
 
-//	pthread_create(&thread[0],NULL,key_handler,NULL);
-	//pthread_create(&thread[2],NULL,parking_check,NULL);
+	pthread_create(&thread[0],NULL,key_handler,NULL);
+//	pthread_create(&thread[2],NULL,parking_check,NULL);
 
 	printf("thread create\n");
-	distance_set(10000);
-	forward_dis();
 
-	while(g_drive_flag ==DF_READY){
-
-		printf("> %d \n",mDistance());
-		if((++i) % 10 == 0)
-		{
-			sleep(1);
-		}
-		//sleep(1);
-	}
-	/*		
-			if( g_drive_mode == AI_MODE)
+	while(TRUE)
+	{
+		if( g_drive_mode == AI_MODE)
 			drive_ai();
-			else if( g_drive_mode == CM_MODE){
+		else if( g_drive_mode == CM_MODE){
 			drive_cm();
 			fwrite_data(d_data);
 
 			buzzer_on();
-			usleep(10000);
-			buzzer_on();
-			usleep(10000);
-			buzzer_on();
-			usleep(10000);
+			usleep(100000);
+			while(i < 10)
+			{		
+				buzzer_on();
+				usleep(100);
 			}
-	 */
+			buzzer_on();
+			usleep(100000);
+		}
+	}
 	return 0;
 }
 
@@ -82,7 +75,6 @@ void drive_ai()
 
 	while(g_drive_flag != DF_READY && it_index <= g_index ){
 		// busy waiting for next image data.
-		usleep(10000);	
 		while(d_data[it_index-1].dist > mDistance()-prev_dist){printf(">> %d > %d -  %d = %d ? \n",d_data[it_index-1].dist,mDistance,prev_dist,mDistance()-prev_dist);}
 		prev_dist = mDistance();
 
@@ -515,7 +507,7 @@ void init_drive()
 	usleep(500000);
 	camera_straight();
 	usleep(10000);
-	speed_set(2500);
+	speed_set(START_SPEED);
 	usleep(10000);
 	dm_speed_set(5);
 	usleep(10000);

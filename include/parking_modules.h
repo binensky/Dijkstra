@@ -35,7 +35,7 @@
 #define PARK_READY 4
 #define PARK_ON 5
 
-static int park_mode = PARK_START;
+static int park_mode = PARK_NONE;
 static int distFD = 0;
 unsigned short rxbuf[4];
 
@@ -80,7 +80,7 @@ void* parking_check(void* p_data)
 		get_dist_sensor(2);
 	}
 	
-	while(1)
+	while(0)
 	{
 		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
 			continue;
@@ -176,7 +176,7 @@ void* parking_check(void* p_data)
 				break;
 		}
 	}
-	close(distFD);
+	//close(distFD);
 }
 
 void park_ready(int index)
@@ -280,34 +280,39 @@ void parking(int flag)
 ////////////////////////////??????????????????????????????????????????????????? how????
 		printf("g park dis : %d\n", g_park_dis);
 		n = mDistance();
+		usleep(10000);
+		turn_set(DM_ANGLE_MIN+70);
+		usleep(10000);
 		distance_set(2500);
-		speed_set(1300);
+		usleep(10000);
+		speed_set(2500);
 		backward_dis();
-		while(mDistance() - n > -20){}
-		turn_set(DM_ANGLE_MIN);
-		while(mDistance() - n > -1500 - ( 240 - 2*g_park_dis)){}
+		while(mDistance() - n > -1300 - ( 240 - 2*g_park_dis)){}
 		turn_set(DM_ANGLE_MAX);
-		while(get_dist_sensor(4) < 290 && get_dist_sensor(3) < 290 ){}
+		//while(get_dist_sensor(4) < 290 && get_dist_sensor(3) < 290 ){}
+		while(get_dist_sensor(4) < 290){}
 		stop();
 		sleep(1);
 		buzzer_on();
 		sleep(1);
+		n = mDistance();
 		tmp_dist = get_dist_sensor(4);
 		printf("tmp dist : %d\n", tmp_dist);
 		forward_dis();
-		while(get_dist_sensor(4) > 100 || get_dist_sensor(3) > 100 ){}
+		//while(get_dist_sensor(4) > 100 || get_dist_sensor(3) > 100 ){}
+		while(mDistance() - n < 800){}
 		turn_straight();
-		n = mDistance();
-		while(mDistance() - n < 1300 - (500 - tmp_dist)){}
-		turn_set(DM_ANGLE_MIN);
-		while(mDistance() - n < 2300){}
+		while(mDistance() - n < 1700 - (500 - tmp_dist)){}
+		turn_set(DM_ANGLE_MIN+100);
+		while(mDistance() - n < 3200){}
 		turn_straight();
 		speed_set(START_SPEED);
 		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
 	}
+	stop();
 
-	d_data[g_index].speed = 1000;
-	speed_set(1500);
+	//d_data[g_index].speed = 1000;
+	//speed_set(1500);
 	usleep(10000);
 	//distance_reset();
 	//usleep(10000);

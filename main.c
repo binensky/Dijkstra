@@ -34,7 +34,8 @@ int main(void)
 	car_connect();
 
 	init_drive();
-//	drive_test();
+	pthread_create(&thread[2],NULL,parking_check,NULL);
+	drive_test();
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 
@@ -48,7 +49,7 @@ int main(void)
 			if(first)
 			{
 				first = FALSE;
-				// pthread_create(&thread[2],NULL,parking_check,NULL);
+				pthread_create(&thread[2],NULL,parking_check,NULL);
 			}
 			drive_cm();
 

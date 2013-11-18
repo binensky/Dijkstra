@@ -4,6 +4,9 @@
 #define _DRIVE_MODULES_H_
 
 
+
+
+
 void  change_course(){
 
 	int n = mDistance();
@@ -129,6 +132,7 @@ void drive_test()
 				break;
 			case '9':
 				parking(IF_PARK_V);
+				//park_vertical();
 				break;
 			case 'a':
 				scanf("%d",&g_park_dis);

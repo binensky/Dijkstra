@@ -14,11 +14,11 @@
 #define CUTLINE 140
 #define CUTLINE_CL 140
 #define CUTLINE_POINT 100
-#define CUTLINE_CURVE 95
+#define CUTLINE_CURVE 90
 #define CUTLINE_OUTLINE 10
 #define GAP 10
 
-#define DEST_HEIGHT 120
+#define DEST_HEIGHT 100
 
 // threshold
 #define THRESHOLD 130
@@ -36,8 +36,8 @@
 #define THRESHOLD_STOP_CR 170
 
 #define THRESHOLD_RED_STOP 60
-#define THRESHOLD_RED_STOP_CB 120
-#define THRESHOLD_RED_STOP_CR 180 
+#define THRESHOLD_RED_STOP_CB 130
+#define THRESHOLD_RED_STOP_CR 150 
 
 #define BOT 0
 #define MID 1
@@ -135,6 +135,6 @@ int width_scan_point = MIDWIDTH;
 int is_broken_line = FALSE;
 int had_change_line = TRUE;
 int cnt_change_line = 0;
-int had_speed_bump = TRUE;
+int had_speed_bump = FALSE;
 
 #endif

@@ -3,7 +3,7 @@
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-//#define SAVE_FILE
+#define SAVE_FILE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -49,7 +49,7 @@ int main(void)
 			if(first)
 			{
 				first = FALSE;
-				pthread_create(&thread[2],NULL,parking_check,NULL);
+				//pthread_create(&thread[2],NULL,parking_check,NULL);
 			}
 			drive_cm();
 
@@ -247,13 +247,13 @@ inline void drive(struct image_data* idata){
 		case IF_RED_SPEED_DOWN:	
 			printf("---RED SPEED DOWN---\n");
 			d_data[g_index].speed = 1000;
-			speed_set(1000);
-			d_data[g_index].angle = d_data[g_index-1].angle;
+			speed_set(800);
+			d_data[g_index].angle = DM_STRAIGHT;
 			break;
 		case IF_WHITE_SPEED_DOWN:
 			printf("---WHITE SPEED DOWN---\n");
 			d_data[g_index].speed = 500;
-			speed_set(500);
+			speed_set(800);
 
 			//if(d_data[g_index-1].flag != IF_WHITE_SPEED_DOWN)
 
@@ -303,13 +303,14 @@ inline void drive(struct image_data* idata){
 			if(d_data[g_index-1].flag == IF_SPEED_BUMP_CUR){
 				if(d_data[g_index-1].angle < DM_STRAIGHT+100)
 				{
+					had_speed_bump = TRUE;
 					turn_straight();
 					d_data[g_index].angle = DM_STRAIGHT;
 				}
 				else
 				{
 					turn_set(d_data[g_index-1].angle - 100);
-					d_data[g_index].angle = d_data[g_index-1].angle -100;
+					d_data[g_index].angle = d_data[g_index-1].angle -200;
 				}
 			}
 			//turn_set((d_data[g_index-1].angle + DM_STRAIGHT)/2);
@@ -322,6 +323,7 @@ inline void drive(struct image_data* idata){
 			if(d_data[g_index-1].flag == IF_SPEED_BUMP_ST)
 			{
 				d_data[g_index].flag = IF_SPEED_BUMP_ST;
+				speed_set(2500);
 				turn_straight();
 				d_data[g_index].angle = DM_STRAIGHT;
 			}
@@ -355,18 +357,23 @@ inline void drive(struct image_data* idata){
 			break;
 		case IF_SPEED_BUMP_ST:
 		case IF_STRAIGHT:
+			speed_set(2500);
 			turn_straight();
 			d_data[g_index].angle = DM_STRAIGHT;
 			break;
 
 		case IF_OUTLINE:
+
 			if(g_angle < DM_STRAIGHT)
 			{
+
+			speed_set(2000);
 				turn_set(DM_ANGLE_MIN);
 				d_data[g_index].angle = DM_ANGLE_MIN;
 			}
 			else if(g_angle > DM_STRAIGHT)
 			{
+			speed_set(2000);
 				turn_set(DM_ANGLE_MAX);
 				d_data[g_index].angle = DM_ANGLE_MAX;
 			}
@@ -388,8 +395,17 @@ inline void drive(struct image_data* idata){
 			break;
 		case IF_PARK_V:
 		case IF_PARK_H:
-			printf("dddd111\n");
-			parking(d_data[g_index].flag);
+			sleep(1);
+			buzzer_on();
+			sleep(1);
+			buzzer_on();
+			sleep(1);
+			buzzer_on();
+			//parking(d_data[g_index].flag);
+			g_drive_flag = DF_DRIVE;
+			distance_set(500);	
+			forward_dis();
+
 			break;
 	}
 
@@ -444,6 +460,8 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 		if(d_data[g_index-1].flag == IF_SPEED_BUMP_ST)
 		{
 			d_data[g_index].flag = IF_SPEED_BUMP_ST;
+
+			speed_set(2500);
 			turn_straight();
 			d_data[g_index].angle = DM_STRAIGHT;
 			return;
@@ -458,6 +476,8 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 				d_data[g_index].angle = angle;
 			}
 			else{
+
+				speed_set(2500);
 				turn_straight();
 				d_data[g_index].angle = DM_STRAIGHT;
 			}
@@ -472,11 +492,15 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 				d_data[g_index].angle = angle;
 			}
 			else{
+
+				speed_set(2500);
 				turn_straight();
 				d_data[g_index].angle = DM_STRAIGHT;
 			}
 		}
 		else{
+
+			speed_set(2500);
 			turn_straight();
 			d_data[g_index].angle = DM_STRAIGHT;
 		}
@@ -484,15 +508,19 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		mid_bot.y = 0;
 		mid_bot.x = MIDWIDTH;
-		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT;
+		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT : DEST_HEIGHT +40;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
 
+	/*
 		if(temp_flag == MID_CURVE_STRAIGHT && dest_angle > 85  && dest_angle < 95){
 			d_data[g_index].mid_flag = MID_STRAIGHT;
 		}else{
 			d_data[g_index].mid_flag = MID_CURVE;
 		}
+	*/
+
+		d_data[g_index].mid_flag = MID_CURVE;
 
 		if(dest_angle == 1000){
 			turn_straight();
@@ -511,7 +539,8 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 void init_drive()
 {
 #ifdef DRIVE
-	sleep(3);
+	stop();
+	sleep(2);
 #endif
 	winker_light(OFF);
 	usleep(10000);	

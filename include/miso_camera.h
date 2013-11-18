@@ -92,8 +92,10 @@ int check_mid_line()
 	printf(" >>> check_mid_line\n");
 #endif
 	red_flag = red_pixel_check(90,180);
-	if(red_flag != MID_NONE)
+	if(red_flag != MID_NONE){
+		printf(" find red pl\n");
 		return red_flag;	// 23
+	}
 
 	// 미드라인 수직 검사 
 	for(i=1; i < CUTLINE; i++){
@@ -107,7 +109,7 @@ int check_mid_line()
 				return speed_bump_ret;
 
 			// det mid flag
-			if(IS_WHITE(MIDWIDTH,i)) 
+			if(g_wait_thread == END_THREAD && IS_WHITE(MIDWIDTH,i)) 
 			{
 				int k, w_cnt=0, y_cnt=0;
 				for( k = i ; k < CUTLINE-1; k++){
@@ -117,9 +119,10 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
-				if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
+				if( w_cnt > y_cnt && w_cnt > 7)
 				//if(w_cnt > y_cnt && w_cnt > 8)
 					return MID_WHITE_SPEED_DOWN;	//24
+				else continue;
 			
 			}
 			else if( i <= CUTLINE_OUTLINE )	// <10
@@ -397,7 +400,7 @@ int find_outline(int rl_info, int y, int w)
 }
 
 int red_pixel_check(const int BOT_Y, const int TOP_Y){
-	int i,j,red_bot=-1,red_cnt=0,w_cnt;
+	int i,j,red_bot=-1,red_cnt=0,w_cnt=0;
 
 	for(i = BOT_Y ; i < TOP_Y ; i++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3){
@@ -410,25 +413,20 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 			}
 		}
 	}
-	if( red_cnt > 100)
+	printf(" >>>>>>>>>>>>>>>>>>>>>>>  red  count : %d  /  red bot : %d  white : %d \n",red_cnt,red_bot, w_cnt);
+
+	if( red_cnt > 50 && red_bot <130)
 	{
-		if(red_bot <= 130){
+		if( red_cnt > 1000){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif
 			return MID_RED_STOP;
-		}else if( 130 < red_bot && red_bot <= 170){
+		}
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~   Slow Down in %d\n", red_bot);
 #endif
 			return MID_RED_SPEED_DOWN;
-
-		}else if( g_index> 0 && d_data[g_index-1].mid_flag == MID_RED_SPEED_DOWN){
-			if(w_cnt > 1500)
-				return MID_RED_SPEED_DOWN;
-			else if(w_cnt > 2000)
-				return MID_RED_STOP;
-		}
 	}
 	return MID_NONE;
 }
@@ -720,7 +718,7 @@ int check_speed_bump(int w, int y)
 			else
 				return MID_SPEED_BUMP_CUR;
 		}
-		else if(speed_bump_count >= 4 && st - en > 20 )
+		else if(speed_bump_count >= 3 && st - en > 20 )
 			return MID_SPEED_BUMP_CUR;
 		else 
 			continue;
@@ -748,7 +746,7 @@ int check_speed_bump_st(int w, int y)
 		}
 	}
 	printf("max : %d, min %d\n",max_height, min_height );
-	if(max_height - min_height <= 10)
+	if(max_height - min_height <= 50)
 		return TRUE;
 	else
 		return FALSE;

@@ -54,7 +54,6 @@ void* key_handler(void* data)
 			
 					buzzer_on();
 					usleep(10000);
-
 					stop();
 					
 					struct pxa_camera* camera = (struct pxa_camera*)cm_handle;

@@ -4,7 +4,7 @@
 
 #include "miso_car_lib.h"
 #include "miso_values.h"
-
+#include <time.h>
 /*
    thread 함수 
    0. distacance를 계속해서 확인한다.
@@ -35,7 +35,7 @@
 #define PARK_READY 4
 #define PARK_ON 5
 
-static int park_mode = PARK_NONE;
+static int park_mode = PARK_START;
 static int distFD = 0;
 unsigned short rxbuf[4];
 
@@ -148,7 +148,20 @@ void* parking_check(void* p_data)
 					// 차이를 구하고 그 값으로 차를 돌린다. 
 					//park_mode = PARK_WAITING;
 					printf("////// PARK_INFO_SAVE -> PARK_ON > %d\n",g_drive_flag);
-					park_mode = PARK_ON;
+					park_mode = PARK_NONE;
+
+					if(g_drive_flag == DF_DRIVE)
+					{
+
+						if(g_wait_thread == INIT_THREAD)
+							g_wait_thread = WAIT_THREAD;
+						else
+						{
+							g_wait_thread = END_THREAD;
+							had_change_line = FALSE;
+							sleep(1000);
+						}
+					}
 					//usleep(10000);
 				}
 				break;
@@ -230,7 +243,11 @@ void park_init()
 		get_dist_sensor(3);
 	}
 }
-
+long getMilliTime(){
+	struct timeval tv;
+	gettimeofday( &tv, NULL );
+	return tv.tv_sec*1000000+tv.tv_usec;
+}
 void parking(int flag)
 {
 	int n;
@@ -242,12 +259,59 @@ void parking(int flag)
 	//usleep(10000);
 	if(flag == IF_PARK_V)
 	{
+		int TIME_BACK_TURN = 700;
+		int TIME_BACK = 300;
+		int stopSensor = 250;
+		int outSensor = 105;
+		
+
 		printf("in parking V\n");
+		distance_set(999999);
+		usleep(1000);
+		speed_set(2500);
+		usleep( 1000 );
+
+		//back st
+		turn_straight();
+		usleep(1000);
+		backward_dis();
+		n = getMilliTime();
+		while( getMilliTime()-n < TIME_BACK );
+
+		//back turn
+		turn_set(DM_ANGLE_MIN);
+		usleep(1000);
+		n = getMilliTime();
+		while( getMilliTime()-n < TIME_BACK_TURN );
+
+		turn_straight();
+		usleep(1000);
+		while( get_dist_sensor(4) < stopSensor );
+
+		stop();
+		sleep(1);
+		buzzer_on();
+		sleep(1);
+
+		forward_dis();
+		while( get_dist_sensor(4) > outSensor );
+
+		turn_set(DM_ANGLE_MIN);
+		usleep(1000);
+		n = getMilliTime();
+		while( getMilliTime() - n < TIME_BACK_TURN );
+		
+		turn_straight();
+		usleep(1000);
+		speed_set(START_SPEED);
+		
+		
+	
 		/*
 		usleep(100000);
 		n = mDistance();
 		usleep(10000);
-		*/
+		
 		distance_set(2500);
 		usleep(1000);
 		speed_set(1500);
@@ -277,7 +341,7 @@ void parking(int flag)
 	//	while(mDistance() - n < 1900){}
 		usleep(900000);
 		turn_straight();
-		speed_set(START_SPEED);
+		speed_set(START_SPEED);*/
 	}
 	else
 	{

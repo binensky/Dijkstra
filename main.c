@@ -34,8 +34,8 @@ int main(void)
 	car_connect();
 
 	init_drive();
-	pthread_create(&thread[2],NULL,parking_check,NULL);
-	drive_test();
+//	pthread_create(&thread[2],NULL,parking_check,NULL);
+//	drive_test();
 
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 
@@ -330,19 +330,19 @@ inline void drive(struct image_data* idata){
 				//d_data[g_index].speed = 1000;
 				//speed_set(1500);
 				usleep(1000);
-				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*5;
+				int angle = DM_STRAIGHT + (idata->bot[LEFT].y - idata->bot[RIGHT].y)*3;
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
 			else if(idata->bot[RIGHT].y < 60)
 			{
-				int angle = DM_STRAIGHT + (180 - 3*idata->bot[RIGHT].y);
+				int angle = DM_STRAIGHT + (120 - 2*idata->bot[RIGHT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}
 			else if(idata->bot[LEFT].y < 60)
 			{
-				int angle = DM_STRAIGHT - (180 - 3*idata->bot[LEFT].y);
+				int angle = DM_STRAIGHT - (120 - 2*idata->bot[LEFT].y);
 				turn_set(angle);
 				d_data[g_index].angle = angle;
 			}

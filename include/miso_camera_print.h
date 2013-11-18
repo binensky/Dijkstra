@@ -4,11 +4,11 @@ void print_screen_org()
 {	
 	int i,j;
 	printf("Y value\n");
-	for(j = CUTLINE; j>0 ; j--)
+	for(j = MAXHEIGHT - 1; j>100 ; j--)
 	{
 
 		printf("%3d:",j);
-		for(i = MAXWIDTH-1; i>=0; i--)
+		for(i = 300; i>=150; i--)
 		{	
 			printf("%3d ",Y(i,j));
 		}
@@ -69,7 +69,7 @@ void print_screen_cb()
 	for(j = MAXHEIGHT - 1; j> 50 ; j--)
 	{
 		printf("%3d:",j);
-		for(i = 250; i>=100; i--)
+		for(i = 150; i>=0; i--)
 		{
 			printf("%3d ",CB(i,j));
 		}
@@ -92,7 +92,7 @@ void print_screen_cr()
 	for(j = MAXHEIGHT - 1 ; j> 50 ; j--)
 	{
 		printf("%3d:",j);
-		for(i = 250; i>=100; i--)
+		for(i = 150; i>=0; i--)
 		{
 			printf("%3d ",CR(i, j));
 		}

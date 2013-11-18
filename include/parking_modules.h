@@ -35,7 +35,7 @@
 #define PARK_READY 4
 #define PARK_ON 5
 
-static int park_mode = PARK_NONE;
+static int park_mode = PARK_START;
 static int distFD = 0;
 unsigned short rxbuf[4];
 
@@ -66,9 +66,8 @@ void* parking_check(void* p_data)
 {
 	int i;
 	int prev_dist = -1;
-	int front_dist[2];
 	int vh_info = PARK_START;
-	int park_dist = mDistance() - prev_dist;
+	int park_dist;
 
 	if((distFD = open("/dev/FOUR_ADC", O_RDONLY )) < 0)
 	{      
@@ -80,7 +79,7 @@ void* parking_check(void* p_data)
 		get_dist_sensor(2);
 	}
 	
-	while(0)
+	while(1)
 	{
 		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
 			continue;
@@ -105,11 +104,10 @@ void* parking_check(void* p_data)
 				if( g_drive_mode == CM_MODE && get_dist_sensor(3) >= CLOSE_DIST )
 				{
 					printf("/////// PARK_NONE -> PARK_FIND\n");
-					front_dist[0] = get_dist_sensor(3);
 					park_mode = PARK_FIND;
 
 					d_data[g_index].speed = 1000;
-					speed_set(1000);
+					speed_set(2000);
 					usleep(1000);
 				}
 				// 모드를 바꿔줘서 다음 플래그로 이동한다. 
@@ -129,6 +127,8 @@ void* parking_check(void* p_data)
 					// check dist range 
 					park_dist = mDistance() - prev_dist;
 
+					//g_drive_flag = DF_VPARK;
+					
 					if(park_dist > OVER_DIST || park_dist < UNDER_DIST)	// 이정도면 잘못 잡은거 
 					{
 						printf("it is not parking area!\n");
@@ -141,17 +141,15 @@ void* parking_check(void* p_data)
 						g_drive_flag = DF_PPARK;
 					printf(">>> mDistance() : %d, ver / hor : %d\n",park_dist, g_drive_flag);
 					// 어느 주차모드인지 H인지 V인지 확인한다.
+					
 					stop();
 
-					front_dist[1] = get_dist_sensor(3); // 다시 거리가 가까워 진다면 dist를 잡는다. 
-					printf(">>>> diff dists %d - %d = %d \n", front_dist[0], front_dist[1], front_dist[0]-front_dist[1]);
 
 					// 차이를 구하고 그 값으로 차를 돌린다. 
-					//check_car_angle(front_dist[0], front_dist[1]);
 					//park_mode = PARK_WAITING;
 					printf("////// PARK_INFO_SAVE -> PARK_ON > %d\n",g_drive_flag);
 					park_mode = PARK_ON;
-					usleep(10000);
+					//usleep(10000);
 				}
 				break;
 			case PARK_ON:
@@ -160,23 +158,22 @@ void* parking_check(void* p_data)
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
-					/*
+					
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
 					{
-					*/
 						g_wait_thread = END_THREAD;
 						had_change_line = FALSE;
 						sleep(1000);
-					//}
+					}
 				}
 				break;
 			default:
 				break;
 		}
 	}
-	//close(distFD);
+	close(distFD);
 }
 
 void park_ready(int index)
@@ -246,8 +243,11 @@ void parking(int flag)
 	if(flag == IF_PARK_V)
 	{
 		printf("in parking V\n");
+		/*
+		usleep(100000);
 		n = mDistance();
-		usleep(1000);
+		usleep(10000);
+		*/
 		distance_set(2500);
 		usleep(1000);
 		speed_set(1500);
@@ -255,22 +255,27 @@ void parking(int flag)
 		turn_set(DM_ANGLE_MIN);
 		usleep(1000);
 		printf("hi\n");
+
 		backward_dis();
-		//while(mDistance() - n > -1600){printf("dis : %d\n", mDistance() - n);}
-		while(mDistance() - n > -1500){printf("dis : %d\n", mDistance() - n);}
+		usleep(700000);
+		// while(mDistance() - n > -1600){printf("dis : %d\n", mDistance() - n);}
+		// while(mDistance() - n > -1400){printf("dis : %d\n", mDistance() - n);}
 		turn_straight();
-		usleep(10000);
-		while(get_dist_sensor(4) < 170){}
+	//	usleep(10000);
+	//	while(get_dist_sensor(4) < 170){}
+		usleep(800000);
 		stop();
 		sleep(1);
 		buzzer_on();
 		sleep(1);
 		forward_dis();
 		//while(get_dist_sensor(4) > 60){}
-		while(get_dist_sensor(4) > 100){}
+	//	while(get_dist_sensor(4) > 100){}
+		usleep(600000);
 		turn_set(DM_ANGLE_MIN);
-		n = mDistance();
-		while(mDistance() - n < 1900){}
+	//	n = mDistance();
+	//	while(mDistance() - n < 1900){}
+		usleep(900000);
 		turn_straight();
 		speed_set(START_SPEED);
 	}
@@ -279,15 +284,17 @@ void parking(int flag)
 		printf("in parking H\n");
 ////////////////////////////??????????????????????????????????????????????????? how????
 		printf("g park dis : %d\n", g_park_dis);
+		usleep(100000);
 		n = mDistance();
 		usleep(10000);
-		turn_set(DM_ANGLE_MIN+70);
+		turn_set(DM_ANGLE_MIN+100);
 		usleep(10000);
 		distance_set(2500);
 		usleep(10000);
 		speed_set(2500);
 		backward_dis();
-		while(mDistance() - n > -1300 - ( 240 - 2*g_park_dis)){}
+		while(mDistance() - n > -1200){}
+		speed_set(2000);
 		turn_set(DM_ANGLE_MAX);
 		//while(get_dist_sensor(4) < 290 && get_dist_sensor(3) < 290 ){}
 		while(get_dist_sensor(4) < 290){}
@@ -302,9 +309,9 @@ void parking(int flag)
 		//while(get_dist_sensor(4) > 100 || get_dist_sensor(3) > 100 ){}
 		while(mDistance() - n < 800){}
 		turn_straight();
-		while(mDistance() - n < 1700 - (500 - tmp_dist)){}
+		while(mDistance() - n < 1700){}
 		turn_set(DM_ANGLE_MIN+100);
-		while(mDistance() - n < 3200){}
+		while(mDistance() - n < 3000){}
 		turn_straight();
 		speed_set(START_SPEED);
 		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));

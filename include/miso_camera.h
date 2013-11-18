@@ -54,10 +54,11 @@ struct image_data* cm_img_process()
 
 	init_values(cm_handle,img_data);
 #ifdef DEBUG
-//	print_screen_y(); //print_screen_org(); 
+//	print_screen_y(); 
+//	print_screen_org(); 
 //	print_screen_cb();
 //	print_screen_cr();
-//	print_screen_color();//print_traffic_light();//exit(0);
+	print_screen_color();//print_traffic_light();//exit(0);
 #endif
 	switch(g_drive_flag)
 	{
@@ -116,10 +117,10 @@ int check_mid_line()
 					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
 					else 				continue;
 				}
-				//if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
-				if(w_cnt > y_cnt && w_cnt > 8)
+				if(g_wait_thread == END_THREAD && w_cnt > y_cnt && w_cnt > 7)
+				//if(w_cnt > y_cnt && w_cnt > 8)
 					return MID_WHITE_SPEED_DOWN;	//24
-				
+			
 			}
 			else if( i <= CUTLINE_OUTLINE )	// <10
 			{
@@ -396,7 +397,7 @@ int find_outline(int rl_info, int y, int w)
 }
 
 int red_pixel_check(const int BOT_Y, const int TOP_Y){
-	int i,j,red_bot=-1,red_cnt=0;
+	int i,j,red_bot=-1,red_cnt=0,w_cnt;
 
 	for(i = BOT_Y ; i < TOP_Y ; i++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3){
@@ -404,22 +405,29 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 				if( red_bot == -1)
 					red_bot = i;
 				red_cnt+=1;
+			}else if( IS_WHITE(j,i)){
+				w_cnt ++;	
 			}
 		}
 	}
 	if( red_cnt > 100)
 	{
-		if(red_bot <= 120){
+		if(red_bot <= 130){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif
 			return MID_RED_STOP;
-		}else if(120 < red_bot && red_bot <= 170){
+		}else if( 130 < red_bot && red_bot <= 170){
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~   Slow Down in %d\n", red_bot);
 #endif
 			return MID_RED_SPEED_DOWN;
 
+		}else if( g_index> 0 && d_data[g_index-1].mid_flag == MID_RED_SPEED_DOWN){
+			if(w_cnt > 1500)
+				return MID_RED_SPEED_DOWN;
+			else if(w_cnt > 2000)
+				return MID_RED_STOP;
 		}
 	}
 	return MID_NONE;
@@ -703,7 +711,7 @@ int check_speed_bump(int w, int y)
 			else
 				return MID_SPEED_BUMP_CUR;
 		}
-		else if( speed_bump_count >= 4 && st - en > 20 )
+		else if(speed_bump_count >= 4 && st - en > 20 )
 			return MID_SPEED_BUMP_CUR;
 		else 
 			continue;
@@ -926,7 +934,7 @@ int check_traffic_light()
 		printf("COLOR : YELLOW!\n");
 		return IF_SG_STOP;
 	}
-	else if(green_count >= 250){
+	else if(green_count >= 350){
 		printf("RIGHT TURN!\n");
 		return IF_SG_RIGHT;
 	}

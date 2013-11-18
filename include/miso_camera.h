@@ -294,7 +294,7 @@ int left_line_check(int i)
 {
 	int w;
 	for( w = width_scan_point+1 ; w < MAXWIDTH -1; w++){	// 중간값이 1이 아닌 경우 인라인을 찾아야 한다.
-		if(!IS_BLACK(w,i)){
+		if(IS_YELLOW(w,i)){
 			return find_inline(LEFT,i,w);
 		}
 	}
@@ -306,7 +306,7 @@ int right_line_check(int i)
 	int w;
 	for( w = width_scan_point-1; w >= 0; w--)
 	{
-		if(!IS_BLACK(w,i)){
+		if(IS_YELLOW(w,i)){
 			return find_inline(RIGHT,i,w);
 		}
 	}
@@ -361,7 +361,7 @@ int find_outline(int rl_info, int y, int w)
 	{
 		for(x = w; x < MAXWIDTH-1; x++)
 		{									// (0,1) 이 잡히는 경우. 
-			if( IS_BLACK(x,y) && !IS_BLACK(x-1,y))
+			if( !IS_YELLOW(x,y) && IS_YELLOW(x-1,y))
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
@@ -379,7 +379,7 @@ int find_outline(int rl_info, int y, int w)
 	{
 		for(x = w; x > 0; x--)
 		{
-			if( !IS_BLACK(x,y) && IS_BLACK(x-1,y)) 
+			if( IS_YELLOW(x,y) && !IS_YELLOW(x-1,y)) 
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
@@ -468,16 +468,19 @@ int left_line_trace(int i, int offset, int is_broken_trace)
 	for( y = i+1; y < CUTLINE ; y++){
 		if(!IS_BLACK(offset,y)){		// 위 점이 1인 경우 오른쪽으로 진행중. 오른쪽으로 돌면서 ->(1,0)을 찾는다. 
 			for( x = offset; x>0; x--){	// offset을 갱신한다.  
-				if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) ){
+				if( IS_YELLOW(x,y) && !IS_YELLOW(x-1,y) ){
 					if(!is_broken_trace){
 						if( pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 							pt_cnt += 1;
-						}else if(pt_cnt == 1){
+						}
+/*
+						else if(pt_cnt == 1){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 						}
+*/
 					}
 					pt_tmp.y = y;
 					pt_tmp.x = x;
@@ -503,12 +506,14 @@ int left_line_trace(int i, int offset, int is_broken_trace)
 			}
 		}else{					// 위 점이 0인 경우 왼쪽으로 순회하면서 (1,0)<- 찾는다. 
 			for( x = offset; x<MAXWIDTH-1; x++){
-				if( IS_BLACK(x,y)  && !IS_BLACK(x+1,y)){
+				if( !IS_YELLOW(x,y)  && IS_YELLOW(x+1,y)){
 					if(!is_broken_trace){
+/*
 						if(pt_cnt == 1){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 						}
+*/
 						if(pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x+1;
@@ -562,18 +567,19 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 	for( y = i+1; y < CUTLINE ; y++){
 		if(IS_BLACK(offset,y)){	// above is black. 
 			for( x = offset ; x>0 ; x--){
-				if(!IS_BLACK(x,y) && IS_BLACK(x-1,y)){ // 10
+				if(IS_YELLOW(x,y) && !IS_YELLOW(x-1,y)){ // 10
 					if(!is_broken_trace){
 						if(pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x-1;
 							pt_cnt += 1;
 						}
+/*
 						else if(pt_cnt == 1){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 						}
-									       }
+*/									       }
 					pt_tmp.y = y;
 					pt_tmp.x = x-1;
 					offset = x-1;		
@@ -613,16 +619,19 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 		}else{ 	// above is line. 
 			int xRange = is_broken_trace? MIDWIDTH-1:MAXWIDTH-1;
 			for( x = offset; x<xRange; x++){
-				if( !IS_BLACK(x,y) && IS_BLACK(x+1,y)){
+				if( IS_YELLOW(x,y) && !IS_YELLOW(x+1,y)){
 					if(!is_broken_trace){
 						if(pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 							pt_cnt += 1;
-						}else if(pt_cnt == 1){
+						}
+/*
+						else if(pt_cnt == 1){
 							pt[pt_cnt].y = y;
 							pt[pt_cnt].x = x;
 						}
+*/
 					}
 					pt_tmp.y = y;
 					pt_tmp.x = x;
@@ -777,7 +786,7 @@ int find_end_point(int i, int offset)
 		{
 			for( x = offset; x < MAXWIDTH-1; x++)
 			{
-				if( IS_BLACK(x+1, y) && !IS_BLACK(x,y))
+				if( !IS_YELLOW(x+1, y) && IS_YELLOW(x,y))
 				{
 					if(pt[pt_cnt-1].y + 10 == y)
 					{
@@ -799,7 +808,7 @@ int find_end_point(int i, int offset)
 		{
 			for( x = offset; x > 0; x--)
 			{
-				if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) )
+				if( IS_YELLOW(x,y) && !IS_YELLOW(x-1,y) )
 				{
 					if(pt[pt_cnt-1].y + 10 == y)
 					{

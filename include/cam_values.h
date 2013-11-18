@@ -135,6 +135,6 @@ int width_scan_point = MIDWIDTH;
 int is_broken_line = FALSE;
 int had_change_line = TRUE;
 int cnt_change_line = 0;
-int had_speed_bump = FALSE;
+int had_speed_bump = TRUE;
 
 #endif

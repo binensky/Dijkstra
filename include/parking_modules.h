@@ -35,7 +35,7 @@
 #define PARK_READY 4
 #define PARK_ON 5
 
-static int park_mode = PARK_START;
+static int park_mode = PARK_NONE;
 static int distFD = 0;
 unsigned short rxbuf[4];
 
@@ -106,9 +106,9 @@ void* parking_check(void* p_data)
 					printf("/////// PARK_NONE -> PARK_FIND\n");
 					park_mode = PARK_FIND;
 
-					d_data[g_index].speed = 1000;
-					speed_set(2000);
-					usleep(1000);
+					//d_data[g_index].speed = 1000;
+					//speed_set(2000);
+					//usleep(1000);
 				}
 				// 모드를 바꿔줘서 다음 플래그로 이동한다. 
 				break;

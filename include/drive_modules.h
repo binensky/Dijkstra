@@ -15,7 +15,7 @@ void firstDrive(){
 	forward_dis();
 	usleep(10000);
 	n = getCurrentTimeMillis();
-	while( getCurrentTimeMillis() - n < 1450000 );
+	while( getCurrentTimeMillis() - n < 1800000 );
 
 	turn_set(800);
 	usleep(10000);

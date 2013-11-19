@@ -3,17 +3,25 @@
 #ifndef _DRIVE_MODULES_H_
 #define _DRIVE_MODULES_H_
 
-
 void  change_course(){
 
-	int n = mDistance();
+	int n;
+	int a =300, b = 320, c = 2500, d = 150;
+
+
+
+	a *= 1000;
+	b *= 1000;
+	c *= 1000;
+	d *= 1000;
+
 	usleep(10000);
 	turn_set(DM_STRAIGHT);
 	usleep(10000);
 	speed_set(2500);
 	winker_light(EMERGENCY);
 	usleep(10000);
-	distance_set(1300);
+	distance_set(3000);
 	forward_dis();
 	usleep(10000);
 	//speed_set(2000);
@@ -23,15 +31,20 @@ void  change_course(){
 	//forward_dis();
 	
 	usleep(10000);
-	while(mDistance() - n < 320){}
-	turn_set(DM_ANGLE_MIN);
-	while(mDistance() - n < 820){}
+	n = getCurrentTimeMillis();
+	while(getCurrentTimeMillis() - n < a){}
+	turn_set(DM_ANGLE_MIN+200);
+	
+	n = getCurrentTimeMillis();
+	while(getCurrentTimeMillis() - n < b){}
 	turn_set(DM_STRAIGHT);
-	while(mDistance() - n < 3920){}
-	turn_set(DM_ANGLE_MAX);
-	while(mDistance() - n < 4420){}
+	n = getCurrentTimeMillis();
+	while(getCurrentTimeMillis() - n < c){}
+	turn_set(DM_ANGLE_MAX-100);
+	n = getCurrentTimeMillis();
+	while(getCurrentTimeMillis() - n < d){}
 	turn_set(DM_STRAIGHT);
-	speed_set(2500);
+	speed_set(START_SPEED);
 	winker_light(OFF);
 	usleep(10000);
 }
@@ -40,25 +53,33 @@ void  change_course(){
 void traffic_drive(int flag){
 	int n = 0;
 
+	int a = 1300, b = 1600 , c = 3000;
+	a *= 1000;
+	b *= 1000;
+	c *= 1000;
 	switch(flag){
 		case IF_SG_STOP:
 			stop();
+			usleep(10000);
 			g_drive_flag = DF_STOP;
 			break;
 
 		case IF_SG_LEFT:
-			n = mDistance();
 			distance_set(1200);
 			usleep(10000);
-			speed_set(2500);	
+			speed_set(1500);	
 			usleep(10000);
 			forward_dis();
-			while(mDistance() - n < 1400){}
+			n = getCurrentTimeMillis();
+			while(getCurrentTimeMillis() - n < a){}
 			turn_set(DM_ANGLE_MAX);
-			while(mDistance() - n < 3480){}
+			n = getCurrentTimeMillis();
+			while(getCurrentTimeMillis() - n < b){}
 			turn_straight();
-			while(mDistance() - n < 4480){}
+			n = getCurrentTimeMillis();
+			while(getCurrentTimeMillis() - n < c){}
 			stop();
+			usleep(10000);
 			g_drive_flag = DF_END;
 			break;
 
@@ -66,15 +87,19 @@ void traffic_drive(int flag){
 			n = mDistance();
 			distance_set(1200);
 			usleep(10000);
-			speed_set(2500);
+			speed_set(1500);
 			usleep(10000);
 			forward_dis();
-			while(mDistance() - n < 1400){}
+			n = getCurrentTimeMillis();
+			while(getCurrentTimeMillis() - n < a){}
 			turn_set(DM_ANGLE_MIN);
-			while(mDistance() - n < 3480){}
+			n = getCurrentTimeMillis();
+			while(getCurrentTimeMillis() - n < b){}
 			turn_straight();
-			while(mDistance() - n < 4480){}
+			n = getCurrentTimeMillis();
+			while(getCurrentTimeMillis() - n < c){}
 			stop();
+			usleep(10000);
 			g_drive_flag = DF_END;
 			break;
 	}
@@ -129,6 +154,10 @@ void drive_test()
 				break;
 			case '9':
 				parking(IF_PARK_V);
+				//park_vertical();
+				break;
+			case 'b':
+				parking(IF_PARK_H);
 				break;
 			case 'a':
 				scanf("%d",&g_park_dis);

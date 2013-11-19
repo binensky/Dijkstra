@@ -5,17 +5,6 @@
 #include "miso_car_lib.h"
 #include "miso_values.h"
 #include <time.h>
-/*
-   thread 함수 
-   0. distacance를 계속해서 확인한다.
-   1. distance가 가까워 지는 부분에서 속도를 줄인다.
-   2. 앞으로 가면서 distance를 확인하는데 다시 멀어지는 부분이 나오면 mDistance를 기록한다.
-   2. distance가 다시 가까워지는 부분에서 mDistance를 구해서 그 거리가 얼마냐에 따라서 
-   수평주차를 할 것인지, 수직주차를 할 것인지 확인한다. 
-   3. distance가 다시 멀어지는 부분에서 차를 멈추고 해당 모듈을 수행한다. 
-
-   기타 (distance가 멀어지냐 가까워지냐에 따라서 수평을 맞추는 작업을 한다.) 	 
- */
 
 #define AVR_CNT 5
 
@@ -23,7 +12,7 @@
 #define FAR_DIST 60
 
 #define VERTICAL_DIST 1700
-#define OVER_DIST 5000
+#define OVER_DIST 7000
 #define UNDER_DIST 800
 
 #define PARK_START -2
@@ -78,7 +67,7 @@ void* parking_check(void* p_data)
 	for(i=0; i<10; i++){
 		get_dist_sensor(2);
 	}
-	
+
 	while(1)
 	{
 		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
@@ -107,8 +96,8 @@ void* parking_check(void* p_data)
 					park_mode = PARK_FIND;
 
 					//d_data[g_index].speed = 1000;
-					//speed_set(2000);
-					//usleep(1000);
+					speed_set(1000);
+					usleep(1000);
 				}
 				// 모드를 바꿔줘서 다음 플래그로 이동한다. 
 				break;
@@ -128,7 +117,7 @@ void* parking_check(void* p_data)
 					park_dist = mDistance() - prev_dist;
 
 					//g_drive_flag = DF_VPARK;
-					
+
 					if(park_dist > OVER_DIST || park_dist < UNDER_DIST)	// 이정도면 잘못 잡은거 
 					{
 						printf("it is not parking area!\n");
@@ -141,27 +130,14 @@ void* parking_check(void* p_data)
 						g_drive_flag = DF_PPARK;
 					printf(">>> mDistance() : %d, ver / hor : %d\n",park_dist, g_drive_flag);
 					// 어느 주차모드인지 H인지 V인지 확인한다.
-					
+
 					stop();
 
 
 					// 차이를 구하고 그 값으로 차를 돌린다. 
 					//park_mode = PARK_WAITING;
 					printf("////// PARK_INFO_SAVE -> PARK_ON > %d\n",g_drive_flag);
-					park_mode = PARK_NONE;
-
-					if(g_drive_flag == DF_DRIVE)
-					{
-
-						if(g_wait_thread == INIT_THREAD)
-							g_wait_thread = WAIT_THREAD;
-						else
-						{
-							g_wait_thread = END_THREAD;
-							had_change_line = FALSE;
-							sleep(1000);
-						}
-					}
+					park_mode = PARK_ON;
 					//usleep(10000);
 				}
 				break;
@@ -171,7 +147,7 @@ void* parking_check(void* p_data)
 					vh_info = PARK_NONE;
 					park_mode = PARK_NONE;
 					printf("////// PARK_ON -> PARK_NONE\n");
-					
+
 					if(g_wait_thread == INIT_THREAD)
 						g_wait_thread = WAIT_THREAD;
 					else
@@ -207,7 +183,7 @@ void park_ready(int index)
 			//	turn_set(DM_STRAIGHT+200);
 			//	turn_set(DM_STRAIGHT-200);
 			//	turn_set(DM_STRAIGHT);
-		)
+			)
 	{}
 }
 
@@ -243,145 +219,223 @@ void park_init()
 		get_dist_sensor(3);
 	}
 }
-long getMilliTime(){
-	struct timeval tv;
-	gettimeofday( &tv, NULL );
-	return tv.tv_sec*1000000+tv.tv_usec;
+void park_vertical(){
+	int i = 0;
+	distance_set(2500);
+	usleep(1000);
+	speed_set(1500);
+	usleep(1000);
+	turn_set(DM_ANGLE_MIN);
+	usleep(1000);
+
+
+	for( i = 0; i < 100; i++ ){
+		//printf( "time:	%ld\n", getCurrentTimeMilli() );
+		sleep(1);
+
+	}
+
 }
+
+
+
+
+
 void parking(int flag)
 {
-	int n;
+	long n;
 	int tmp_dist;
 
-	//distance_reset();
-	//usleep(10000);
-	//distance_set(100);
-	//usleep(10000);
+	int TIME_BACK_TURN = 600;
+	int TIME_BACK = 300;
+	int stopSensor = 250;
+	int outSensor = 108;
+	int backRightSensor = 170;
+	int turnRightSensor = 170;
+	int turnRight = 1700;
+
+	int stopTime = 0;
+	int speed = 2500;
+
+	int angle_min = 850;
+	int angle_max = 2150;
+
+	/*
+	   printf( "speed : " );
+	   scanf("%d", &speed );
+	   printf("sensor (right, in back, outback) : " );
+	   scanf("%d %d %d", &rightSensor, &stopSensor, &outSensor );
+	   printf( "backTime turnTime rTurn: ");
+	   scanf( "%d %d %d", &TIME_BACK, &TIME_BACK_TURN, &turnRight );
+
+	   TIME_BACK_TURN *= 1000;
+	   TIME_BACK *= 1000;
+	 */
+
+	while( 0 ){
+		printf( "%d : %d : %d \n", get_dist_sensor(2), get_dist_sensor(3), get_dist_sensor(4) );
+
+		usleep(500000);
+	}
+
+
+
 	if(flag == IF_PARK_V)
 	{
-		int TIME_BACK_TURN = 700;
-		int TIME_BACK = 300;
-		int stopSensor = 250;
-		int outSensor = 105;
-		
+		int pre;
+		int cur;
+		int backTurnTime = 1250;
+		int frontCheck = 0;
+		int frontOut = 0;
+
+
 
 		printf("in parking V\n");
+		//scanf("%d", &backTurnTime );
+		backTurnTime*=1000;
+		//init
 		distance_set(999999);
 		usleep(1000);
-		speed_set(2500);
-		usleep( 1000 );
+		//speed_set( 1000 );
+		//usleep(1000);
 
-		//back st
+	
 		turn_straight();
 		usleep(1000);
-		backward_dis();
-		n = getMilliTime();
-		while( getMilliTime()-n < TIME_BACK );
+		forward_dis();
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < 400000 );
 
-		//back turn
-		turn_set(DM_ANGLE_MIN);
-		usleep(1000);
-		n = getMilliTime();
-		while( getMilliTime()-n < TIME_BACK_TURN );
-
-		turn_straight();
-		usleep(1000);
-		while( get_dist_sensor(4) < stopSensor );
+		//back straight
 
 		stop();
+		sleep(1);
+
+		speed_set(1500);
+		usleep(1000);
+		turn_set(angle_min);
+		usleep(1000);
+		backward_dis();
+		/*
+		   do{
+		   if( get_dist_sensor(2) > 90 ){
+		   frontCheck = 1;
+		   }
+		   if( frontCheck && get_dist_sensor(2) < 90 && get_dist_sensor(3) > 200  ){
+		   frontOut = 1;
+		   }
+		   }while( !frontOut );
+		 */
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < 1320000 );
+
+		turn_straight();
+		usleep(1000);
+		while( get_dist_sensor(4) < 250 ){
+			if( get_dist_sensor(3) > 600 ){
+				//turn_set(1800);
+			}
+		}
+		stop();
+		turn_straight();
 		sleep(1);
 		buzzer_on();
 		sleep(1);
 
-		forward_dis();
-		while( get_dist_sensor(4) > outSensor );
-
-		turn_set(DM_ANGLE_MIN);
+		turn_straight();
 		usleep(1000);
-		n = getMilliTime();
-		while( getMilliTime() - n < TIME_BACK_TURN );
-		
+		forward_dis();
+		while( get_dist_sensor(4) > 100 );
+
+
+		turn_set(angle_min);
+		usleep(1000);
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < 1220000 );
+
 		turn_straight();
 		usleep(1000);
 		speed_set(START_SPEED);
-		
-		
-	
-		/*
-		usleep(100000);
-		n = mDistance();
-		usleep(10000);
-		
-		distance_set(2500);
-		usleep(1000);
-		speed_set(1500);
-		usleep(1000);
-		turn_set(DM_ANGLE_MIN);
-		usleep(1000);
-		printf("hi\n");
 
-		backward_dis();
-		usleep(700000);
-		// while(mDistance() - n > -1600){printf("dis : %d\n", mDistance() - n);}
-		// while(mDistance() - n > -1400){printf("dis : %d\n", mDistance() - n);}
-		turn_straight();
-	//	usleep(10000);
-	//	while(get_dist_sensor(4) < 170){}
-		usleep(800000);
-		stop();
-		sleep(1);
-		buzzer_on();
-		sleep(1);
-		forward_dis();
-		//while(get_dist_sensor(4) > 60){}
-	//	while(get_dist_sensor(4) > 100){}
-		usleep(600000);
-		turn_set(DM_ANGLE_MIN);
-	//	n = mDistance();
-	//	while(mDistance() - n < 1900){}
-		usleep(900000);
-		turn_straight();
-		speed_set(START_SPEED);*/
 	}
 	else
 	{
-		printf("in parking H\n");
-////////////////////////////??????????????????????????????????????????????????? how????
-		printf("g park dis : %d\n", g_park_dis);
-		usleep(100000);
-		n = mDistance();
-		usleep(10000);
-		turn_set(DM_ANGLE_MIN+100);
-		usleep(10000);
-		distance_set(2500);
-		usleep(10000);
-		speed_set(2500);
-		backward_dis();
-		while(mDistance() - n > -1200){}
-		speed_set(2000);
-		turn_set(DM_ANGLE_MAX);
-		//while(get_dist_sensor(4) < 290 && get_dist_sensor(3) < 290 ){}
-		while(get_dist_sensor(4) < 290){}
+		   int a = 1150;
+		   int b = 1300;
+		   int c = 1000;
+		   int d = 1300;
+
+		   //scanf( "%d %d %d %d", &a, &b, &c, &d );
+		   a *= 1000;
+		   b *= 1000;
+		   c *= 1000;
+		   d *= 1000;
+
+		   distance_set(99999);
+		   usleep(1000);
+		   speed_set(1500);
+		   usleep(1000);
+
+
+		turn_straight();
+		usleep(1000);
+		forward_dis();
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < 300000 );
+
+
+
 		stop();
 		sleep(1);
-		buzzer_on();
-		sleep(1);
-		n = mDistance();
-		tmp_dist = get_dist_sensor(4);
-		printf("tmp dist : %d\n", tmp_dist);
-		forward_dis();
-		//while(get_dist_sensor(4) > 100 || get_dist_sensor(3) > 100 ){}
-		while(mDistance() - n < 800){}
+
+		   turn_set(angle_min);
+		   usleep(1000);
+		   backward_dis();
+		   n = getCurrentTimeMillis();
+		   while( getCurrentTimeMillis() - n <1200000 ){
+		   }
+
 		turn_straight();
-		while(mDistance() - n < 1700){}
-		turn_set(DM_ANGLE_MIN+100);
-		while(mDistance() - n < 3000){}
+		usleep(1000);
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < 400000 );
+
+
+		   turn_set(angle_max);
+		   usleep(1000);
+		   n = getCurrentTimeMillis();
+		   while( getCurrentTimeMillis() - n < b && get_dist_sensor(4) < 500 ){
+		   }
+
+		   turn_straight();
+		   usleep(1000);
+		   while( get_dist_sensor(4) < 300){
+		   }
+
+		   stop();
+		   sleep(1);
+		//buzzer_on();
+		sleep(1);
+
+		turn_set(angle_max);
+		usleep(1000);
+		forward_dis();
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < c );
+
+		turn_set(angle_min);
+		usleep(1000);
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis()-n < d ){
+		}
+
+
 		turn_straight();
 		speed_set(START_SPEED);
-		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));
+		//printf("back : %d, right : %d\n", get_dist_sensor(4), get_dist_sensor(3));*/
 	}
-	stop();
-
+	//stop();
+	d_data[g_index].mid_flag = MID_STRAIGHT;
 	//d_data[g_index].speed = 1000;
 	//speed_set(1500);
 	usleep(10000);

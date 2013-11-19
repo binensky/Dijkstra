@@ -14,7 +14,7 @@
 void init_values(int handle,struct image_data* idata);
 void init_point();
 
-int red_pixel_check(const int BOT_Y, const int TOP_Y);
+int red_pixel_check();
 int get_road_angle();
 int get_angle(struct p_point a, struct p_point b);
 
@@ -39,6 +39,7 @@ int check_speed_bump_st(int w, int y);
 int check_change_line(int rl_info, int x, int y);
 int find_broken_line(int rl_info, int x, int y);
 
+struct image_data* speed_bump_image_data(struct image_data* img_data);
 struct image_data* make_image_data(struct image_data* img_data);
 struct image_data* left_set_image_data(struct image_data* img_data, char is_straight);
 struct image_data* right_set_image_data(struct image_data* img_data, char is_straight);
@@ -48,17 +49,18 @@ int angles[PT_SIZE-1];
 int pt_cnt;			// left pt, right pt,
 int g_first = TRUE;
 
+int trace_red_circle();
 struct image_data* cm_img_process()
 {
 	struct image_data* img_data = (struct image_data*)malloc(sizeof(struct image_data));
-
+	int angle ,flag, tmp;
 	init_values(cm_handle,img_data);
 #ifdef DEBUG
 //	print_screen_y(); 
-//	print_screen_org(); 
-//	print_screen_cb();
+	print_screen_org(); 
+	print_screen_cb();
 //	print_screen_cr();
-	print_screen_color();//print_traffic_light();//exit(0);
+//	print_screen_color();//print_traffic_light();//exit(0);
 #endif
 	switch(g_drive_flag)
 	{
@@ -66,10 +68,31 @@ struct image_data* cm_img_process()
 			img_data->mid_flag = check_mid_line();	// mid flag set. 
 			printf(">> mid flag : %d\n", img_data->mid_flag);
 			return make_image_data(img_data);	// img flag set. 
-		case DF_SPEED_DOWN:
+
+		case DF_RED_SPEED_DOWN:		
+			angle =  trace_red_circle();
+			flag = red_pixel_check();
+			img_data->flag = flag;
+
+			return img_data;
+
+		case DF_WHITE_SPEED_DOWN:
 			img_data->flag = IF_WHITE_SPEED_DOWN;
 			img_data->flag = MID_WHITE_SPEED_DOWN;
 			return speed_down_image_data(img_data);
+		
+		case DF_SPEED_BUMP:
+			img_data->flag = IF_SPEED_BUMP_ST;
+			img_data->flag = MID_SPEED_BUMP_ST;				
+
+			if(check_mid_line() == MID_SPEED_BUMP_ST)
+				return speed_bump_image_data(img_data);
+			else{
+				g_drive_flag = DF_DRIVE;
+				img_data->flag = IF_STRAIGHT;
+				return img_data;
+			}
+			
 		case DF_STOP:
 			img_data->flag = check_traffic_light();
 			printf(">> traffic falg : %d\n", img_data->flag);
@@ -82,6 +105,29 @@ struct image_data* cm_img_process()
 	return NULL;
 }
 
+int trace_red_circle()
+{
+	int i;
+	int y =  RED_TOP_Y - RED_BOT_Y;
+	int isFirst = TRUE;
+	int  reds[2];
+	int result;
+
+	for(i = 0; i < MAXWIDTH; i++)
+	{
+		if( IS_RED(i, y)){
+			if( isFirst){
+				reds[0] = i;	
+				isFirst = FALSE;
+			}
+			reds[1] = i;
+		}		
+	}
+
+	return DM_STRAIGHT + (reds[1] - reds[0]) ;
+	
+}
+
 int check_mid_line()
 {
 	int i,j;
@@ -91,8 +137,8 @@ int check_mid_line()
 #ifdef TRACE
 	printf(" >>> check_mid_line\n");
 #endif
-	red_flag = red_pixel_check(90,180);
-	if(red_flag != MID_NONE){
+	red_flag = red_pixel_check();
+	if(g_wait_thread == WAIT_THREAD && red_flag != MID_NONE){
 		printf(" find red pl\n");
 		return red_flag;	// 23
 	}
@@ -104,13 +150,10 @@ int check_mid_line()
 
 			printf("mid height %d \n", i);
 
-			// speed bump check 
-			if( !had_speed_bump && 0 < (speed_bump_ret = check_speed_bump(MIDWIDTH,i)))
-				return speed_bump_ret;
-
 			// det mid flag
-			if(g_wait_thread == END_THREAD && IS_WHITE(MIDWIDTH,i)) 
+			if(after_change_line && IS_WHITE(MIDWIDTH,i)) 
 			{
+				printf("aa\n");
 				int k, w_cnt=0, y_cnt=0;
 				for( k = i ; k < CUTLINE-1; k++){
 					if( IS_BLACK(MIDWIDTH,k+1) && !IS_BLACK(MIDWIDTH,k) )
@@ -120,24 +163,37 @@ int check_mid_line()
 					else 				continue;
 				}
 				if( w_cnt > y_cnt && w_cnt > 7)
-				//if(w_cnt > y_cnt && w_cnt > 8)
 					return MID_WHITE_SPEED_DOWN;	//24
 				else continue;
 			
-			}
-			else if( i <= CUTLINE_OUTLINE )	// <10
+			}else 
 			{
-				return MID_OUTLINE;	// ret 31
+				int k, w_cnt=0, y_cnt=0;
+
+				for( k = i ; k < CUTLINE-1; k++){
+					if( IS_BLACK(MIDWIDTH,k+1) && !IS_BLACK(MIDWIDTH,k) )
+						break;
+					if(IS_WHITE(MIDWIDTH,k))	w_cnt++;
+					else if(IS_YELLOW(MIDWIDTH,k))	y_cnt++;
+					else 				continue;
+				}
+
+				if( y_cnt > 10 && w_cnt > 10)
+					return MID_SPEED_BUMP_ST;	//24
+				else if( i <= CUTLINE_OUTLINE )	// <10
+				{
+					return MID_OUTLINE;	// ret 31
+				}
+				else if( i <= CUTLINE_CURVE)	// <=60
+				{
+					return  MID_CURVE;	// 3
+				}
+				else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
+				{
+					return MID_CURVE_STRAIGHT;	// 2
+				}
+				break;	// 1
 			}
-			else if( i <= CUTLINE_CURVE)	// <=60
-			{
-				return  MID_CURVE;	// 3
-			}
-			else if( CUTLINE_CURVE < i && i <= CUTLINE) // 60< <140
-			{
-				return MID_CURVE_STRAIGHT;	// 2
-			}
-			break;	// 1
 		}
 		else
 		{// is black 
@@ -147,16 +203,16 @@ int check_mid_line()
 	return MID_STRAIGHT;	// 1
 }
 
-struct image_data* speed_down_image_data(struct image_data* img_data)
+struct image_data* speed_bump_image_data(struct image_data* img_data)
 {
 	int i, j, left = FALSE, right = FALSE;
 	int b_flag = FALSE;
-	
+
 	for(j=0; j<CUTLINE-2; j++)
 	{
 		for(i = MIDWIDTH; i< MAXWIDTH-1; i++)
 		{
-			if(!IS_YELLOW(i,j) && IS_YELLOW(i+1,j) && IS_YELLOW(i+1,j+1) && IS_YELLOW(i+1,j+2))
+			if(IS_BLACK(i,j) && !IS_BLACK(i+1,j) && !IS_BLACK(i+1,j+1) && !IS_BLACK(i+1,j+2))
 			{
 				printf("find left %d %d\n", i+1, j);
 				img_data->bot[LEFT].y = j;
@@ -175,7 +231,56 @@ struct image_data* speed_down_image_data(struct image_data* img_data)
 	{
 		for(i = MIDWIDTH-1; i> 0; i--)
 		{
-			if(!IS_YELLOW(i,j) && IS_YELLOW(i-1,j) && IS_YELLOW(i-1,j+1) && IS_YELLOW(i-1,j+2) )
+			if(IS_BLACK(i,j) && !IS_BLACK(i-1,j) && !IS_BLACK(i-1,j+1) && !IS_BLACK(i-1,j+2) )
+			{
+				printf("find right %d %d\n", i-1, j);
+				img_data->bot[RIGHT].y = j;
+				right = TRUE;
+				b_flag = TRUE;
+				break;
+			}
+		}
+		if(b_flag)
+			break;
+	}
+
+	if(!left)
+		img_data->bot[LEFT].y = -1;
+	if(!right)
+		img_data->bot[RIGHT].y = -1;
+
+	return img_data;
+}
+
+struct image_data* speed_down_image_data(struct image_data* img_data)
+{
+	int i, j, left = FALSE, right = FALSE;
+	int b_flag = FALSE;
+	
+	for(j=0; j<CUTLINE-2; j++)
+	{
+		for(i = MIDWIDTH; i< MAXWIDTH-1; i++)
+		{
+			if(IS_BLACK(i,j) && !IS_BLACK(i+1,j) && !IS_BLACK(i+1,j+1) && !IS_BLACK(i+1,j+2))
+			{
+				printf("find left %d %d\n", i+1, j);
+				img_data->bot[LEFT].y = j;
+				left = TRUE;
+				b_flag = TRUE;
+				break;
+			}
+		}
+		if(b_flag)
+			break;
+	}
+
+	b_flag = FALSE;
+
+	for(j=0; j<CUTLINE-2; j++)
+	{
+		for(i = MIDWIDTH-1; i> 0; i--)
+		{
+			if(IS_BLACK(i,j) && !IS_BLACK(i-1,j) && !IS_BLACK(i-1,j+1) && !IS_BLACK(i-1,j+2) )
 			{
 				printf("find right %d %d\n", i-1, j);
 				img_data->bot[RIGHT].y = j;
@@ -277,6 +382,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 	if( is_straight && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
+		after_change_line = TRUE;
 		return img_data;
 	}
 
@@ -297,7 +403,7 @@ int left_line_check(int i)
 {
 	int w;
 	for( w = width_scan_point+1 ; w < MAXWIDTH -1; w++){	// 중간값이 1이 아닌 경우 인라인을 찾아야 한다.
-		if(IS_YELLOW(w,i)){
+		if(!IS_BLACK(w,i)){
 			return find_inline(LEFT,i,w);
 		}
 	}
@@ -309,7 +415,7 @@ int right_line_check(int i)
 	int w;
 	for( w = width_scan_point-1; w >= 0; w--)
 	{
-		if(IS_YELLOW(w,i)){
+		if(!IS_BLACK(w,i)){
 			return find_inline(RIGHT,i,w);
 		}
 	}
@@ -364,7 +470,7 @@ int find_outline(int rl_info, int y, int w)
 	{
 		for(x = w; x < MAXWIDTH-1; x++)
 		{									// (0,1) 이 잡히는 경우. 
-			if( !IS_YELLOW(x,y) && IS_YELLOW(x-1,y))
+			if( IS_BLACK(x,y) && !IS_BLACK(x-1,y))
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
@@ -382,7 +488,7 @@ int find_outline(int rl_info, int y, int w)
 	{
 		for(x = w; x > 0; x--)
 		{
-			if( IS_YELLOW(x,y) && !IS_YELLOW(x-1,y)) 
+			if( !IS_BLACK(x,y) && IS_BLACK(x-1,y)) 
 			{
 				pt[BOT].y = y;
 				pt[BOT].x = x-1;
@@ -399,12 +505,12 @@ int find_outline(int rl_info, int y, int w)
 
 }
 
-int red_pixel_check(const int BOT_Y, const int TOP_Y){
+int red_pixel_check(){
 	int i,j,red_bot=-1,red_cnt=0,w_cnt=0;
 
-	for(i = BOT_Y ; i < TOP_Y ; i++){
+	for(i = RED_BOT_Y; i < RED_TOP_Y; i++){
 		for( j = 0 ; j < MAXWIDTH ; j+=3){
-			if(IS_RED(j,i)){
+			if( IS_RED(j,i) ){
 				if( red_bot == -1)
 					red_bot = i;
 				red_cnt+=1;
@@ -417,16 +523,20 @@ int red_pixel_check(const int BOT_Y, const int TOP_Y){
 
 	if( red_cnt > 50 && red_bot <130)
 	{
-		if( red_cnt > 1000){
+		if( red_cnt > 150){
+			if( red_cnt > 1000){
 #ifdef DRIVE_DEBUG
-			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif
-			return MID_RED_STOP;
-		}
+				return MID_RED_STOP;
+			}
+
 #ifdef DRIVE_DEBUG
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~   Slow Down in %d\n", red_bot);
 #endif
 			return MID_RED_SPEED_DOWN;
+		}
+
 	}
 	return MID_NONE;
 }
@@ -466,7 +576,7 @@ int left_line_trace(int i, int offset, int is_broken_trace)
 	for( y = i+1; y < CUTLINE ; y++){
 		if(!IS_BLACK(offset,y)){		// 위 점이 1인 경우 오른쪽으로 진행중. 오른쪽으로 돌면서 ->(1,0)을 찾는다. 
 			for( x = offset; x>0; x--){	// offset을 갱신한다.  
-				if( IS_YELLOW(x,y) && !IS_YELLOW(x-1,y) ){
+				if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) ){
 					if(!is_broken_trace){
 						if( pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
@@ -504,7 +614,7 @@ int left_line_trace(int i, int offset, int is_broken_trace)
 			}
 		}else{					// 위 점이 0인 경우 왼쪽으로 순회하면서 (1,0)<- 찾는다. 
 			for( x = offset; x<MAXWIDTH-1; x++){
-				if( !IS_YELLOW(x,y)  && IS_YELLOW(x+1,y)){
+				if( IS_BLACK(x,y)  && !IS_BLACK(x+1,y)){
 					if(!is_broken_trace){
 /*
 						if(pt_cnt == 1){
@@ -565,7 +675,7 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 	for( y = i+1; y < CUTLINE ; y++){
 		if(IS_BLACK(offset,y)){	// above is black. 
 			for( x = offset ; x>0 ; x--){
-				if(IS_YELLOW(x,y) && !IS_YELLOW(x-1,y)){ // 10
+				if(!IS_BLACK(x,y) && IS_BLACK(x-1,y)){ // 10
 					if(!is_broken_trace){
 						if(pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
@@ -617,7 +727,7 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 		}else{ 	// above is line. 
 			int xRange = is_broken_trace? MIDWIDTH-1:MAXWIDTH-1;
 			for( x = offset; x<xRange; x++){
-				if( IS_YELLOW(x,y) && !IS_YELLOW(x+1,y)){
+				if( !IS_BLACK(x,y) && IS_BLACK(x+1,y)){
 					if(!is_broken_trace){
 						if(pt[pt_cnt-1].y + 10 == y){
 							pt[pt_cnt].y = y;
@@ -676,9 +786,7 @@ int check_speed_bump(int w, int y)
 	int i, j, st = 0, en = 0;
 	int speed_bump_count = 0;
 
-#ifdef TRACE
 	printf(">>>> check_speed_bump %d, %d\n", w, y);
-#endif
 
 	for(j = y; j <= CUTLINE-40; j++)
 	{
@@ -705,6 +813,7 @@ int check_speed_bump(int w, int y)
 				st = i;
 		}
 
+		printf(" speed_bump_count %d \n", speed_bump_count);
 		if(g_index>0 && d_data[g_index-1].mid_flag == MID_SPEED_BUMP_ST)
 			return MID_SPEED_BUMP_ST;	// speed bump check.
 
@@ -712,13 +821,13 @@ int check_speed_bump(int w, int y)
 		{
 			if(check_speed_bump_st(w,y))
 			{
-				had_speed_bump = TRUE;
+				//had_speed_bump = TRUE;
 				return MID_SPEED_BUMP_ST;
 			}
 			else
 				return MID_SPEED_BUMP_CUR;
 		}
-		else if(speed_bump_count >= 3 && st - en > 20 )
+		else if(speed_bump_count >= 4 && st - en > 20 )
 			return MID_SPEED_BUMP_CUR;
 		else 
 			continue;
@@ -784,7 +893,7 @@ int find_end_point(int i, int offset)
 		{
 			for( x = offset; x < MAXWIDTH-1; x++)
 			{
-				if( !IS_YELLOW(x+1, y) && IS_YELLOW(x,y))
+				if( IS_BLACK(x+1, y) && !IS_BLACK(x,y))
 				{
 					if(pt[pt_cnt-1].y + 10 == y)
 					{
@@ -806,7 +915,7 @@ int find_end_point(int i, int offset)
 		{
 			for( x = offset; x > 0; x--)
 			{
-				if( IS_YELLOW(x,y) && !IS_YELLOW(x-1,y) )
+				if( !IS_BLACK(x,y) && IS_BLACK(x-1,y) )
 				{
 					if(pt[pt_cnt-1].y + 10 == y)
 					{
@@ -941,7 +1050,7 @@ int check_traffic_light()
 		printf("COLOR : YELLOW!\n");
 		return IF_SG_STOP;
 	}
-	else if(green_count >= 350){
+	else if(green_count >= 300){
 		printf("RIGHT TURN!\n");
 		return IF_SG_RIGHT;
 	}

@@ -4,11 +4,11 @@ void print_screen_org()
 {	
 	int i,j;
 	printf("Y value\n");
-	for(j = MAXHEIGHT - 1; j>100 ; j--)
+	for(j = 140 - 1; j>1 ; j--)
 	{
 
 		printf("%3d:",j);
-		for(i = 300; i>=150; i--)
+		for(i = MAXWIDTH; i>=0; i--)
 		{	
 			printf("%3d ",Y(i,j));
 		}
@@ -66,10 +66,10 @@ void print_screen_cb()
 	   printf("%3d ", i);
 	   }
 	 */
-	for(j = MAXHEIGHT - 1; j> 50 ; j--)
+	for(j = 140; j> 1 ; j--)
 	{
 		printf("%3d:",j);
-		for(i = 150; i>=0; i--)
+		for(i = 320; i>=0; i--)
 		{
 			printf("%3d ",CB(i,j));
 		}

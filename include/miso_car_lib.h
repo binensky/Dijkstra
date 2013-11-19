@@ -46,6 +46,21 @@ void speed_down(int v)
 	lm_speed(HIGH(g_sp),LOW(g_sp));
 }
 
+long getCurrentTime(){
+	time_t   current_time;
+	time( &current_time);
+
+	return current_time;
+}
+
+long getCurrentTimeMillis(){
+	struct timeval tv;
+	gettimeofday( &tv, NULL );
+
+	return tv.tv_sec*1000000+tv.tv_usec;
+}
+
+
 // direction
 void turn_straight()
 {

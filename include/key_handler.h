@@ -32,20 +32,20 @@ void* key_handler(void* data)
 	while(1){
 		read_key= read(keyFD, &buf,sizeof(buf));
 		key = read_key;
-		switch(key)
-		{
+
+		switch(key){
 			case KEY1:
 				// STOP / RESET
-				if( g_drive_flag == DF_DRIVE || g_drive_flag == DF_SPEED_DOWN )
+				if( g_drive_flag != DF_READY )
 				{
 					g_drive_flag = DF_READY;
-				
 					buzzer_on();
 					usleep(10000);
 
 					stop();
-				}else if( g_drive_flag == DF_READY){
-		
+				}else if( g_drive_flag == DF_READY)
+				{
+					struct pxa_camera* camera;
 					// write image data into file. 
 #ifdef SAVE_FILE
 					fwrite_data(d_data);
@@ -56,7 +56,7 @@ void* key_handler(void* data)
 					usleep(10000);
 					stop();
 					
-					struct pxa_camera* camera = (struct pxa_camera*)cm_handle;
+					camera =(struct pxa_camera*)cm_handle;
 
 					while(camera->ref_count > 0){
 						camera_release_frame(cm_handle,vidbuf);
@@ -80,22 +80,6 @@ void* key_handler(void* data)
 				break;
 
 			case KEY3:
-				if( g_drive_flag == DF_READY)
-				{
-					// get image data from file. 
-					fread_data(d_data);
-
-					g_drive_flag = DF_DRIVE;
-					g_drive_mode = AI_MODE;
-			
-					//buzzer_on();
-					usleep(500000);
-					//buzzer_on();
-					usleep(500000);
-					//buzzer_on();
-					usleep(500000);
-					// start
-				}
 				break;
 
 			default:

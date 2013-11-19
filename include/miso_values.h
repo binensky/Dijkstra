@@ -22,7 +22,9 @@
 #define DF_STOP 0
 #define DF_READY 1
 #define DF_DRIVE 2
-#define DF_SPEED_DOWN 3
+#define DF_WHITE_SPEED_DOWN 3
+#define DF_RED_SPEED_DOWN 4
+#define DF_SPEED_BUMP 5
 #define DF_END 9
 #define DF_VPARK 61
 #define DF_PPARK 62
@@ -73,11 +75,13 @@
 #define CM_MODE 0
 #define AI_MODE 1
 
-#define RESUME_INDEX 120
+#define RESUME_INDEX 150
 
 #define DATA_SIZE 10000
-#define START_SPEED 2500
+#define START_SPEED 1500
 
+#define RED_TOP_Y 180
+#define RED_BOT_Y 90
 struct p_point{
 	int x;		// x좌표 (0~319)
 	int y;		// y좌표 (0~239)
@@ -95,7 +99,6 @@ struct drive_data{
 	int mid_flag;	// mid line image process flag 
 	int angle;	// image process angle. 
 	int dist;	// distance of drive moter. 
-	int speed;	// speed of drive moter
 };
 
 // car status flags

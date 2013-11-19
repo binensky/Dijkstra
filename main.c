@@ -39,8 +39,8 @@ int main(void)
 	pthread_create(&thread[0],NULL,key_handler,NULL);
 	
 	printf("thread create\n");
-	
-while(g_drive_flag != DF_END)
+
+	while(g_drive_flag != DF_END)
 	{
 		if( g_drive_mode == CM_MODE){
 			if(first)
@@ -48,6 +48,7 @@ while(g_drive_flag != DF_END)
 				first = FALSE;
 				pthread_create(&thread[2],NULL,parking_check,NULL);
 			}
+			firstDrive();
 			drive_cm();
 		}
 	}
@@ -165,6 +166,7 @@ inline void drive(struct image_data* idata){
 
 		case IF_RED_SPEED_DOWN:	
 			printf("---RED SPEED DOWN---\n");
+			speed_set(1000);
 			d_data[g_index].angle = DM_STRAIGHT;
 			break;
 		case IF_WHITE_SPEED_DOWN:
@@ -419,7 +421,7 @@ void drive_turn(struct image_data* idata, double gradient, int intercept, int he
 	{
 		mid_bot.y = 0;
 		mid_bot.x = MIDWIDTH;
-		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT+20 : DEST_HEIGHT +70;
+		dest.y = temp_flag == MID_CURVE ? DEST_HEIGHT+20 : DEST_HEIGHT +100;
 		dest.x = (int)((dest.y - intercept)/gradient);
 		dest_angle = get_angle(mid_bot,dest);
 

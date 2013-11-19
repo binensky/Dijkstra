@@ -70,10 +70,10 @@ struct image_data* cm_img_process()
 			return make_image_data(img_data);	// img flag set. 
 
 		case DF_RED_SPEED_DOWN:		
-			angle =  trace_red_circle();
+			//angle =  trace_red_circle();
 			flag = red_pixel_check();
 			img_data->flag = flag;
-
+			speed_set(1000);
 			return img_data;
 
 		case DF_WHITE_SPEED_DOWN:
@@ -523,8 +523,8 @@ int red_pixel_check(){
 
 	if( red_cnt > 50 && red_bot <130)
 	{
-		if( red_cnt > 150){
-			if( red_cnt > 1000){
+		if( red_cnt > 50){
+			if( red_cnt > 300){
 #ifdef DRIVE_DEBUG
 				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif

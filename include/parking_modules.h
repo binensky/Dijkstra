@@ -70,6 +70,7 @@ void* parking_check(void* p_data)
 
 	while(1)
 	{
+		int tmp;
 		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
 			continue;
 
@@ -83,7 +84,8 @@ void* parking_check(void* p_data)
 				}
 				break;
 			case PARK_START_FIND:
-				if( get_dist_sensor(3) <= FAR_DIST)
+				tmp = get_dist_sensor(3);
+				if( tmp <= FAR_DIST)
 				{
 					park_mode = PARK_NONE;
 				}
@@ -301,7 +303,7 @@ void parking(int flag)
 
 	
 		turn_straight();
-		usleep(1000);
+		usleep(10000);
 		forward_dis();
 		n = getCurrentTimeMillis();
 		while( getCurrentTimeMillis() - n < 400000 );
@@ -312,10 +314,12 @@ void parking(int flag)
 		sleep(1);
 
 		speed_set(1500);
-		usleep(1000);
+		usleep(10000);
 		turn_set(angle_min);
-		usleep(1000);
+		usleep(10000);
 		backward_dis();
+		usleep(10000);
+
 		/*
 		   do{
 		   if( get_dist_sensor(2) > 90 ){
@@ -326,8 +330,9 @@ void parking(int flag)
 		   }
 		   }while( !frontOut );
 		 */
+
 		n = getCurrentTimeMillis();
-		while( getCurrentTimeMillis() - n < 1320000 );
+		while( getCurrentTimeMillis() - n < 1300000 - (120 - g_park_dis)*10000 );
 
 		turn_straight();
 		usleep(1000);
@@ -351,7 +356,7 @@ void parking(int flag)
 		turn_set(angle_min);
 		usleep(1000);
 		n = getCurrentTimeMillis();
-		while( getCurrentTimeMillis() - n < 1220000 );
+		while( getCurrentTimeMillis() - n < 600000 );
 
 		turn_straight();
 		usleep(1000);
@@ -363,7 +368,7 @@ void parking(int flag)
 		   int a = 1150;
 		   int b = 1300;
 		   int c = 1000;
-		   int d = 1300;
+		   int d = 1000;
 
 		   //scanf( "%d %d %d %d", &a, &b, &c, &d );
 		   a *= 1000;
@@ -392,24 +397,24 @@ void parking(int flag)
 		   usleep(1000);
 		   backward_dis();
 		   n = getCurrentTimeMillis();
-		   while( getCurrentTimeMillis() - n <1200000 ){
+		   while( getCurrentTimeMillis() - n <900000 ){
 		   }
 
 		turn_straight();
 		usleep(1000);
 		n = getCurrentTimeMillis();
-		while( getCurrentTimeMillis() - n < 400000 );
+		while( getCurrentTimeMillis() - n < 300000 );
 
 
 		   turn_set(angle_max);
 		   usleep(1000);
 		   n = getCurrentTimeMillis();
-		   while( getCurrentTimeMillis() - n < b && get_dist_sensor(4) < 500 ){
+		   while( getCurrentTimeMillis() - n < b && get_dist_sensor(4) < 300 ){
 		   }
 
 		   turn_straight();
 		   usleep(1000);
-		   while( get_dist_sensor(4) < 300){
+		   while( get_dist_sensor(4) < 290 && get_dist_sensor(3)){
 		   }
 
 		   stop();
@@ -422,6 +427,11 @@ void parking(int flag)
 		forward_dis();
 		n = getCurrentTimeMillis();
 		while( getCurrentTimeMillis() - n < c );
+
+		turn_straight();
+		usleep(1000);
+		n = getCurrentTimeMillis();
+		while( getCurrentTimeMillis() - n < 100000 );
 
 		turn_set(angle_min);
 		usleep(1000);

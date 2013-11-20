@@ -75,10 +75,10 @@
 #define CM_MODE 0
 #define AI_MODE 1
 
-#define RESUME_INDEX 150
+#define RESUME_INDEX 130
 
 #define DATA_SIZE 10000
-#define START_SPEED 1500
+#define START_SPEED 1600
 
 #define RED_TOP_Y 180
 #define RED_BOT_Y 90

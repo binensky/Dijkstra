@@ -391,7 +391,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 {				
 	int i;
 	printf("is straight %d / !had_change_line %d / is_broken_line %d \n ",is_straight, !had_change_line, is_broken_line); 
-	if( !had_change_line && is_broken_line){
+	if(had_red_stop && !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
 		after_change_line = TRUE;

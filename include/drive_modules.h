@@ -7,7 +7,7 @@
 void  change_course(){
 
 	int n;
-	int a =300, b = 250, c = 1500, d = 150;
+	int a =300, b = 220, c = 1700, d = 150;
 
 
 
@@ -66,6 +66,7 @@ void traffic_drive(int flag){
 			break;
 
 		case IF_SG_LEFT:
+			turn_straight();
 			distance_set(9900);
 			usleep(10000);
 			speed_set(1500);	
@@ -85,7 +86,7 @@ void traffic_drive(int flag){
 			break;
 
 		case IF_SG_RIGHT:
-			n = mDistance();
+			turn_straight();
 			distance_set(1200);
 			usleep(10000);
 			speed_set(1500);

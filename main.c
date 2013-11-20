@@ -1,10 +1,9 @@
 //#define DEBUG
-
 //#define DRIVE_DEBUG
 //#define MID_LINE_DEBUG
 #define DRIVE
 //#define TRACE
-#define SAVE_FILE
+//#define SAVE_FILE
 
 #include <stdio.h>
 #include <pthread.h>
@@ -108,7 +107,7 @@ inline void drive(struct image_data* idata){
 		case IF_RED_STOP:
 			stop();
 			d_data[g_index].mid_flag = MID_STRAIGHT;
-			speed_set(1500);
+			speed_set(START_SPEED);
 			usleep(1000);
 			break;
 

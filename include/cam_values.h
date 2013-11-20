@@ -92,8 +92,9 @@
 #define CR(G,H) vidbuf->ycbcr.cr[((H)/2)*MAXWIDTH+((G)/2)]
 
 #define IS_UNKNOWN(M,N) ((Y(M,N) >= THRESHOLD) && (Y(M,N) < THRESHOLD+70) && (CB(M,N) >= THRESHOLD_YELLOW_CB))
-#define IS_YELLOW(I,J) (( Y(I,J) >= THRESHOLD) && ( CB(I,J) < THRESHOLD_CB))
+#define IS_YELLOW(I,J) ( CB(I,J) < THRESHOLD_CB)
 #define IS_WHITE(K,L) ((Y(K,L) >= THRESHOLD+30) && ( CB(K,L) >= THRESHOLD_CB))
+#define IS_WHITE_LINE(K,L) (CB(K,L) >= THRESHOLD_CB)
 
 #define IS_RED(X,Z) (Y(X,Z) >= THRESHOLD_RED_STOP  && CB(X,Z) < THRESHOLD_RED_STOP_CB && CR(X,Z) >= THRESHOLD_RED_STOP_CR)
 

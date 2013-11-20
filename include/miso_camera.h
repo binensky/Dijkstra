@@ -70,10 +70,19 @@ struct image_data* cm_img_process()
 			return make_image_data(img_data);	// img flag set. 
 
 		case DF_RED_SPEED_DOWN:		
-			//angle =  trace_red_circle();
 			flag = red_pixel_check();
-			img_data->flag = flag;
+			
+			if( d_data[g_index-1].flag == IF_RED_STOP  && flag !=MID_RED_STOP   )
+			{	
+				had_red_stop = TRUE;
+				g_drive_flag = DF_DRIVE;
+				img_data->flag = IF_STRAIGHT;
+				speed_set(1500);
+				return img_data;
+			}
+				
 			speed_set(1000);
+			img_data->flag = flag;
 			return img_data;
 
 		case DF_WHITE_SPEED_DOWN:
@@ -137,10 +146,13 @@ int check_mid_line()
 #ifdef TRACE
 	printf(" >>> check_mid_line\n");
 #endif
-	red_flag = red_pixel_check();
-	if(g_wait_thread == WAIT_THREAD && red_flag != MID_NONE){
-		printf(" find red pl\n");
-		return red_flag;	// 23
+	if( !had_red_stop ){
+		red_flag = red_pixel_check();
+		if( red_flag != MID_NONE){
+			g_drive_flag = DF_RED_SPEED_DOWN;
+			printf(" find red pl\n");
+			return red_flag;	// 23
+		}
 	}
 
 	// 미드라인 수직 검사 
@@ -379,7 +391,7 @@ struct image_data* right_set_image_data(struct image_data* img_data, char is_str
 {				
 	int i;
 	printf("is straight %d / !had_change_line %d / is_broken_line %d \n ",is_straight, !had_change_line, is_broken_line); 
-	if( is_straight && !had_change_line && is_broken_line){
+	if( !had_change_line && is_broken_line){
 		img_data->flag = IF_CL_RIGHT;
 		had_change_line = TRUE;
 		after_change_line = TRUE;
@@ -523,8 +535,8 @@ int red_pixel_check(){
 
 	if( red_cnt > 50 && red_bot <130)
 	{
-		if( red_cnt > 50){
-			if( red_cnt > 300){
+		if( red_cnt > 30){
+	 		if( red_cnt > 1000){
 #ifdef DRIVE_DEBUG
 				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~ MID_STOP in %d\n", red_bot);
 #endif
@@ -540,6 +552,7 @@ int red_pixel_check(){
 	}
 	return MID_NONE;
 }
+
 int white_count(int y){
 
 	int i = 0, j = 0;
@@ -703,14 +716,14 @@ int right_line_trace(int i, int offset, int is_broken_trace)
 				if(pt_tmp.x == -1 && pt_tmp.y == -1){
 					return TRUE;
 				}
-				if( had_change_line || cnt_change_line >2)
+				if( had_change_line || cnt_change_line >3)
 				{
 					return TRUE;
 				}else if( check_change_line(RIGHT, pt_tmp.x, pt_tmp.y)){
 					
 					cnt_change_line+=1;
 					printf(" >>>>>>>>>>>>>>>>>>>>>>>>>> cnt change line : %d\n",cnt_change_line);
-					if( cnt_change_line >2){
+					if( cnt_change_line >3){
 						is_broken_line = TRUE;
 					}
 

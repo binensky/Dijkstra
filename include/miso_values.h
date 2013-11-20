@@ -107,7 +107,7 @@ static int g_drive_mode;
 static int g_index ;
 static int g_park_dis;
 static int g_wait_thread ;
-
+static int had_red_stop = FALSE;
 // camera fd
 static int cm_handle;	
 

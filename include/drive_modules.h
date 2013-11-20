@@ -4,31 +4,10 @@
 
 #ifndef _DRIVE_MODULES_H_
 #define _DRIVE_MODULES_H_
-void firstDrive(){
-	int n=0;
-	distance_set(1000000);
-	speed_set(1500);
-	usleep(1000);
-
-	turn_straight();
-	usleep(10000);
-	forward_dis();
-	usleep(10000);
-	n = getCurrentTimeMillis();
-	while( getCurrentTimeMillis() - n < 1800000 );
-
-	turn_set(800);
-	usleep(10000);
-	forward_dis();
-	n = getCurrentTimeMillis();
-	while( getCurrentTimeMillis() - n < 1450000 );
-
-	forward_dis();
-}
 void  change_course(){
 
 	int n;
-	int a =300, b = 320, c = 1800, d = 150;
+	int a =300, b = 250, c = 1500, d = 150;
 
 
 
@@ -75,7 +54,7 @@ void  change_course(){
 void traffic_drive(int flag){
 	int n = 0;
 
-	int a = 1300, b = 1450 , c = 3200;
+	int a = 1200, b = 1520 , c = 4000;
 	a *= 1000;
 	b *= 1000;
 	c *= 1000;
@@ -87,7 +66,7 @@ void traffic_drive(int flag){
 			break;
 
 		case IF_SG_LEFT:
-			distance_set(1200);
+			distance_set(9900);
 			usleep(10000);
 			speed_set(1500);	
 			usleep(10000);

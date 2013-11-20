@@ -24,7 +24,7 @@
 #define PARK_READY 4
 #define PARK_ON 5
 
-static int park_mode = PARK_START;
+static int park_mode = PARK_NONE;
 static int distFD = 0;
 unsigned short rxbuf[4];
 
@@ -68,9 +68,8 @@ void* parking_check(void* p_data)
 		get_dist_sensor(2);
 	}
 
-	while(1)
-	{
-		int tmp;
+	while(1){
+		int tmp, saved;
 		if(g_wait_thread == WAIT_THREAD || g_wait_thread == END_THREAD)
 			continue;
 
@@ -113,6 +112,7 @@ void* parking_check(void* p_data)
 				}
 				break;
 			case PARK_INFO_SAVE:
+				
 				if( (g_park_dis = get_dist_sensor(3)) >= CLOSE_DIST)
 				{
 					// check dist range 
@@ -262,18 +262,6 @@ void parking(int flag)
 	int angle_min = 850;
 	int angle_max = 2150;
 
-	/*
-	   printf( "speed : " );
-	   scanf("%d", &speed );
-	   printf("sensor (right, in back, outback) : " );
-	   scanf("%d %d %d", &rightSensor, &stopSensor, &outSensor );
-	   printf( "backTime turnTime rTurn: ");
-	   scanf( "%d %d %d", &TIME_BACK, &TIME_BACK_TURN, &turnRight );
-
-	   TIME_BACK_TURN *= 1000;
-	   TIME_BACK *= 1000;
-	 */
-
 	while( 0 ){
 		printf( "%d : %d : %d \n", get_dist_sensor(2), get_dist_sensor(3), get_dist_sensor(4) );
 
@@ -320,19 +308,8 @@ void parking(int flag)
 		backward_dis();
 		usleep(10000);
 
-		/*
-		   do{
-		   if( get_dist_sensor(2) > 90 ){
-		   frontCheck = 1;
-		   }
-		   if( frontCheck && get_dist_sensor(2) < 90 && get_dist_sensor(3) > 200  ){
-		   frontOut = 1;
-		   }
-		   }while( !frontOut );
-		 */
-
 		n = getCurrentTimeMillis();
-		while( getCurrentTimeMillis() - n < 1300000 - (120 - g_park_dis)*10000 );
+		while( getCurrentTimeMillis() - n < 1160000) ;
 
 		turn_straight();
 		usleep(1000);
